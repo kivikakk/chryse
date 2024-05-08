@@ -1,6 +1,7 @@
-ThisBuild / scalaVersion := "2.13.12"
-ThisBuild / version      := "0.1.0-SNAPSHOT"
-ThisBuild / organization := "ee.hrzn"
+ThisBuild / scalaVersion  := "2.13.12"
+ThisBuild / version       := "0.1.0-SNAPSHOT"
+ThisBuild / organization  := "ee.hrzn"
+ThisBuild / versionScheme := Some("early-semver")
 
 val chiselVersion = "6.3.0"
 
