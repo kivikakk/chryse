@@ -9,9 +9,3 @@ trait Platform {
   val id: String
   val clockHz: Int
 }
-
-trait ElaboratablePlatform extends Platform {
-  def apply[Top <: HasIO[_ <: Data]](top: => Top)(implicit
-      platform: Platform,
-  ): RawModule
-}
