@@ -1,0 +1,7 @@
+set_io clki 35
+set_frequency clki 12.0
+
+set_io io_ubtn 10
+
+set_io io_ledr 11
+set_io io_ledg 37

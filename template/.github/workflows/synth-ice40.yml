@@ -1,0 +1,40 @@
+name: iCE40 synthesis
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout chryse
+      uses: actions/checkout@v4
+      with:
+        repository: kivikakk/chryse
+    - name: Set up JDK 22
+      uses: actions/setup-java@v4
+      with:
+        java-version: '22'
+        distribution: 'temurin'
+        cache: 'sbt'
+    - name: Build and install chryse locally
+      run: sbt publishLocal
+
+    - name: Install OSS CAD Suite
+      uses: YosysHQ/setup-oss-cad-suite@v3
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+    - run: yosys --version
+
+    - name: Checkout this
+      uses: actions/checkout@v4
+    - name: Elaborate
+      run: sbt run
+    - name: Synthesise
+      run: make ice40
