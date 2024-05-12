@@ -1,4 +1,4 @@
-package ee.hrzn.chryse.sb
+package ee.hrzn.chryse.platform.ice40
 
 import chisel3._
 import chisel3.experimental.ExtModule
