@@ -3,12 +3,9 @@ package ee.hrzn.chryse.platform.ice40
 import chisel3._
 import ee.hrzn.chryse.HasIO
 import ee.hrzn.chryse.platform.BoardPlatform
-import ee.hrzn.chryse.platform.ElaboratablePlatform
-import ee.hrzn.chryse.platform.Platform
 
-case class ICE40Platform(ubtnReset: Boolean = false)
-    extends ElaboratablePlatform
-    with BoardPlatform {
+final case class ICE40Platform(ubtnReset: Boolean = false)
+    extends BoardPlatform {
   val id      = "ice40"
   val clockHz = 12_000_000
 

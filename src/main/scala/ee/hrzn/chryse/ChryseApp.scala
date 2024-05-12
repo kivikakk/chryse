@@ -1,64 +1,79 @@
 package ee.hrzn.chryse
 
-import _root_.circt.stage.ChiselStage
-import chisel3._
-import ee.hrzn.chryse.platform.ElaboratablePlatform
+import chisel3.Data
+import circt.stage.ChiselStage
+import ee.hrzn.chryse.platform.BoardPlatform
 import ee.hrzn.chryse.platform.Platform
-
-import java.io.PrintWriter
-import scala.sys.process._
-import scopt.OParser
+import ee.hrzn.chryse.platform.cxxrtl.CXXRTLOptions
 import scopt.DefaultOEffectSetup
 import scopt.DefaultOParserSetup
-import ee.hrzn.chryse.platform.BoardPlatform
-import java.nio.file.Files
-import java.nio.file.Paths
+import scopt.OParser
+
+import scala.collection.mutable
 
 abstract class ChryseApp {
   val name: String
-  val target_platforms: Seq[BoardPlatform]
-  def genTop(implicit platform: Platform): HasIO[_ <: Data]
+  val targetPlatforms: Seq[BoardPlatform]
+  val cxxrtlOptions: Option[CXXRTLOptions] = None
 
-  protected val firtoolOpts = Array(
-    "--lowering-options=disallowLocalVariables",
-    "--lowering-options=disallowPackedArrays",
-    "-disable-all-randomization",
-    "-strip-debug-info",
-  )
+  def genTop(implicit platform: Platform): HasIO[_ <: Data]
 
   def main(args: Array[String]): Unit = {
     val appVersion = getClass().getPackage().getImplementationVersion()
     val builder    = OParser.builder[ChryseAppConfig]
-    val boards     = target_platforms.map(_.id).mkString(",")
+    val boards     = targetPlatforms.map(_.id).mkString(",")
     val parser = {
       import builder._
-      OParser.sequence(
-        programName(name),
-        head(
-          name,
-          appVersion,
-          s"(Chryse ${ChryseApp.getChrysePackage().getImplementationVersion()})",
-        ),
-        help("help").text("prints this usage text"),
-        note(""),
-        cmd("build")
-          .action((_, c) => c.copy(mode = Some(ChryseAppModeBuild)))
-          .text("Build the design, and optionally program it.")
-          .children(
-            arg[String]("<board>")
-              .required()
-              .action((platform, c) => c.copy(platform = platform))
-              .text(s"board to build for {$boards}"),
-            opt[Unit]('p', "program")
-              .action((_, c) => c.copy(program = true))
-              .text("program the design onto the board after building"),
-            note(""),
+      val parsers: mutable.ArrayBuffer[OParser[Unit, ChryseAppConfig]] =
+        mutable.ArrayBuffer(
+          head(
+            name,
+            appVersion,
+            s"(Chryse ${ChryseApp.getChrysePackage().getImplementationVersion()})",
           ),
+          help("help").text("prints this usage text"),
+          note(""),
+          cmd("build")
+            .action((_, c) => c.copy(mode = Some(ChryseAppModeBuild)))
+            .text("Build the design, and optionally program it.")
+            .children(
+              arg[String]("<board>")
+                .required()
+                .action((platform, c) => c.copy(buildPlatform = platform))
+                .text(s"board to build for {$boards}"),
+              opt[Unit]('p', "program")
+                .action((_, c) => c.copy(buildProgram = true))
+                .text("program the design onto the board after building"),
+              note(""),
+            ),
+        )
+      if (cxxrtlOptions.isDefined) {
+        parsers +=
+          cmd("cxxsim")
+            .action((_, c) => c.copy(mode = Some(ChryseAppModeCxxsim)))
+            .text("Run the C++ simulator tests.")
+            .children(
+              opt[Unit]('c', "compile")
+                .action((_, c) => c.copy(cxxrtlCompileOnly = true))
+                .text("compile only; don't run"),
+              opt[Unit]('O', "optimize")
+                .action((_, c) => c.copy(cxxrtlOptimize = true))
+                .text("build with optimizations"),
+              opt[Unit]('d', "debug")
+                .action((_, c) => c.copy(cxxrtlDebug = true))
+                .text("generate source-level debug information"),
+              opt[Unit]('v', "vcd")
+                .action((_, c) => c.copy(cxxrtlVcd = true))
+                .text("output a VCD file when running cxxsim (passes --vcd)"),
+              note(""),
+            )
+      }
+      parsers +=
         checkConfig(c =>
           if (c.mode.isEmpty) failure("no mode specified")
           else success,
-        ),
-      )
+        )
+      OParser.sequence(programName(name), parsers.toSeq: _*)
     }
 
     val setup = new DefaultOParserSetup {
@@ -85,98 +100,37 @@ abstract class ChryseApp {
         s"(Chryse ${ChryseApp.getChrysePackage().getImplementationVersion()})",
     )
 
-    val platform = target_platforms.find(_.id == config.platform).get
-    println(s"Building for ${platform.id} ...")
-
-    Files.createDirectories(Paths.get("build"))
-
-    val verilogPath = s"build/$name-${platform.id}.sv"
-    val verilog =
-      ChiselStage.emitSystemVerilog(
-        platform(genTop(platform)),
-        firtoolOpts = firtoolOpts,
-      )
-    writeCare(verilogPath, verilog)
-
-    val yosysScriptPath = s"build/$name-${platform.id}.ys"
-    val jsonPath        = s"build/$name-${platform.id}.json"
-    writeCare(
-      yosysScriptPath,
-      s"""read_verilog -sv $verilogPath
-         |synth_ice40 -top top
-         |write_json $jsonPath""".stripMargin,
-    )
-
-    runCare(
-      "synthesis",
-      Seq(
-        "yosys",
-        "-q",
-        "-g",
-        "-l",
-        s"build/$name-${platform.id}.rpt",
-        "-s",
-        yosysScriptPath,
-      ),
-    )
-
-    // TODO: generate PCF.
-
-    val ascPath = s"build/$name-${platform.id}.asc"
-    runCare(
-      "place and route",
-      Seq(
-        platform.nextpnrBinary,
-        "-q",
-        "--log",
-        s"build/$name-${platform.id}.tim",
-        "--json",
-        jsonPath,
-        "--pcf",
-        s"$name-${platform.id}.pcf",
-        "--asc",
-        ascPath,
-      ) ++ platform.nextpnrArgs,
-    )
-
-    val binPath = s"build/$name-${platform.id}.bin"
-    runCare(
-      "pack",
-      Seq(platform.packBinary, ascPath, binPath),
-    )
-
-    if (config.program) {
-      runCare("program", Seq(platform.programBinary, binPath))
-    }
-  }
-
-  private def writeCare(path: String, content: String): Unit = {
-    new PrintWriter(path, "utf-8") {
-      try write(content)
-      finally close()
-    }
-  }
-
-  private def runCare(step: String, cmd: Seq[String]): Unit = {
-    val result = cmd.!
-    if (result != 0) {
-      throw new ChryseAppStepFailureException(step)
+    config.mode.get match {
+      case ChryseAppModeBuild =>
+        tasks.BuildTask(
+          name,
+          targetPlatforms.find(_.id == config.buildPlatform).get,
+          genTop(_),
+          config.buildProgram,
+        )
+      case ChryseAppModeCxxsim =>
+        tasks.CxxsimTask(name, genTop(_), cxxrtlOptions.get, config)
     }
   }
 }
-
-class ChryseAppStepFailureException(step: String)
-    extends Exception(s"Chryse step failed: $step") {}
-
-sealed trait ChryseAppMode
-case object ChryseAppModeBuild extends ChryseAppMode
-
-case class ChryseAppConfig(
-    mode: Option[ChryseAppMode] = None,
-    platform: String = "",
-    program: Boolean = false,
-)
 
 object ChryseApp {
   def getChrysePackage(): Package = this.getClass().getPackage()
 }
+
+sealed trait ChryseAppMode
+final case object ChryseAppModeBuild  extends ChryseAppMode
+final case object ChryseAppModeCxxsim extends ChryseAppMode
+
+final case class ChryseAppConfig(
+    mode: Option[ChryseAppMode] = None,
+    buildPlatform: String = "",
+    buildProgram: Boolean = false,
+    cxxrtlCompileOnly: Boolean = false,
+    cxxrtlOptimize: Boolean = false,
+    cxxrtlDebug: Boolean = false,
+    cxxrtlVcd: Boolean = false,
+)
+
+class ChryseAppStepFailureException(step: String)
+    extends Exception(s"Chryse step failed: $step") {}
