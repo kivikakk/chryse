@@ -1,15 +1,15 @@
-package ee.hrzn.chryse.platform.ice40
+package ee.hrzn.chryse.platform.ecp5
 
 import chisel3._
 import ee.hrzn.chryse.HasIO
 import ee.hrzn.chryse.platform.ElaboratablePlatform
 import ee.hrzn.chryse.platform.Platform
 
-case object ICE40Platform extends ElaboratablePlatform {
-  val id      = "ice40"
-  val clockHz = 12_000_000
+case object ECP5Platform extends ElaboratablePlatform {
+  val id      = "ecp5"
+  val clockHz = 48_000_000
 
   override def apply[Top <: HasIO[_ <: Data]](genTop: => Top)(implicit
       platform: Platform,
-  ) = ICE40Top(genTop)
+  ) = ECP5Top(genTop)
 }
