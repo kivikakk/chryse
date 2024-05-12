@@ -13,6 +13,7 @@ lazy val root = (project in file("."))
       "org.chipsalliance" %% "chisel"     % chiselVersion,
       "org.scalatest"     %% "scalatest"  % "3.2.18" % "test",
       "edu.berkeley.cs"   %% "chiseltest" % "6.0.0",
+      "com.github.scopt"  %% "scopt"      % "4.1.0",
     ),
     scalacOptions ++= Seq(
       "-language:reflectiveCalls", "-deprecation", "-feature", "-Xcheckinit",
@@ -34,7 +35,6 @@ lazy val sbtchryse = (project in file("sbt-chryse"))
       }
     },
     scalacOptions ++= Seq(
-      // What do these even do, hey
       "-deprecation",
       "-feature",
       "-Xcheckinit",

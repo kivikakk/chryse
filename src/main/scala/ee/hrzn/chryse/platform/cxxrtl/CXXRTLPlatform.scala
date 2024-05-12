@@ -7,9 +7,8 @@ import ee.hrzn.chryse.platform.GenericTop
 import ee.hrzn.chryse.platform.Platform
 
 case class CXXRTLPlatform(clockHz: Int) extends ElaboratablePlatform {
-  val id      = "cxxrtl"
+  val id = "cxxrtl"
 
-  override def apply[Top <: HasIO[_ <: Data]](top: => Top)(implicit
-      platform: Platform,
-  ) = GenericTop(top)
+  override def apply[Top <: HasIO[_ <: Data]](top: => Top) =
+    GenericTop(top)(this)
 }
