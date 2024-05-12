@@ -5,7 +5,8 @@ import ee.hrzn.chryse.HasIO
 import ee.hrzn.chryse.platform.ElaboratablePlatform
 import ee.hrzn.chryse.platform.Platform
 
-case object ICE40Platform extends ElaboratablePlatform {
+case class ICE40Platform(ubtnReset: Boolean = false)
+    extends ElaboratablePlatform {
   val id      = "ice40"
   val clockHz = 12_000_000
 

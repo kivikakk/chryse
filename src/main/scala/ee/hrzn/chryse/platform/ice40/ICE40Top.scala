@@ -1,6 +1,7 @@
 package ee.hrzn.chryse.platform.ice40
 
 import chisel3._
+import chisel3.experimental.noPrefix
 import chisel3.util._
 import ee.hrzn.chryse.HasIO
 import ee.hrzn.chryse.platform.Platform
@@ -28,10 +29,18 @@ class ICE40Top[Top <: HasIO[_ <: Data]](genTop: => Top)(implicit
     reset         := true.B
     resetTimerReg := resetTimerReg + 1.U
   }
-  private val io_ubtn = IO(Input(Bool()))
+
+  val finalReset = noPrefix {
+    if (platform.asInstanceOf[ICE40Platform].ubtnReset) {
+      val io_ubtn = IO(Input(Bool()))
+      reset | ~io_ubtn
+    } else {
+      reset
+    }
+  }
 
   private val top =
-    withClockAndReset(clk, reset | ~io_ubtn)(Module(genTop))
+    withClockAndReset(clk, finalReset)(Module(genTop))
   private val io = IO(top.createIo())
   io :<>= top.io.as[Data]
 }

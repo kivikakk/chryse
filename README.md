@@ -10,4 +10,3 @@ its own HDL depending on how much I love Scala. :)
 * Generate PCFs on demand via board descriptions.
 * Tie this all together with SV generation — lowering options should be here,
   not in user code.
-* iCE40 UBTN reset should be opt in.
