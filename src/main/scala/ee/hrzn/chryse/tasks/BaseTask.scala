@@ -9,8 +9,7 @@ abstract class BaseTask {
   protected val buildDir = "build"
 
   protected val firtoolOpts = Array(
-    "--lowering-options=disallowLocalVariables",
-    "--lowering-options=disallowPackedArrays",
+    "--lowering-options=disallowLocalVariables,disallowPackedArrays",
     "-disable-all-randomization",
     "-strip-debug-info",
   )
