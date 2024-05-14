@@ -79,13 +79,15 @@ abstract class ChryseApp {
     val setup = new DefaultOParserSetup {
       override def showUsageOnError = Some(true)
     }
+    var terminating = false
     val config =
       OParser.runParser(parser, args, ChryseAppConfig(), setup) match {
         case (result, effects) =>
           OParser.runEffects(
             effects,
             new DefaultOEffectSetup {
-              override def terminate(exitState: Either[String, Unit]): Unit = ()
+              override def terminate(exitState: Either[String, Unit]): Unit =
+                terminating = true
             },
           )
 
@@ -94,6 +96,8 @@ abstract class ChryseApp {
             case _            => return
           }
       }
+
+    if (terminating) return
 
     println(
       s"$name ${getClass().getPackage().getImplementationVersion()} " +

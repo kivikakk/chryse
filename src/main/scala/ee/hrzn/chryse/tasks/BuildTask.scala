@@ -26,19 +26,20 @@ object BuildTask extends BaseTask {
         platform(genTop(platform)),
         firtoolOpts = firtoolOpts,
       )
-    writeCare(verilogPath, verilog)
+    writePath(verilogPath, verilog)
 
     val yosysScriptPath = s"$buildDir/$name-${platform.id}.ys"
     val jsonPath        = s"$buildDir/$name-${platform.id}.json"
-    writeCare(
+    writePath(
       yosysScriptPath,
       s"""read_verilog -sv $verilogPath
          |synth_ice40 -top top
          |write_json $jsonPath""".stripMargin,
     )
 
-    runCare(
-      "synthesis",
+    val yosysCu = CompilationUnit(
+      Seq(verilogPath, yosysScriptPath),
+      jsonPath,
       Seq(
         "yosys",
         "-q",
@@ -49,12 +50,15 @@ object BuildTask extends BaseTask {
         yosysScriptPath,
       ),
     )
+    runCu("synthesis", yosysCu)
 
     // TODO: generate PCF.
+    val pcfPath = s"$name-${platform.id}.pcf"
 
     val ascPath = s"$buildDir/$name-${platform.id}.asc"
-    runCare(
-      "place and route",
+    val ascCu = CompilationUnit(
+      Seq(jsonPath, pcfPath),
+      ascPath,
       Seq(
         platform.nextpnrBinary,
         "-q",
@@ -63,21 +67,24 @@ object BuildTask extends BaseTask {
         "--json",
         jsonPath,
         "--pcf",
-        s"$name-${platform.id}.pcf",
+        pcfPath,
         "--asc",
         ascPath,
       ) ++ platform.nextpnrArgs,
     )
+    runCu("place and route", ascCu)
 
     val binPath = s"$buildDir/$name-${platform.id}.bin"
-    runCare(
-      "pack",
+    val binCu = CompilationUnit(
+      Seq(ascPath),
+      binPath,
       Seq(platform.packBinary, ascPath, binPath),
     )
+    runCu("pack", binCu)
 
     if (program) {
       println(s"Programming ${platform.id} ...")
-      runCare("program", Seq(platform.programBinary, binPath))
+      runCmd("program", Seq(platform.programBinary, binPath))
     }
   }
 }

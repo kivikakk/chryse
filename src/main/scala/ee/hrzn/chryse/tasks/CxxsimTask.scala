@@ -8,17 +8,19 @@ import ee.hrzn.chryse.platform.Platform
 import ee.hrzn.chryse.platform.cxxrtl.CXXRTLOptions
 import ee.hrzn.chryse.platform.cxxrtl.CXXRTLPlatform
 
-import java.nio.file.FileVisitOption
 import java.nio.file.Files
 import java.nio.file.Paths
 import scala.jdk.CollectionConverters._
+import scala.sys.process._
 
 object CxxsimTask extends BaseTask {
   private val cxxsimDir = "cxxsim"
+  private val cxxOpts = Seq("-std=c++14", "-g", "-pedantic", "-Wall", "-Wextra",
+    "-Wno-zero-length-array", "-Wno-unused-parameter")
 
   def apply(
       name: String,
-      genTop: Platform => HasIO[_ <: chisel3.Data],
+      genTop: Platform => HasIO[_ <: Data],
       cxxrtlOptions: CXXRTLOptions,
       config: ChryseAppConfig,
   ): Unit = {
@@ -34,23 +36,24 @@ object CxxsimTask extends BaseTask {
         platform(genTop(platform)),
         firtoolOpts = firtoolOpts,
       )
-    writeCare(verilogPath, verilog)
+    writePath(verilogPath, verilog)
 
     val blackboxIlPath = s"$buildDir/$name-${platform.id}-blackbox.il"
     // TODO
-    writeCare(blackboxIlPath, "\n")
+    writePath(blackboxIlPath, "\n")
 
     val yosysScriptPath = s"$buildDir/$name-${platform.id}.ys"
     val ccPath          = s"$buildDir/$name.cc"
-    writeCare(
+    writePath(
       yosysScriptPath,
       s"""read_rtlil $blackboxIlPath
          |read_verilog -sv $verilogPath
          |write_cxxrtl -header $ccPath""".stripMargin,
     )
 
-    runCare(
-      "synthesis",
+    val yosysCu = CompilationUnit(
+      Seq(blackboxIlPath, verilogPath, yosysScriptPath),
+      ccPath,
       Seq(
         "yosys",
         "-q",
@@ -61,15 +64,68 @@ object CxxsimTask extends BaseTask {
         yosysScriptPath,
       ),
     )
-
-    // Compile all sources in cxxsimDir.
-    // Use Make-like heuristics to determine what's up to date.
-    // TODO: continue here.
-    for { p <- Files.walk(Paths.get(cxxsimDir)).iterator.asScala }
-      println(s"p: $p")
+    runCu("synthesis", yosysCu)
 
     // TODO: we need to decide how the simulation gets driven. How do we offer
     // enough control to the user? Do we assume they/let them do all the setup
     // themselves? etc.
+    //
+    // Fundamentally, the user may have many different ways of driving the
+    // process. We want to facilitate connecting blackboxes etc., but what else?
+    // Hrmmm. Let's start simple (just compiling everything, like rainhdx), and
+    // then see where we go.
+    val ccs     = Seq(ccPath) ++ filesInDirWithExt(cxxsimDir, ".cc")
+    val headers = filesInDirWithExt(cxxsimDir, ".h").toSeq
+
+    val yosysDatDir = Seq("yosys-config", "--datdir").!!.trim()
+
+    def buildPathForCc(cc: String) =
+      cc.replace(s"$cxxsimDir/", s"$buildDir/")
+        .replace(".cc", ".o")
+
+    def compileCmdForCc(cc: String, obj: String) = Seq(
+      "c++",
+      s"-I$buildDir",
+      s"-I$yosysDatDir/include/backends/cxxrtl/runtime",
+      "-c",
+      cc,
+      "-o",
+      obj,
+    ) ++ cxxOpts
+
+    // XXX: depend on what look like headers for now.
+    val cus = for {
+      cc <- ccs
+      obj = buildPathForCc(cc)
+      cmd = compileCmdForCc(cc, obj)
+    } yield CompilationUnit(Seq(cc) ++ headers, obj, cmd)
+
+    runCus("compilation", cus)
+
+    val binPath = s"$buildDir/$name"
+    val linkCu = CompilationUnit(
+      cus.map(_.outPath),
+      binPath,
+      Seq("c++", "-o", binPath) ++ cxxOpts ++ cus.map(_.outPath),
+    )
+    runCu("linking", linkCu)
+
+    if (config.cxxrtlCompileOnly) return
+
+    val binArgs = if (config.cxxrtlVcd) Seq("--vcd") else Seq()
+    val binCmd  = Seq(binPath) ++ binArgs
+
+    println(s"running: $binCmd")
+    val rc = binCmd.!
+
+    println(s"$name exited with return code $rc")
   }
+
+  private def filesInDirWithExt(dir: String, ext: String): Iterator[String] =
+    Files
+      .walk(Paths.get(dir), 1)
+      .iterator
+      .asScala
+      .map(_.toString)
+      .filter(_.endsWith(ext))
 }
