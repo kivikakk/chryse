@@ -62,9 +62,17 @@ abstract class ChryseApp {
               opt[Unit]('d', "debug")
                 .action((_, c) => c.copy(cxxrtlDebug = true))
                 .text("generate source-level debug information"),
-              opt[Unit]('v', "vcd")
-                .action((_, c) => c.copy(cxxrtlVcd = true))
-                .text("output a VCD file when running cxxsim (passes --vcd)"),
+              opt[String]('v', "vcd")
+                .valueName("<file>")
+                .action((p, c) => c.copy(cxxrtlVcdOutPath = Some(p)))
+                .text(
+                  "output a VCD file when running cxxsim (passes --vcd <file> to the executable)",
+                ),
+              arg[String]("<arg>...")
+                .unbounded()
+                .optional()
+                .action((arg, c) => c.copy(cxxrtlArgs = c.cxxrtlArgs :+ arg))
+                .text("other arguments for the cxxsim executable"),
               note(""),
             )
       }
@@ -133,7 +141,8 @@ final case class ChryseAppConfig(
     cxxrtlCompileOnly: Boolean = false,
     cxxrtlOptimize: Boolean = false,
     cxxrtlDebug: Boolean = false,
-    cxxrtlVcd: Boolean = false,
+    cxxrtlVcdOutPath: Option[String] = None,
+    cxxrtlArgs: List[String] = List(),
 )
 
 class ChryseAppStepFailureException(step: String)

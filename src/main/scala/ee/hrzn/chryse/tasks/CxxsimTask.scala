@@ -15,8 +15,8 @@ import scala.sys.process._
 
 object CxxsimTask extends BaseTask {
   private val cxxsimDir = "cxxsim"
-  private val cxxOpts = Seq("-std=c++14", "-g", "-pedantic", "-Wall", "-Wextra",
-    "-Wno-zero-length-array", "-Wno-unused-parameter")
+  private val baseCxxOpts = Seq("-std=c++14", "-g", "-pedantic", "-Wall",
+    "-Wextra", "-Wno-zero-length-array", "-Wno-unused-parameter")
 
   def apply(
       name: String,
@@ -78,6 +78,12 @@ object CxxsimTask extends BaseTask {
     val headers = filesInDirWithExt(cxxsimDir, ".h").toSeq
 
     val yosysDatDir = Seq("yosys-config", "--datdir").!!.trim()
+    val cxxOpts =
+      baseCxxOpts ++ (if (config.cxxrtlDebug) Seq("-g")
+                      else Seq()) ++
+        (if (config.cxxrtlOptimize)
+           Seq("-O3")
+         else Seq())
 
     def buildPathForCc(cc: String) =
       cc.replace(s"$cxxsimDir/", s"$buildDir/")
@@ -112,8 +118,11 @@ object CxxsimTask extends BaseTask {
 
     if (config.cxxrtlCompileOnly) return
 
-    val binArgs = if (config.cxxrtlVcd) Seq("--vcd") else Seq()
-    val binCmd  = Seq(binPath) ++ binArgs
+    val binArgs = config.cxxrtlVcdOutPath match {
+      case Some(vcdOutPath) => Seq("--vcd", vcdOutPath)
+      case _                => Seq()
+    }
+    val binCmd = Seq(binPath) ++ binArgs ++ config.cxxrtlArgs
 
     println(s"running: $binCmd")
     val rc = binCmd.!
