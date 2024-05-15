@@ -40,6 +40,7 @@ object CxxsimTask extends BaseTask {
       )
     writePath(verilogPath, verilog)
 
+    // Forgive me for what I am about to do.
     object UnwindException extends Exception
 
     val blackboxIlPath = s"$buildDir/$name-${platform.id}-blackbox.il"
