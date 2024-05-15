@@ -18,12 +18,15 @@ abstract class BaseTask {
     "-strip-debug-info",
   )
 
-  protected def writePath(path: String, content: String): Unit = {
-    new PrintWriter(path, "utf-8") {
-      try write(content)
+  protected def writePath(path: String)(action: PrintWriter => Unit): Unit = {
+    new PrintWriter(path, "UTF-8") {
+      try action(this)
       finally close()
     }
   }
+
+  protected def writePath(path: String, content: String): Unit =
+    writePath(path)(_.write(content))
 
   protected def runCmd(step: String, cmd: Seq[String]) =
     runCmds(step, Seq(cmd))

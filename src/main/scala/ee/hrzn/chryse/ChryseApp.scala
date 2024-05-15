@@ -40,7 +40,11 @@ abstract class ChryseApp {
               arg[String]("<board>")
                 .required()
                 .action((platform, c) => c.copy(buildPlatform = platform))
-                .text(s"board to build for {$boards}"),
+                .text(s"board to build for {$boards}")
+                .validate(board =>
+                  if (targetPlatforms.exists(_.id == board)) success
+                  else failure(s"unknown board $board"),
+                ),
               opt[Unit]('p', "program")
                 .action((_, c) => c.copy(buildProgram = true))
                 .text("program the design onto the board after building"),

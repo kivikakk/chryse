@@ -1,6 +1,6 @@
 package ee.hrzn.chryse.tasks
 
-import chisel3.Data
+import chisel3._
 import circt.stage.ChiselStage
 import ee.hrzn.chryse.ChryseAppConfig
 import ee.hrzn.chryse.HasIO
@@ -8,8 +8,10 @@ import ee.hrzn.chryse.platform.Platform
 import ee.hrzn.chryse.platform.cxxrtl.CXXRTLOptions
 import ee.hrzn.chryse.platform.cxxrtl.CXXRTLPlatform
 
+import java.io.PrintWriter
 import java.nio.file.Files
 import java.nio.file.Paths
+import scala.collection.mutable
 import scala.jdk.CollectionConverters._
 import scala.sys.process._
 
@@ -38,9 +40,46 @@ object CxxsimTask extends BaseTask {
       )
     writePath(verilogPath, verilog)
 
+    object UnwindException extends Exception
+
     val blackboxIlPath = s"$buildDir/$name-${platform.id}-blackbox.il"
-    // TODO
-    writePath(blackboxIlPath, "\n")
+    writePath(blackboxIlPath) { wr =>
+      for { (bb, bbIx) <- cxxrtlOptions.blackboxes.zipWithIndex } {
+        if (bbIx > 0) wr.write("\n")
+        wr.write("attribute \\cxxrtl_blackbox 1\n")
+        wr.write("attribute \\blackbox 1\n")
+        wr.write(s"module \\${bb.getSimpleName()}\n")
+
+        try {
+          ChiselStage.emitSystemVerilog {
+            val inst = bb.getConstructor().newInstance()
+            val io =
+              bb.getDeclaredMethod("io").invoke(inst).asInstanceOf[Bundle]
+            for {
+              ((str, dat), elIx) <-
+                io.elements.toSeq.reverseIterator.zipWithIndex
+            } {
+              if (elIx > 0) wr.write("\n")
+              val dir =
+                dat.getClass().getMethod("specifiedDirection").invoke(dat)
+              if (dir == SpecifiedDirection.Input && dat.isInstanceOf[Clock]) {
+                wr.write("  attribute \\cxxrtl_edge \"p\"\n")
+              } else if (dir == SpecifiedDirection.Output) {
+                wr.write("  attribute \\cxxrtl_sync 1\n")
+              }
+              wr.write(
+                s"  wire ${dir.toString().toLowerCase()} ${elIx + 1} \\$str\n",
+              )
+            }
+            throw UnwindException
+          }
+        } catch {
+          case UnwindException => ()
+        }
+
+        wr.write("end\n")
+      }
+    }
 
     val yosysScriptPath = s"$buildDir/$name-${platform.id}.ys"
     val ccPath          = s"$buildDir/$name.cc"
@@ -78,12 +117,11 @@ object CxxsimTask extends BaseTask {
     val headers = filesInDirWithExt(cxxsimDir, ".h").toSeq
 
     val yosysDatDir = Seq("yosys-config", "--datdir").!!.trim()
-    val cxxOpts =
-      baseCxxOpts ++ (if (config.cxxrtlDebug) Seq("-g")
-                      else Seq()) ++
-        (if (config.cxxrtlOptimize)
-           Seq("-O3")
-         else Seq())
+    val cxxOpts     = new mutable.ArrayBuffer[String]
+    cxxOpts.appendAll(baseCxxOpts)
+    cxxOpts.append(s"-DCLOCK_HZ=${cxxrtlOptions.clockHz}")
+    if (config.cxxrtlDebug) cxxOpts.append("-g")
+    if (config.cxxrtlOptimize) cxxOpts.append("-O3")
 
     def buildPathForCc(cc: String) =
       cc.replace(s"$cxxsimDir/", s"$buildDir/")
