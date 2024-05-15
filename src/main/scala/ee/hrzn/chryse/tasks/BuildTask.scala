@@ -38,7 +38,8 @@ object BuildTask extends BaseTask {
     )
 
     val yosysCu = CompilationUnit(
-      Seq(verilogPath, yosysScriptPath),
+      Some(verilogPath),
+      Seq(yosysScriptPath),
       jsonPath,
       Seq(
         "yosys",
@@ -57,7 +58,8 @@ object BuildTask extends BaseTask {
 
     val ascPath = s"$buildDir/$name-${platform.id}.asc"
     val ascCu = CompilationUnit(
-      Seq(jsonPath, pcfPath),
+      Some(jsonPath),
+      Seq(pcfPath),
       ascPath,
       Seq(
         platform.nextpnrBinary,
@@ -76,7 +78,8 @@ object BuildTask extends BaseTask {
 
     val binPath = s"$buildDir/$name-${platform.id}.bin"
     val binCu = CompilationUnit(
-      Seq(ascPath),
+      Some(ascPath),
+      Seq(),
       binPath,
       Seq(platform.packBinary, ascPath, binPath),
     )

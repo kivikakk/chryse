@@ -92,6 +92,7 @@ object CxxsimTask extends BaseTask {
     )
 
     val yosysCu = CompilationUnit(
+      None,
       Seq(blackboxIlPath, verilogPath, yosysScriptPath),
       ccPath,
       Seq(
@@ -143,12 +144,21 @@ object CxxsimTask extends BaseTask {
       cc <- ccs
       obj = buildPathForCc(cc)
       cmd = compileCmdForCc(cc, obj)
-    } yield CompilationUnit(Seq(cc) ++ headers, obj, cmd)
+    } yield CompilationUnit(Some(cc), headers, obj, cmd)
 
     runCus("compilation", cus)
 
+    val cwd = System.getProperty("user.dir")
+    writePath(s"$buildDir/compile_commands.json") { wr =>
+      upickle.default.writeTo(
+        cus.map(cu => ClangdEntry(cwd, cu.primaryInPath.get, cu.cmd)),
+        wr,
+      )
+    }
+
     val binPath = s"$buildDir/$name"
     val linkCu = CompilationUnit(
+      None,
       cus.map(_.outPath),
       binPath,
       Seq("c++", "-o", binPath) ++ cxxOpts ++ cus.map(_.outPath),
@@ -176,4 +186,10 @@ object CxxsimTask extends BaseTask {
       .asScala
       .map(_.toString)
       .filter(_.endsWith(ext))
+}
+
+private case class ClangdEntry(directory: String, file: String, arguments: Seq[String])
+private object ClangdEntry {
+  implicit val rw: upickle.default.ReadWriter[ClangdEntry] =
+    upickle.default.macroRW
 }

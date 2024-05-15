@@ -61,12 +61,13 @@ abstract class BaseTask {
   }
 
   case class CompilationUnit(
-      val inPaths: Seq[String],
+      val primaryInPath: Option[String],
+      val otherInPaths: Seq[String],
       val outPath: String,
       val cmd: Seq[String],
   ) {
     val digestPath            = s"$outPath.dig"
-    private val sortedInPaths = inPaths.sorted
+    private val sortedInPaths = otherInPaths.appendedAll(primaryInPath).sorted
 
     private def addIntToDigest(n: Int)(implicit digest: MessageDigest): Unit =
       digest.update(String.format("%08x", n).getBytes("UTF-8"))
@@ -85,8 +86,8 @@ abstract class BaseTask {
 
     private def digestInsWithCmd(): String = {
       implicit val digest = MessageDigest.getInstance("SHA-256")
-      addIntToDigest(inPaths.length)
-      for { inPath <- inPaths.sorted } {
+      addIntToDigest(sortedInPaths.length)
+      for { inPath <- sortedInPaths } {
         addStringToDigest(inPath)
         addBytesToDigest(Files.readAllBytes(Paths.get(inPath)))
       }
