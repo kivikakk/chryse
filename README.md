@@ -8,4 +8,3 @@ its own HDL depending on how much I love Scala. :)
 * Generate PCFs on demand via board descriptions.
 * CXXRTL/cxxsim.
 * Parameterise correctly for ECP5.
-* Remove sbtchryse if we don't need it after all.

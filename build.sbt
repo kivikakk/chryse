@@ -1,7 +1,7 @@
 ThisBuild / version       := "0.1.0-SNAPSHOT"
 ThisBuild / organization  := "ee.hrzn"
 ThisBuild / versionScheme := Some("early-semver")
-ThisBuild / homepage      := Some(url("https://github.com/hrzn-ee/chryse"))
+ThisBuild / homepage      := Some(url("https://github.com/chryse-hdl/chryse"))
 
 val chiselVersion = "6.3.0"
 
@@ -21,22 +21,5 @@ lazy val root = (project in file("."))
     ),
     addCompilerPlugin(
       "org.chipsalliance" % "chisel-plugin" % chiselVersion cross CrossVersion.full,
-    ),
-  )
-
-lazy val sbtchryse = (project in file("sbt-chryse"))
-  .enablePlugins(SbtPlugin)
-  .settings(
-    name      := "sbt-chryse",
-    sbtPlugin := true,
-    pluginCrossBuild / sbtVersion := {
-      scalaBinaryVersion.value match {
-        case "2.12" => "1.9.7"
-      }
-    },
-    scalacOptions ++= Seq(
-      "-deprecation",
-      "-feature",
-      "-Xcheckinit",
     ),
   )
