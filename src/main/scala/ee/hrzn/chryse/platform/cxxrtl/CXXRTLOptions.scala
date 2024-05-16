@@ -11,10 +11,10 @@ final case class CXXRTLOptions(
     ldFlags: Seq[String] = Seq(),
     pkgConfig: Seq[String] = Seq(),
 ) {
-  val allCxxFlags: Seq[String] = cxxFlags ++ pkgConfig.flatMap(
+  lazy val allCxxFlags: Seq[String] = cxxFlags ++ pkgConfig.flatMap(
     Seq("pkg-config", "--cflags", _).!!.trim.split(' '),
   )
-  val allLdFlags: Seq[String] = ldFlags ++ pkgConfig.flatMap(
+  lazy val allLdFlags: Seq[String] = ldFlags ++ pkgConfig.flatMap(
     Seq("pkg-config", "--libs", _).!!.trim.split(' '),
   )
 }
