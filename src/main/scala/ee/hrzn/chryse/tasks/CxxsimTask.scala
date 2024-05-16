@@ -129,7 +129,7 @@ object CxxsimTask extends BaseTask {
       cc.replace(s"$cxxsimDir/", s"$buildDir/")
         .replace(".cc", ".o")
 
-    def compileCmdForCc(cc: String, obj: String) = Seq(
+    def compileCmdForCc(cc: String, obj: String): Seq[String] = Seq(
       "c++",
       s"-I$buildDir",
       s"-I$yosysDatDir/include/backends/cxxrtl/runtime",
@@ -137,7 +137,7 @@ object CxxsimTask extends BaseTask {
       cc,
       "-o",
       obj,
-    ) ++ cxxOpts ++ cxxrtlOptions.cxxFlags
+    ) ++ cxxOpts ++ cxxrtlOptions.allCxxFlags
 
     // XXX: depend on what look like headers for now.
     val cus = for {
@@ -163,7 +163,7 @@ object CxxsimTask extends BaseTask {
       binPath,
       Seq("c++", "-o", binPath) ++ cxxOpts ++ cus.map(
         _.outPath,
-      ) ++ cxxrtlOptions.ldFlags,
+      ) ++ cxxrtlOptions.allLdFlags,
     )
     runCu("linking", linkCu)
 
