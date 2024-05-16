@@ -3,6 +3,7 @@ package ee.hrzn.chryse.tasks
 import chisel3._
 import circt.stage.ChiselStage
 import ee.hrzn.chryse.ChryseAppConfig
+import ee.hrzn.chryse.ChryseAppStepFailureException
 import ee.hrzn.chryse.HasIO
 import ee.hrzn.chryse.platform.Platform
 import ee.hrzn.chryse.platform.cxxrtl.BlackBoxGenerator
@@ -146,6 +147,9 @@ object CxxsimTask extends BaseTask {
     val rc = binCmd.!
 
     println(s"$name exited with return code $rc")
+    if (rc != 0) {
+      throw new ChryseAppStepFailureException("rc non-zero")
+    }
   }
 
   private def filesInDirWithExt(dir: String, ext: String): Iterator[String] =
