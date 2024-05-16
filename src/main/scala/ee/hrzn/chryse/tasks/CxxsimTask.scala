@@ -137,7 +137,7 @@ object CxxsimTask extends BaseTask {
       cc,
       "-o",
       obj,
-    ) ++ cxxOpts
+    ) ++ cxxOpts ++ cxxrtlOptions.cxxFlags
 
     // XXX: depend on what look like headers for now.
     val cus = for {
@@ -161,7 +161,9 @@ object CxxsimTask extends BaseTask {
       None,
       cus.map(_.outPath),
       binPath,
-      Seq("c++", "-o", binPath) ++ cxxOpts ++ cus.map(_.outPath),
+      Seq("c++", "-o", binPath) ++ cxxOpts ++ cus.map(
+        _.outPath,
+      ) ++ cxxrtlOptions.ldFlags,
     )
     runCu("linking", linkCu)
 
@@ -188,7 +190,11 @@ object CxxsimTask extends BaseTask {
       .filter(_.endsWith(ext))
 }
 
-private case class ClangdEntry(directory: String, file: String, arguments: Seq[String])
+private case class ClangdEntry(
+    directory: String,
+    file: String,
+    arguments: Seq[String],
+)
 private object ClangdEntry {
   implicit val rw: upickle.default.ReadWriter[ClangdEntry] =
     upickle.default.macroRW
