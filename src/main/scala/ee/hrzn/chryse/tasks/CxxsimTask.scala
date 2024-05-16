@@ -5,6 +5,7 @@ import circt.stage.ChiselStage
 import ee.hrzn.chryse.ChryseAppConfig
 import ee.hrzn.chryse.HasIO
 import ee.hrzn.chryse.platform.Platform
+import ee.hrzn.chryse.platform.cxxrtl.BlackBoxGenerator
 import ee.hrzn.chryse.platform.cxxrtl.CXXRTLOptions
 import ee.hrzn.chryse.platform.cxxrtl.CXXRTLPlatform
 
@@ -40,45 +41,11 @@ object CxxsimTask extends BaseTask {
       )
     writePath(verilogPath, verilog)
 
-    // Forgive me for what I am about to do.
-    object UnwindException extends Exception
-
     val blackboxIlPath = s"$buildDir/$name-${platform.id}-blackbox.il"
     writePath(blackboxIlPath) { wr =>
       for { (bb, bbIx) <- cxxrtlOptions.blackboxes.zipWithIndex } {
         if (bbIx > 0) wr.write("\n")
-        wr.write("attribute \\cxxrtl_blackbox 1\n")
-        wr.write("attribute \\blackbox 1\n")
-        wr.write(s"module \\${bb.getSimpleName()}\n")
-
-        try {
-          ChiselStage.emitSystemVerilog {
-            val inst = bb.getConstructor().newInstance()
-            val io =
-              bb.getDeclaredMethod("io").invoke(inst).asInstanceOf[Bundle]
-            for {
-              ((str, dat), elIx) <-
-                io.elements.toSeq.reverseIterator.zipWithIndex
-            } {
-              if (elIx > 0) wr.write("\n")
-              val dir =
-                dat.getClass().getMethod("specifiedDirection").invoke(dat)
-              if (dir == SpecifiedDirection.Input && dat.isInstanceOf[Clock]) {
-                wr.write("  attribute \\cxxrtl_edge \"p\"\n")
-              } else if (dir == SpecifiedDirection.Output) {
-                wr.write("  attribute \\cxxrtl_sync 1\n")
-              }
-              wr.write(
-                s"  wire ${dir.toString().toLowerCase()} ${elIx + 1} \\$str\n",
-              )
-            }
-            throw UnwindException
-          }
-        } catch {
-          case UnwindException => ()
-        }
-
-        wr.write("end\n")
+        BlackBoxGenerator(wr, bb)
       }
     }
 
