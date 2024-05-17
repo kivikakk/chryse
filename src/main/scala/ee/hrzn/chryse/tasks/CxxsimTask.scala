@@ -114,8 +114,6 @@ object CxxsimTask extends BaseTask {
       cmd = compileCmdForCc(cc, obj)
     } yield CompilationUnit(Some(cc), headers, obj, cmd)
 
-    runCus("compilation", cus)
-
     val cwd = System.getProperty("user.dir")
     writePath(s"$buildDir/compile_commands.json") { wr =>
       upickle.default.writeTo(
@@ -123,6 +121,8 @@ object CxxsimTask extends BaseTask {
         wr,
       )
     }
+
+    runCus("compilation", cus)
 
     val binPath = s"$buildDir/$name"
     val linkCu = CompilationUnit(
