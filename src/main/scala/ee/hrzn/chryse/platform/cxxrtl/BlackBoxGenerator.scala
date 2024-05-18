@@ -24,25 +24,21 @@ class BlackBoxGenerator(private val wr: Writer) {
           ((name, dat)) <-
             io.elements.toSeq.reverseIterator
         } {
-          if (elIx > 0) wr.write("\n")
           val dir =
-            dat
-              .getClass()
-              .getMethod("specifiedDirection")
+            classOf[Data]
+              .getMethod("specifiedDirection") // chisel private :<
               .invoke(dat)
               .asInstanceOf[SpecifiedDirection]
-
-          if (dat.isInstanceOf[Vec[_]]) {
-            val vec = dat.asInstanceOf[Vec[_]]
-            for { i <- 0 until vec.length } {
-              emitWire(s"${name}_$i", dat, dir, elIx)
+          dat match {
+            case vec: Vec[_] =>
+              for { (vecEl, vecElIx) <- vec.getElements.zipWithIndex } {
+                emitWire(s"${name}_$vecElIx", vecEl, dir, vecEl.getWidth, elIx)
+                elIx += 1
+              }
+            case _ =>
+              emitWire(name, dat, dir, dat.getWidth, elIx)
               elIx += 1
-            }
-          } else {
-            emitWire(name, dat, dir, elIx)
-            elIx += 1
           }
-
         }
         throw UnwindException
       }
@@ -57,14 +53,21 @@ class BlackBoxGenerator(private val wr: Writer) {
       name: String,
       dat: Data,
       dir: SpecifiedDirection,
+      width: Int,
       elIx: Integer,
   ): Unit = {
+    if (elIx > 0) wr.write("\n")
     if (dir == SpecifiedDirection.Input && dat.isInstanceOf[Clock]) {
       wr.write("  attribute \\cxxrtl_edge \"p\"\n")
     } else if (dir == SpecifiedDirection.Output) {
+      // XXX: We're assuming this is a synchronous output, but who says it is?
       wr.write("  attribute \\cxxrtl_sync 1\n")
     }
-    wr.write(s"  wire ${dir.toString().toLowerCase()} ${elIx + 1} \\$name\n")
+    wr.write(s"  wire ${dir.toString().toLowerCase()} ${elIx + 1}")
+    if (width != 1) {
+      wr.write(s" width $width")
+    }
+    wr.write(s" \\$name\n")
   }
 }
 
