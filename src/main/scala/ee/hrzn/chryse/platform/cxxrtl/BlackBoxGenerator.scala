@@ -60,6 +60,7 @@ class BlackBoxGenerator(private val wr: Writer) {
     if (dir == SpecifiedDirection.Input && dat.isInstanceOf[Clock]) {
       wr.write("  attribute \\cxxrtl_edge \"p\"\n")
     } else if (dir == SpecifiedDirection.Output) {
+      // XXX: We're assuming this is a synchronous output, but who says it is?
       wr.write("  attribute \\cxxrtl_sync 1\n")
     }
     wr.write(s"  wire ${dir.toString().toLowerCase()} ${elIx + 1}")
