@@ -14,7 +14,6 @@ import java.io.PrintWriter
 import java.nio.file.Files
 import java.nio.file.Paths
 import scala.collection.mutable
-import scala.jdk.CollectionConverters._
 import scala.sys.process._
 
 object CxxsimTask extends BaseTask {
@@ -116,10 +115,7 @@ object CxxsimTask extends BaseTask {
 
     val cwd = System.getProperty("user.dir")
     writePath(s"$buildDir/compile_commands.json") { wr =>
-      upickle.default.writeTo(
-        cus.map(cu => ClangdEntry(cwd, cu.primaryInPath.get, cu.cmd)),
-        wr,
-      )
+      upickle.default.writeTo(cus.map(ClangdEntry(_)), wr)
     }
 
     runCus("compilation", cus)
@@ -152,21 +148,17 @@ object CxxsimTask extends BaseTask {
     }
   }
 
-  private def filesInDirWithExt(dir: String, ext: String): Iterator[String] =
-    Files
-      .walk(Paths.get(dir), 1)
-      .iterator
-      .asScala
-      .map(_.toString)
-      .filter(_.endsWith(ext))
-}
+  private case class ClangdEntry(
+      directory: String,
+      file: String,
+      arguments: Seq[String],
+  )
 
-private case class ClangdEntry(
-    directory: String,
-    file: String,
-    arguments: Seq[String],
-)
-private object ClangdEntry {
-  implicit val rw: upickle.default.ReadWriter[ClangdEntry] =
-    upickle.default.macroRW
+  private object ClangdEntry {
+    def apply(cu: CompilationUnit): ClangdEntry =
+      ClangdEntry(System.getProperty("user.dir"), cu.primaryInPath.get, cu.cmd)
+
+    implicit val rw: upickle.default.ReadWriter[ClangdEntry] =
+      upickle.default.macroRW
+  }
 }

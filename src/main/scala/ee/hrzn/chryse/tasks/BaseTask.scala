@@ -7,6 +7,7 @@ import java.nio.file.Files
 import java.nio.file.Paths
 import java.security.MessageDigest
 import java.util.HexFormat
+import scala.jdk.CollectionConverters._
 import scala.sys.process._
 
 abstract class BaseTask {
@@ -59,6 +60,14 @@ abstract class BaseTask {
     runCmds(step, run.map(_.cmd))
     run.foreach(_.markUpToDate())
   }
+
+  protected def filesInDirWithExt(dir: String, ext: String): Iterator[String] =
+    Files
+      .walk(Paths.get(dir), 1)
+      .iterator
+      .asScala
+      .map(_.toString)
+      .filter(_.endsWith(ext))
 
   case class CompilationUnit(
       val primaryInPath: Option[String],
