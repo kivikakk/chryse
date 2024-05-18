@@ -11,4 +11,3 @@ its own HDL depending on how much I love Scala. :)
 
 * Generate PCFs on demand via board descriptions.
 * Parameterise correctly for ECP5.
-* CXXRTL blackbox types: ✅ Vec; ❌ anything not one bit wide.
