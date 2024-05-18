@@ -43,6 +43,20 @@ class BlackBoxGeneratorSpec extends AnyFlatSpec with Matchers {
                               |end
 """.stripMargin)
   }
+
+  it should "expand wider elements correctly" in {
+    val sw = new StringWriter
+    BlackBoxGenerator(sw, classOf[WiderElementsBB])
+    sw.toString() should be("""attribute \cxxrtl_blackbox 1
+                              |attribute \blackbox 1
+                              |module \WiderElementsBB
+                              |  wire input 1 width 64 \d_in
+                              |
+                              |  attribute \cxxrtl_sync 1
+                              |  wire output 2 width 8 \d_out
+                              |end
+""".stripMargin)
+  }
 }
 
 private class UnaryBB extends BlackBox {
@@ -58,5 +72,12 @@ private class VecOfBoolBB extends BlackBox {
   val io = IO(new Bundle {
     val d_in  = Input(Vec(3, Bool()))
     val d_out = Output(Vec(2, Bool()))
+  })
+}
+
+private class WiderElementsBB extends BlackBox {
+  val io = IO(new Bundle {
+    val d_in  = Input(UInt(64.W))
+    val d_out = Input(SInt(8.W))
   })
 }
