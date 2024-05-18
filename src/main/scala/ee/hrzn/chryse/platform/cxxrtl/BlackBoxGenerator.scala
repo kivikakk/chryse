@@ -24,6 +24,7 @@ class BlackBoxGenerator(private val wr: Writer) {
           ((name, dat)) <-
             io.elements.toSeq.reverseIterator
         } {
+          // TODO: "inout" (Chisel "Analog")
           val dir =
             classOf[Data]
               .getMethod("specifiedDirection") // chisel private :<

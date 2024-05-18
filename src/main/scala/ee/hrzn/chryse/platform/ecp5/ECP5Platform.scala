@@ -14,6 +14,10 @@ case object ECP5Platform extends BoardPlatform {
   val packBinary    = "ecppack"
   val programBinary = "dfu-util"
 
+  val resources = Seq(
+    // TODO
+  )
+
   override def apply[Top <: HasIO[_ <: Data]](genTop: => Top) =
     ECP5Top(genTop)(this)
 }

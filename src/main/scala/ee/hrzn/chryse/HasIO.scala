@@ -2,7 +2,8 @@ package ee.hrzn.chryse
 
 import chisel3._
 
-// This looks a lot like the FixedIO*Module stuff.
+// This is like a "FixedIOModule" (i.e. neither Raw nor Ext).
+// FixedIOBaseModule is sealed :(
 
 trait HasIO[ContainedIO <: Data] extends RawModule {
   def createIo(): ContainedIO

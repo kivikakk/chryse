@@ -30,7 +30,7 @@ class ICE40Top[Top <: HasIO[_ <: Data]](genTop: => Top)(implicit
   }
 
   val finalReset = noPrefix {
-    if (platform.asInstanceOf[ICE40Platform].ubtnReset) {
+    if (platform.asInstanceOf[IceBreakerPlatform].ubtnReset) {
       val io_ubtn = IO(Input(Bool()))
       reset | ~io_ubtn
     } else {

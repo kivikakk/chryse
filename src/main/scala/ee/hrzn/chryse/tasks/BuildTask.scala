@@ -13,7 +13,7 @@ object BuildTask extends BaseTask {
   def apply(
       name: String,
       platform: BoardPlatform,
-      genTop: Platform => HasIO[_ <: chisel3.Data],
+      genTop: Platform => HasIO[_ <: Data],
       program: Boolean,
   ): Unit = {
     println(s"Building for ${platform.id} ...")
