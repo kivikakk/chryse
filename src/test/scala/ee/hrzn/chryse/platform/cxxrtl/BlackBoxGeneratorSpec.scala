@@ -33,11 +33,14 @@ class BlackBoxGeneratorSpec extends AnyFlatSpec with Matchers {
                               |attribute \blackbox 1
                               |module \VecOfBoolBB
                               |  wire input 1 \d_in_0
+                              |
                               |  wire input 2 \d_in_1
+                              |
                               |  wire input 3 \d_in_2
                               |
                               |  attribute \cxxrtl_sync 1
                               |  wire output 4 \d_out_0
+                              |
                               |  attribute \cxxrtl_sync 1
                               |  wire output 5 \d_out_1
                               |end
@@ -53,7 +56,10 @@ class BlackBoxGeneratorSpec extends AnyFlatSpec with Matchers {
                               |  wire input 1 width 64 \d_in
                               |
                               |  attribute \cxxrtl_sync 1
-                              |  wire output 2 width 8 \d_out
+                              |  wire output 2 width 8 \d_out_0
+                              |
+                              |  attribute \cxxrtl_sync 1
+                              |  wire output 3 width 8 \d_out_1
                               |end
 """.stripMargin)
   }
@@ -78,6 +84,6 @@ private class VecOfBoolBB extends BlackBox {
 private class WiderElementsBB extends BlackBox {
   val io = IO(new Bundle {
     val d_in  = Input(UInt(64.W))
-    val d_out = Input(SInt(8.W))
+    val d_out = Output(Vec(2, SInt(8.W)))
   })
 }
