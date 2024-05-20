@@ -1,13 +1,11 @@
 package ee.hrzn.chryse.platform.ecp5
 
 import chisel3._
-import chisel3.util._
-import ee.hrzn.chryse.HasIO
 import ee.hrzn.chryse.platform.Platform
+import ee.hrzn.chryse.ChryseModule
 
-class ECP5Top[Top <: HasIO[_ <: Data]](genTop: => Top)(implicit
-    platform: Platform,
-) extends RawModule {
+class ECP5Top[Top <: Module](platform: Platform, genTop: => Top)
+    extends ChryseModule {
   override def desiredName = "top"
 
   private val clki = IO(Input(Clock()))
@@ -26,12 +24,9 @@ class ECP5Top[Top <: HasIO[_ <: Data]](genTop: => Top)(implicit
 
   private val top =
     withClockAndReset(clki, false.B)(Module(genTop))
-  private val io = IO(top.createIo())
-  io :<>= top.io.as[Data]
 }
 
 object ECP5Top {
-  def apply[Top <: HasIO[_ <: Data]](genTop: => Top)(implicit
-      platform: Platform,
-  ) = new ECP5Top(genTop)
+  def apply[Top <: Module](platform: Platform, genTop: => Top) =
+    new ECP5Top(platform, genTop)
 }

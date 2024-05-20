@@ -1,21 +1,17 @@
 package ee.hrzn.chryse.platform
 
 import chisel3._
-import ee.hrzn.chryse.HasIO
 import ee.hrzn.chryse.platform.Platform
+import ee.hrzn.chryse.ChryseModule
 
-class GenericTop[Top <: HasIO[_ <: Data]](genTop: => Top)(implicit
-    platform: Platform,
-) extends Module {
+class GenericTop[Top <: Module](platform: Platform, genTop: => Top)
+    extends ChryseModule {
   override def desiredName = "top"
 
   private val top = Module(genTop)
-  private val io  = IO(top.createIo())
-  io :<>= top.io.as[Data]
 }
 
 object GenericTop {
-  def apply[Top <: HasIO[_ <: Data]](genTop: => Top)(implicit
-      platform: Platform,
-  ) = new GenericTop(genTop)
+  def apply[Top <: Module](platform: Platform, genTop: => Top) =
+    new GenericTop(platform, genTop)
 }

@@ -1,6 +1,6 @@
 package ee.hrzn.chryse.platform
 
-trait BoardPlatform extends ElaboratablePlatform {
+trait BoardPlatform[Resources <: BoardResources] extends ElaboratablePlatform {
   val nextpnrBinary: String
   val nextpnrArgs: Seq[String]
 
@@ -8,6 +8,5 @@ trait BoardPlatform extends ElaboratablePlatform {
 
   val programBinary: String
 
-  // TODO
-  val resources: Seq[BoardResource]
+  val resources: BoardResources
 }

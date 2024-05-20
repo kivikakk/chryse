@@ -3,15 +3,18 @@ package ee.hrzn.chryse.platform.ice40
 import chisel3._
 import chisel3.experimental.noPrefix
 import chisel3.util._
-import ee.hrzn.chryse.HasIO
+import chisel3.util.experimental.forceName
+import ee.hrzn.chryse.ChryseModule
+import ee.hrzn.chryse.platform.BoardPlatform
 import ee.hrzn.chryse.platform.Platform
+import ee.hrzn.chryse.platform.resource.BaseResource
+import java.lang.reflect.Modifier
 
-class ICE40Top[Top <: HasIO[_ <: Data]](genTop: => Top)(implicit
-    platform: Platform,
-) extends RawModule {
+class ICE40Top[Top <: Module](platform: Platform, genTop: => Top)
+    extends ChryseModule {
   override def desiredName = "top"
 
-  private val clki = IO(Input(Clock()))
+  private val clki = Wire(Clock())
 
   private val clk_gb = Module(new SB_GB)
   clk_gb.USER_SIGNAL_TO_GLOBAL_BUFFER := clki
@@ -40,12 +43,36 @@ class ICE40Top[Top <: HasIO[_ <: Data]](genTop: => Top)(implicit
 
   private val top =
     withClockAndReset(clk, finalReset)(Module(genTop))
-  private val io = IO(top.createIo())
-  io :<>= top.io.as[Data]
+
+  platform match {
+    case plat: BoardPlatform[_] =>
+      val sb = new StringBuilder
+      val rc = plat.resources.getClass()
+      for {
+        f <- rc.getDeclaredFields()
+      } {
+        val name = f.getName()
+        print(s"considering: $name ... ")
+        f.setAccessible(true)
+        f.get(plat.resources) match {
+          case res: BaseResource[_, _] =>
+            if (res.inst.isDefined) {
+              println("has inst!")
+              sb.append(s"set_io $name ${res.pinNumber.get}\n")
+              val rio = IO(Input(Bool()))
+              rio.suggestName(name)
+              res.inst.get := rio
+            } else println("no inst.")
+          case _ =>
+            println("nope")
+        }
+      }
+      lastPCF = Some(sb.toString())
+  }
+
 }
 
 object ICE40Top {
-  def apply[Top <: HasIO[_ <: Data]](genTop: => Top)(implicit
-      platform: Platform,
-  ) = new ICE40Top(genTop)
+  def apply[Top <: Module](platform: Platform, genTop: => Top) =
+    new ICE40Top(platform, genTop)
 }

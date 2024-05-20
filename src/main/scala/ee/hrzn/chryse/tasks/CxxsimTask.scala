@@ -4,7 +4,6 @@ import chisel3._
 import circt.stage.ChiselStage
 import ee.hrzn.chryse.ChryseAppConfig
 import ee.hrzn.chryse.ChryseAppStepFailureException
-import ee.hrzn.chryse.HasIO
 import ee.hrzn.chryse.platform.Platform
 import ee.hrzn.chryse.platform.cxxrtl.BlackBoxGenerator
 import ee.hrzn.chryse.platform.cxxrtl.CXXRTLOptions
@@ -21,9 +20,9 @@ object CxxsimTask extends BaseTask {
   private val baseCxxOpts = Seq("-std=c++17", "-g", "-pedantic", "-Wall",
     "-Wextra", "-Wno-zero-length-array", "-Wno-unused-parameter")
 
-  def apply(
+  def apply[Top <: Module](
       name: String,
-      genTop: Platform => HasIO[_ <: Data],
+      genTop: Platform => Top,
       cxxrtlOptions: CXXRTLOptions,
       config: ChryseAppConfig,
   ): Unit = {

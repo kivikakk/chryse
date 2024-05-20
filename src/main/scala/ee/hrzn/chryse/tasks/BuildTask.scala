@@ -1,8 +1,7 @@
 package ee.hrzn.chryse.tasks
 
-import chisel3.Data
+import chisel3._
 import circt.stage.ChiselStage
-import ee.hrzn.chryse.HasIO
 import ee.hrzn.chryse.platform.BoardPlatform
 import ee.hrzn.chryse.platform.Platform
 
@@ -10,23 +9,34 @@ import java.nio.file.Files
 import java.nio.file.Paths
 
 object BuildTask extends BaseTask {
-  def apply(
+  def apply[Top <: Module](
       name: String,
-      platform: BoardPlatform,
-      genTop: Platform => HasIO[_ <: Data],
+      platform: BoardPlatform[_],
+      genTop: Platform => Top,
       program: Boolean,
+      fullStacktrace: Boolean,
   ): Unit = {
     println(s"Building for ${platform.id} ...")
 
     Files.createDirectories(Paths.get(buildDir))
 
-    val verilogPath = s"$buildDir/$name-${platform.id}.sv"
+    val verilogPath             = s"$buildDir/$name-${platform.id}.sv"
+    var lastPCF: Option[String] = None
     val verilog =
       ChiselStage.emitSystemVerilog(
-        platform(genTop(platform)),
+        {
+          val elaborated = platform(genTop(platform))
+          lastPCF = elaborated.lastPCF
+          elaborated
+        },
+        if (fullStacktrace) Array("--full-stacktrace") else Array.empty,
         firtoolOpts = firtoolOpts,
       )
     writePath(verilogPath, verilog)
+
+    if (lastPCF.isDefined) {
+      println(s"PCF: [[$lastPCF]]")
+    }
 
     val yosysScriptPath = s"$buildDir/$name-${platform.id}.ys"
     val jsonPath        = s"$buildDir/$name-${platform.id}.json"
@@ -53,8 +63,8 @@ object BuildTask extends BaseTask {
     )
     runCu("synthesis", yosysCu)
 
-    // TODO: generate PCF.
-    val pcfPath = s"$name-${platform.id}.pcf"
+    val pcfPath = s"$buildDir/$name-${platform.id}.pcf"
+    writePath(pcfPath, lastPCF.get)
 
     val ascPath = s"$buildDir/$name-${platform.id}.asc"
     val ascCu = CompilationUnit(

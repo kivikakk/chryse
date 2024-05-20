@@ -1,6 +1,6 @@
 package ee.hrzn.chryse
 
-import chisel3.Data
+import chisel3._
 import circt.stage.ChiselStage
 import ee.hrzn.chryse.platform.BoardPlatform
 import ee.hrzn.chryse.platform.Platform
@@ -11,12 +11,11 @@ import scopt.OParser
 
 import scala.collection.mutable
 
-abstract class ChryseApp {
+abstract class ChryseApp[Top <: Module] {
   val name: String
-  val targetPlatforms: Seq[BoardPlatform]
+  val genTop: Platform => Top
+  val targetPlatforms: Seq[BoardPlatform[_]]
   val cxxrtlOptions: Option[CXXRTLOptions] = None
-
-  def genTop(implicit platform: Platform): HasIO[_ <: Data]
 
   def main(args: Array[String]): Unit = {
     val appVersion = getClass().getPackage().getImplementationVersion()
@@ -48,6 +47,9 @@ abstract class ChryseApp {
               opt[Unit]('p', "program")
                 .action((_, c) => c.copy(buildProgram = true))
                 .text("program the design onto the board after building"),
+              opt[Unit]('F', "full-stacktrace")
+                .action((_, c) => c.copy(buildFullStacktrace = true))
+                .text("include full Chisel stacktraces"),
               note(""),
             ),
         )
@@ -121,11 +123,12 @@ abstract class ChryseApp {
         tasks.BuildTask(
           name,
           targetPlatforms.find(_.id == config.buildPlatform).get,
-          genTop(_),
+          genTop,
           config.buildProgram,
+          config.buildFullStacktrace,
         )
       case ChryseAppModeCxxsim =>
-        tasks.CxxsimTask(name, genTop(_), cxxrtlOptions.get, config)
+        tasks.CxxsimTask(name, genTop, cxxrtlOptions.get, config)
     }
   }
 }
@@ -142,6 +145,7 @@ final case class ChryseAppConfig(
     mode: Option[ChryseAppMode] = None,
     buildPlatform: String = "",
     buildProgram: Boolean = false,
+    buildFullStacktrace: Boolean = false,
     cxxrtlCompileOnly: Boolean = false,
     cxxrtlOptimize: Boolean = false,
     cxxrtlDebug: Boolean = false,
