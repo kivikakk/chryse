@@ -52,21 +52,19 @@ class ICE40Top[Top <: Module](platform: Platform, genTop: => Top)
         f <- rc.getDeclaredFields()
       } {
         val name = f.getName()
-        print(s"considering: $name ... ")
         f.setAccessible(true)
         f.get(plat.resources) match {
           case res: BaseResource[_, _] =>
             if (res.inst.isDefined) {
-              println("has inst!")
               sb.append(s"set_io $name ${res.pinNumber.get}\n")
               val rio = IO(Input(Bool()))
               rio.suggestName(name)
               res.inst.get := rio
-            } else println("no inst.")
+            }
           case _ =>
-            println("nope")
         }
       }
+
       lastPCF = Some(sb.toString())
   }
 

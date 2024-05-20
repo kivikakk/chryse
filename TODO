@@ -1,2 +1,3 @@
 * Finish the clock stuff and assignment in ICE40Top.
 * Write unit tests for this.
+* Finish the "this.type" use replacement (don't need F-bounded poly).
