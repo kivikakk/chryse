@@ -4,6 +4,8 @@ import chisel3._
 import circt.stage.ChiselStage
 import ee.hrzn.chryse.platform.BoardPlatform
 import ee.hrzn.chryse.platform.Platform
+import ee.hrzn.chryse.platform.ice40.ICE40Top
+import ee.hrzn.chryse.platform.ice40.PCF
 
 import java.nio.file.Files
 import java.nio.file.Paths
@@ -22,13 +24,16 @@ object BuildTask extends BaseTask {
 
     Files.createDirectories(Paths.get(buildDir))
 
-    val verilogPath             = s"$buildDir/$name-${platform.id}.sv"
-    var lastPCF: Option[String] = None
+    val verilogPath          = s"$buildDir/$name-${platform.id}.sv"
+    var lastPCF: Option[PCF] = None
     val verilog =
       ChiselStage.emitSystemVerilog(
         {
           val elaborated = platform(genTop)
-          lastPCF = elaborated.lastPCF
+          lastPCF = elaborated match {
+            case ice40: ICE40Top[_] => ice40.lastPCF
+            case _                  => None
+          }
           elaborated
         },
         if (fullStacktrace) Array("--full-stacktrace") else Array.empty,
@@ -45,7 +50,7 @@ object BuildTask extends BaseTask {
     writePath(
       yosysScriptPath,
       s"""read_verilog -sv $verilogPath
-         |synth_ice40 -top top
+         |synth_ice40 -top chrysetop
          |write_json $jsonPath""".stripMargin,
     )
 
@@ -66,7 +71,7 @@ object BuildTask extends BaseTask {
     runCu("synthesis", yosysCu)
 
     val pcfPath = s"$buildDir/$name-${platform.id}.pcf"
-    writePath(pcfPath, lastPCF.get)
+    writePath(pcfPath, lastPCF.get.toString())
 
     val ascPath = s"$buildDir/$name-${platform.id}.asc"
     val ascCu = CompilationUnit(

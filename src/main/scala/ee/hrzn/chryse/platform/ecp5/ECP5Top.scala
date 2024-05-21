@@ -1,15 +1,13 @@
 package ee.hrzn.chryse.platform.ecp5
 
 import chisel3._
-import ee.hrzn.chryse.platform.Platform
 import ee.hrzn.chryse.ChryseModule
-import ee.hrzn.chryse.platform.BoardResources
 import ee.hrzn.chryse.platform.BoardPlatform
+import ee.hrzn.chryse.platform.BoardResources
+import ee.hrzn.chryse.platform.Platform
 
 class ECP5Top[Top <: Module](platform: Platform, genTop: => Top)
     extends ChryseModule {
-  override def desiredName = "top"
-
   private val clki = IO(Input(Clock()))
 
   // TODO: GSR stuff. (details follow.)

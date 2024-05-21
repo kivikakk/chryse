@@ -6,6 +6,7 @@ import ee.hrzn.chryse.ChryseModule
 import ee.hrzn.chryse.chisel.BuilderContext
 import ee.hrzn.chryse.platform.ice40.ICE40Top
 import ee.hrzn.chryse.platform.ice40.IceBreakerPlatform
+import ee.hrzn.chryse.platform.ice40.PCF
 import ee.hrzn.chryse.platform.resource.BaseBool.Implicits._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should._
@@ -18,12 +19,19 @@ class BoardResourcesSpec extends AnyFlatSpec with Matchers {
     val top = BuilderContext {
       plat(new DetectionTop(_))
     }
-    top.lastPCF.get.linesIterator.toList.sorted.mkString("\n") should be(
-      """set_io clock 35
-        |set_io ledg 37
-        |set_io uart_rx 6
-        |set_io uart_tx 9
-        |set_io ubtn 10""".stripMargin,
+    top.lastPCF should be(
+      Some(
+        PCF(
+          Map(
+            "clock"   -> 35,
+            "ledg"    -> 37,
+            "uart_rx" -> 6,
+            "uart_tx" -> 9,
+            "ubtn"    -> 10,
+          ),
+          Map("clock" -> 12_000_000),
+        ),
+      ),
     )
   }
 
@@ -37,12 +45,20 @@ class BoardResourcesSpec extends AnyFlatSpec with Matchers {
       },
       firtoolOpts = Array("-strip-debug-info"),
     )
-    top.lastPCF.get.linesIterator.toList.sorted.mkString("\n") should be(
-      """set_io clock 35
-        |set_io ledg 37
-        |set_io uart_tx 9
-        |set_io ubtn 10""".stripMargin,
+    top.lastPCF should be(
+      Some(
+        PCF(
+          Map(
+            "clock"   -> 35,
+            "ledg"    -> 37,
+            "uart_tx" -> 9,
+            "ubtn"    -> 10,
+          ),
+          Map("clock" -> 12_000_000),
+        ),
+      ),
     )
+
     rtl should include("ledg_int = view__ubtn_int")
     (rtl should not).include("uart_tx_int = view__ubtn_int")
     rtl should include("uart_tx_int = ~view__ubtn_int")
@@ -50,7 +66,7 @@ class BoardResourcesSpec extends AnyFlatSpec with Matchers {
     // HACK: this is brittle. Parse the Verilog or something.
     "\\s+".r
       .replaceAllIn(rtl, " ") should include(
-      "module ice40top( input clock, ubtn, output uart_tx, ledg );",
+      "module chrysetop( input clock, ubtn, output uart_tx, ledg );",
     )
   }
 }

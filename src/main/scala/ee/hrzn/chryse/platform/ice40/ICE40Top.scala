@@ -13,14 +13,15 @@ import ee.hrzn.chryse.platform.Platform
 import ee.hrzn.chryse.platform.resource
 
 import java.lang.reflect.Modifier
+import scala.collection.mutable
 
 class ICE40Top[Top <: Module](
     platform: BoardPlatform[_ <: BoardResources],
     genTop: => Top,
 ) extends ChryseModule {
-  override def desiredName = "ice40top"
+  var lastPCF: Option[PCF] = None
 
-  val clki = Wire(Clock())
+  private val clki = Wire(Clock())
 
   private val clk_gb = Module(new SB_GB)
   clk_gb.USER_SIGNAL_TO_GLOBAL_BUFFER := clki
@@ -38,7 +39,7 @@ class ICE40Top[Top <: Module](
     resetTimerReg := resetTimerReg + 1.U
   }
 
-  val finalReset = noPrefix {
+  private val finalReset = noPrefix {
     // TODO: this no longer works. :)
     if (platform.asInstanceOf[IceBreakerPlatform].ubtnReset) {
       val io_ubtn = IO(Input(Bool()))
@@ -52,8 +53,12 @@ class ICE40Top[Top <: Module](
     withClockAndReset(clk, finalReset)(Module(genTop))
 
   // TODO: allow clock override.
-  // TODO: refactor this out to a non-ICE40Top level.
-  val sb = new StringBuilder
+
+  // TODO: refactor out the main machinations to a non-ICE40Top level; override
+  // the PCF generation specifically (needs to tie in with ICE40-specific build
+  // process).
+  private val ios   = mutable.Map[String, resource.Pin]()
+  private val freqs = mutable.Map[String, Int]()
   for { f <- platform.resources.getClass().getDeclaredFields() } {
     val name = f.getName()
     f.setAccessible(true)
@@ -65,13 +70,14 @@ class ICE40Top[Top <: Module](
         // NOTE: we can't just say clki := platform.resources.clock in our top
         // here, since that'll define an input IO in *this* module which we
         // can't then sink like we would in the resource.Base[_] case.
-        sb.append(s"set_io $name ${clock.pinId.get}\n")
+        ios   += name -> clock.pinId.get
+        freqs += name -> platform.clockHz
         val io = IO(Input(Clock())).suggestName(name)
         clki := io
 
       case res: resource.Base[_] =>
         if (res.ioInst.isDefined) {
-          sb.append(s"set_io $name ${res.pinId.get}\n")
+          ios += name -> res.pinId.get
           val io = IO(res.makeIo()).suggestName(name)
           DirectionOf(io) match {
             case SpecifiedDirection.Input =>
@@ -84,10 +90,9 @@ class ICE40Top[Top <: Module](
         }
       case _ =>
     }
-
-    lastPCF = Some(sb.toString())
   }
 
+  lastPCF = Some(PCF(ios.iterator.to(Map), freqs.iterator.to(Map)))
 }
 
 object ICE40Top {
