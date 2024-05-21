@@ -27,6 +27,9 @@ class IceBreakerResources extends BoardResources {
 
   val ubtn = ButtonResource().inverted.onPin(10)
 
+  val ledg = LEDResource().onPin(37)
+  val ledr = LEDResource().onPin(11)
+
   val pmod1a1  = AnalogResource().onPin(4)
   val pmod1a2  = AnalogResource().onPin(2)
   val pmod1a3  = AnalogResource().onPin(47)

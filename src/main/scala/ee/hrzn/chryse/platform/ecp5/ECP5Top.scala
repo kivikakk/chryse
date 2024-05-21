@@ -10,7 +10,7 @@ class ECP5Top[Top <: Module](platform: Platform, genTop: => Top)
 
   private val clki = IO(Input(Clock()))
 
-  // TODO:
+  // TODO: GSR stuff. (details follow.)
   // FD1S3AX D=1    Q=gsr0
   // FD1S3AX D=gsr0 Q=gsr1
   // SGSR    GSR=gsr1

@@ -13,8 +13,8 @@ its own HDL depending on how much I love Scala. :)
 * Boards provide resources — refer to them in your design, and Chryse adds them
   to the PCF (or equivalent) used during build.
 * [CXXRTL] support: it's just another platform. Chisel blackboxes are
-  automatically lowered into CXXRTL, and a Chryse's build system takes care of
-  the details. You write the main loop and blackbox implementation.
+  automatically lowered into CXXRTL, and Chryse's build system takes care of the
+  details. You write the main loop and blackbox implementation.
 
 [CXXRTL]: https://yosyshq.readthedocs.io/projects/yosys/en/latest/cmd/write_cxxrtl.html
 

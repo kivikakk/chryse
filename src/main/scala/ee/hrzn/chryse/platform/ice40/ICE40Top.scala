@@ -5,6 +5,7 @@ import chisel3.experimental.noPrefix
 import chisel3.util._
 import chisel3.util.experimental.forceName
 import ee.hrzn.chryse.ChryseModule
+import ee.hrzn.chryse.chisel.DirectionOf
 import ee.hrzn.chryse.platform.BoardPlatform
 import ee.hrzn.chryse.platform.Platform
 import ee.hrzn.chryse.platform.resource.BaseResource
@@ -58,12 +59,18 @@ class ICE40Top[Top <: Module](platform: Platform, genTop: => Top)
         val name = f.getName()
         f.setAccessible(true)
         f.get(plat.resources) match {
-          case res: BaseResource[_, _] =>
+          case res: BaseResource[_] =>
             if (res.inst.isDefined) {
               sb.append(s"set_io $name ${res.pinNumber.get}\n")
-              val rio = IO(Input(Bool()))
-              rio.suggestName(name)
-              res.inst.get := rio
+              val io = res.make().suggestName(name)
+              DirectionOf(io) match {
+                case SpecifiedDirection.Input =>
+                  res.inst.get := IO(io)
+                case SpecifiedDirection.Output =>
+                  IO(io) := res.inst.get
+                case dir =>
+                  throw new Exception(s"unhandled direction: $dir")
+              }
             }
           case _ =>
         }
@@ -75,6 +82,8 @@ class ICE40Top[Top <: Module](platform: Platform, genTop: => Top)
 }
 
 object ICE40Top {
-  def apply[Top <: Module](platform: Platform, genTop: => Top) =
+  def apply[Top <: Module](platform: BoardPlatform[_], genTop: => Top) = {
+    platform.resources.setNames() // XXX do this somewhere non-plat specific
     new ICE40Top(platform, genTop)
+  }
 }
