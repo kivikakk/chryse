@@ -54,15 +54,11 @@ class ICE40Top[Top <: Module](
 
   // TODO: allow clock override.
 
-  // TODO: refactor out the main machinations to a non-ICE40Top level; override
-  // the PCF generation specifically (needs to tie in with ICE40-specific build
-  // process).
   private val ios   = mutable.Map[String, resource.Pin]()
   private val freqs = mutable.Map[String, Int]()
-  for { f <- platform.resources.getClass().getDeclaredFields() } {
-    val name = f.getName()
-    f.setAccessible(true)
-    f.get(platform.resources) match {
+  for { res <- platform.resources.all } {
+    val name = res.name.get
+    res match {
       case clock: resource.ClockSource =>
         if (clock.ioInst.isDefined) {
           throw new Exception("clock must be manually handled for now")
@@ -75,7 +71,7 @@ class ICE40Top[Top <: Module](
         val io = IO(Input(Clock())).suggestName(name)
         clki := io
 
-      case res: resource.Base[_] =>
+      case _ =>
         if (res.ioInst.isDefined) {
           ios += name -> res.pinId.get
           val io = IO(res.makeIo()).suggestName(name)
@@ -88,7 +84,6 @@ class ICE40Top[Top <: Module](
               throw new Exception(s"unhandled direction: $dir")
           }
         }
-      case _ =>
     }
   }
 

@@ -42,7 +42,16 @@ class IceBreakerResources extends BoardResources {
   val pmod1a8  = resource.InOut().onPin(48)
   val pmod1a9  = resource.InOut().onPin(46)
   val pmod1a10 = resource.InOut().onPin(44)
-  // TODO: pmod1b
+
+  val pmod1b1  = resource.InOut().onPin(43)
+  val pmod1b2  = resource.InOut().onPin(38)
+  val pmod1b3  = resource.InOut().onPin(34)
+  val pmod1b4  = resource.InOut().onPin(31)
+  val pmod1b7  = resource.InOut().onPin(42)
+  val pmod1b8  = resource.InOut().onPin(36)
+  val pmod1b9  = resource.InOut().onPin(32)
+  val pmod1b10 = resource.InOut().onPin(28)
+
   val pmod2_1  = resource.InOut().onPin(27)
   val pmod2_2  = resource.InOut().onPin(25)
   val pmod2_3  = resource.InOut().onPin(21)
