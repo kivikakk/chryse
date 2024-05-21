@@ -4,6 +4,7 @@ import chisel3._
 import ee.hrzn.chryse.platform.BoardPlatform
 import ee.hrzn.chryse.platform.BoardResources
 import ee.hrzn.chryse.platform.resource
+import ee.hrzn.chryse.platform.resource.Pin._
 
 final case class IceBreakerPlatform(ubtnReset: Boolean = false)
     extends BoardPlatform[IceBreakerResources] {
@@ -22,16 +23,15 @@ final case class IceBreakerPlatform(ubtnReset: Boolean = false)
 }
 
 class IceBreakerResources extends BoardResources {
-  val clock                 = resource.ClockSource(12_000_000).onPin(35)
-  override val defaultClock = Some(clock)
+  val clock = resource.ClockSource(12_000_000).onPin(35)
 
   val ubtn = resource.Button().inverted.onPin(10)
 
   val uart_tx = resource.UARTTX().onPin(9)
   val uart_rx = resource.UARTRX().onPin(6)
 
-  val ledg = resource.LED().onPin(37)
-  val ledr = resource.LED().onPin(11)
+  val ledg = resource.LED().inverted.onPin(37)
+  val ledr = resource.LED().inverted.onPin(11)
 
   val pmod1a1  = resource.InOut().onPin(4)
   val pmod1a2  = resource.InOut().onPin(2)

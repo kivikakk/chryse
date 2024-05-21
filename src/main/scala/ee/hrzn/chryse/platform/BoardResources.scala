@@ -13,5 +13,5 @@ abstract class BoardResources {
       }
     }
 
-  val defaultClock: Option[resource.ClockSource] = None
+  val clock: resource.ClockSource
 }

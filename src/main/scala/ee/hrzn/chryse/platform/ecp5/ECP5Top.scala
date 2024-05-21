@@ -3,6 +3,8 @@ package ee.hrzn.chryse.platform.ecp5
 import chisel3._
 import ee.hrzn.chryse.platform.Platform
 import ee.hrzn.chryse.ChryseModule
+import ee.hrzn.chryse.platform.BoardResources
+import ee.hrzn.chryse.platform.BoardPlatform
 
 class ECP5Top[Top <: Module](platform: Platform, genTop: => Top)
     extends ChryseModule {
@@ -27,6 +29,11 @@ class ECP5Top[Top <: Module](platform: Platform, genTop: => Top)
 }
 
 object ECP5Top {
-  def apply[Top <: Module](platform: Platform, genTop: => Top) =
+  def apply[Top <: Module](
+      platform: BoardPlatform[_ <: BoardResources],
+      genTop: => Top,
+  ) = {
+    platform.resources.setNames() // XXX refactor
     new ECP5Top(platform, genTop)
+  }
 }
