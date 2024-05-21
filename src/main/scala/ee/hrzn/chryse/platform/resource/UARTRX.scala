@@ -1,6 +1,8 @@
 package ee.hrzn.chryse.platform.resource
 
-class UARTRX extends BaseInBool {}
+import chisel3._
+
+class UARTRX extends BaseIn[Bool](Bool()) {}
 
 object UARTRX {
   def apply() = new UARTRX

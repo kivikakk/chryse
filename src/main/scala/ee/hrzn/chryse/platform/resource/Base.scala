@@ -13,7 +13,7 @@ trait Base[HW <: Data] {
     inst match {
       case Some(r) => r
       case None =>
-        val r = IO(make()).suggestName(s"${name.get}_internal")
+        val r = IO(make()).suggestName(s"${name.get}_int")
         inst = Some(r)
         inst.get
     }

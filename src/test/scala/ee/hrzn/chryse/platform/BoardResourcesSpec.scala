@@ -17,10 +17,11 @@ class BoardResourcesSpec extends AnyFlatSpec with Matchers {
   it should "detect resource uses and generate PCFs accordingly" in {
     val plat = IceBreakerPlatform()
     val top = BuilderContext {
-      plat(new DetectionTop(plat))
+      plat(new DetectionTop(_))
     }
     top.lastPCF.get.linesIterator.toList.sorted.mkString("\n") should be(
-      """set_io ledg 37
+      """set_io clock 35
+        |set_io ledg 37
         |set_io uart_rx 6
         |set_io uart_tx 9
         |set_io ubtn 10""".stripMargin,
@@ -31,15 +32,18 @@ class BoardResourcesSpec extends AnyFlatSpec with Matchers {
     val plat             = IceBreakerPlatform()
     var top: ICE40Top[_] = null
     val rtl = ChiselStage.emitSystemVerilog {
-      top = plat(new InversionTop(plat))
+      top = plat(new InversionTop(_))
       top
     }
     top.lastPCF.get.linesIterator.toList.sorted.mkString("\n") should be(
-      """set_io ledg 37
+      """set_io clock 35
+        |set_io ledg 37
         |set_io uart_tx 9
         |set_io ubtn 10""".stripMargin,
     )
-    rtl should be("")
+    rtl should include("ledg_int = view__ubtn_int")
+    (rtl should not).include("uart_tx_int = view__ubtn_int")
+    rtl should include("uart_tx_int = ~view__ubtn_int")
   }
 }
 

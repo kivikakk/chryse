@@ -27,7 +27,7 @@ object BuildTask extends BaseTask {
     val verilog =
       ChiselStage.emitSystemVerilog(
         {
-          val elaborated = platform(genTop(platform))
+          val elaborated = platform(genTop)
           lastPCF = elaborated.lastPCF
           elaborated
         },

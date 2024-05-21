@@ -3,6 +3,7 @@ package ee.hrzn.chryse.platform.ice40
 import chisel3._
 import ee.hrzn.chryse.platform.BoardPlatform
 import ee.hrzn.chryse.platform.BoardResources
+import ee.hrzn.chryse.platform.Platform
 import ee.hrzn.chryse.platform.resource
 import ee.hrzn.chryse.platform.resource.Pin._
 
@@ -18,8 +19,8 @@ final case class IceBreakerPlatform(ubtnReset: Boolean = false)
 
   val resources = new IceBreakerResources
 
-  override def apply[Top <: Module](genTop: => Top) =
-    ICE40Top(this, genTop)
+  override def apply[Top <: Module](genTop: Platform => Top) =
+    ICE40Top(this, genTop(this))
 }
 
 class IceBreakerResources extends BoardResources {

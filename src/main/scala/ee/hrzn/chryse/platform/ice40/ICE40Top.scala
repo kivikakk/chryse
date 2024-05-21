@@ -18,11 +18,14 @@ class ICE40Top[Top <: Module](
     platform: BoardPlatform[_ <: BoardResources],
     genTop: => Top,
 ) extends ChryseModule {
-  override def desiredName = "top"
+  import platform.resources.clock.Implicits._
+
+  override def desiredName = "ice40top"
+
+  val clki = Wire(Clock())
 
   private val clk_gb = Module(new SB_GB)
-  import platform.resources.clock.Implicits._
-  clk_gb.USER_SIGNAL_TO_GLOBAL_BUFFER := platform.resources.clock
+  clk_gb.USER_SIGNAL_TO_GLOBAL_BUFFER := clki
   private val clk = clk_gb.GLOBAL_BUFFER_OUTPUT
 
   private val timerLimit = (15e-6 * platform.clockHz).toInt
@@ -38,6 +41,7 @@ class ICE40Top[Top <: Module](
   }
 
   val finalReset = noPrefix {
+    // TODO: this no longer works. :)
     if (platform.asInstanceOf[IceBreakerPlatform].ubtnReset) {
       val io_ubtn = IO(Input(Bool()))
       reset | ~io_ubtn
@@ -57,6 +61,16 @@ class ICE40Top[Top <: Module](
     val name = f.getName()
     f.setAccessible(true)
     f.get(platform.resources) match {
+      case clock: resource.ClockSource =>
+        if (clock.inst.isDefined) {
+          throw new Exception("clock must be manually handled for now")
+        }
+        // NOTE: we can't just say clki := platform.resources.clock in our top
+        // here, since that'll define an input IO in *this* module which we
+        // can't then sink like we would in the resource.Base[_] case.
+        sb.append(s"set_io $name ${clock.pinId.get}\n")
+        clki := IO(Input(Clock())).suggestName(name)
+
       case res: resource.Base[_] =>
         if (res.inst.isDefined) {
           sb.append(s"set_io $name ${res.pinId.get}\n")

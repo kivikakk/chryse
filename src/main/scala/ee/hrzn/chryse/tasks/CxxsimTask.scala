@@ -35,7 +35,7 @@ object CxxsimTask extends BaseTask {
     val verilogPath = s"$buildDir/$name-${platform.id}.sv"
     val verilog =
       ChiselStage.emitSystemVerilog(
-        platform(genTop(platform)),
+        platform(genTop),
         firtoolOpts = firtoolOpts,
       )
     writePath(verilogPath, verilog)
