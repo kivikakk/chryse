@@ -6,7 +6,7 @@ import chisel3.experimental.dataview._
 import scala.language.implicitConversions
 
 class BaseOut[HW <: Data](gen: => HW) extends Base[HW] {
-  private[chryse] def make(): HW = Output(gen)
+  private[chryse] def makeIo(): HW = Output(gen)
 
   object Implicits {
     implicit val BaseOutProduct: DataProduct[BaseOut[HW]] =
@@ -15,11 +15,11 @@ class BaseOut[HW <: Data](gen: => HW) extends Base[HW] {
             res: BaseOut[HW],
             path: String,
         ): Iterator[(Data, String)] =
-          List(res.inst.get -> path).iterator
+          List(res.ioInst.get.user -> path).iterator
       }
 
     implicit def view: DataView[BaseOut[HW], HW] =
-      DataView(res => gen, _.instOrMake() -> _)
+      DataView(res => gen, _.ioInstOrMake().user -> _)
 
     implicit def BaseOut2HW(res: BaseOut[HW]): HW =
       res.viewAs[HW]

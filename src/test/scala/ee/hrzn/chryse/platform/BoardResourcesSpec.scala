@@ -4,12 +4,12 @@ import chisel3._
 import circt.stage.ChiselStage
 import ee.hrzn.chryse.ChryseModule
 import ee.hrzn.chryse.chisel.BuilderContext
+import ee.hrzn.chryse.platform.ice40.ICE40Top
 import ee.hrzn.chryse.platform.ice40.IceBreakerPlatform
 import ee.hrzn.chryse.platform.resource.BaseInBool.Implicits._
 import ee.hrzn.chryse.platform.resource.BaseOutBool.Implicits._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should._
-import ee.hrzn.chryse.platform.ice40.ICE40Top
 
 class BoardResourcesSpec extends AnyFlatSpec with Matchers {
   behavior.of("BoardResources")
@@ -41,6 +41,8 @@ class BoardResourcesSpec extends AnyFlatSpec with Matchers {
         |set_io uart_tx 9
         |set_io ubtn 10""".stripMargin,
     )
+    // XXX: we aren't generating input names correctly. (¿Sometimes?)
+    // Test for this.
     rtl should include("ledg_int = view__ubtn_int")
     (rtl should not).include("uart_tx_int = view__ubtn_int")
     rtl should include("uart_tx_int = ~view__ubtn_int")

@@ -3,19 +3,24 @@ package ee.hrzn.chryse.platform.resource
 import chisel3._
 
 trait Base[HW <: Data] {
-  private[chryse] var pinId: Option[Pin]   = None
-  private[chryse] var name: Option[String] = None
+  final private[chryse] var pinId: Option[Pin]   = None
+  final private[chryse] var name: Option[String] = None
 
-  private[chryse] var inst: Option[HW] = None
-  private[chryse] def make(): HW
+  // Should return Input/Output Chisel datatype.
+  private[chryse] def makeIo(): HW
 
-  private[chryse] def instOrMake(): HW = {
-    inst match {
+  final private[chryse] var ioInst: Option[InstSides[HW]] = None
+
+  /* Instantiate an IO in the module at the point of connection. These will be
+   * connected by the platform toplevel (which implies they can only be used in
+   * the user toplevel). */
+  private[chryse] def ioInstOrMake(): InstSides[HW] = {
+    ioInst match {
       case Some(r) => r
       case None =>
-        val r = IO(make()).suggestName(s"${name.get}_int")
-        inst = Some(r)
-        inst.get
+        val r = IO(makeIo()).suggestName(s"${name.get}_int")
+        ioInst = Some(InstSides(r, r))
+        ioInst.get
     }
   }
 
@@ -24,3 +29,5 @@ trait Base[HW <: Data] {
     this
   }
 }
+
+case class InstSides[HW](user: HW, top: HW)

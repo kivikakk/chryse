@@ -1,8 +1,8 @@
 package ee.hrzn.chryse.platform.ice40
 
 import chisel3._
-import chisel3.experimental.noPrefix
 import chisel3.experimental.dataview._
+import chisel3.experimental.noPrefix
 import chisel3.util._
 import chisel3.util.experimental.forceName
 import ee.hrzn.chryse.ChryseModule
@@ -53,7 +53,6 @@ class ICE40Top[Top <: Module](
   private val top =
     withClockAndReset(clk, finalReset)(Module(genTop))
 
-  // TODO: get clock from "defaultClock", hook that up to the SB_GB.
   // TODO: allow clock override.
   // TODO: refactor this out to a non-ICE40Top level.
   val sb = new StringBuilder
@@ -62,24 +61,25 @@ class ICE40Top[Top <: Module](
     f.setAccessible(true)
     f.get(platform.resources) match {
       case clock: resource.ClockSource =>
-        if (clock.inst.isDefined) {
+        if (clock.ioInst.isDefined) {
           throw new Exception("clock must be manually handled for now")
         }
         // NOTE: we can't just say clki := platform.resources.clock in our top
         // here, since that'll define an input IO in *this* module which we
         // can't then sink like we would in the resource.Base[_] case.
         sb.append(s"set_io $name ${clock.pinId.get}\n")
-        clki := IO(Input(Clock())).suggestName(name)
+        val io = IO(Input(Clock())).suggestName(name)
+        clki := io
 
       case res: resource.Base[_] =>
-        if (res.inst.isDefined) {
+        if (res.ioInst.isDefined) {
           sb.append(s"set_io $name ${res.pinId.get}\n")
-          val io = res.make()
+          val io = IO(res.makeIo()).suggestName(name)
           DirectionOf(io) match {
             case SpecifiedDirection.Input =>
-              res.inst.get := IO(io).suggestName(name)
+              res.ioInst.get.top := io
             case SpecifiedDirection.Output =>
-              IO(io).suggestName(name) := res.inst.get
+              io := res.ioInst.get.top
             case dir =>
               throw new Exception(s"unhandled direction: $dir")
           }
