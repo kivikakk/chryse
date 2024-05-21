@@ -18,8 +18,6 @@ class ICE40Top[Top <: Module](
     platform: BoardPlatform[_ <: BoardResources],
     genTop: => Top,
 ) extends ChryseModule {
-  import platform.resources.clock.Implicits._
-
   override def desiredName = "ice40top"
 
   val clki = Wire(Clock())
