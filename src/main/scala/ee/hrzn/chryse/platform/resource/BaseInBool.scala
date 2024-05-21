@@ -5,10 +5,10 @@ import chisel3.experimental.dataview._
 
 import scala.language.implicitConversions
 
-class LEDResource extends BaseResource[Bool] {
+class BaseInBool extends Base[Bool] {
   private var invert = false // TODO: invert should do something
 
-  private[chryse] def make(): Bool = Output(Bool())
+  private[chryse] def make(): Bool = Input(Bool())
 
   def inverted: this.type = {
     invert = true
@@ -16,23 +16,21 @@ class LEDResource extends BaseResource[Bool] {
   }
 }
 
-object LEDResource {
-  def apply() = new LEDResource
-
+object BaseInBool {
   object Implicits {
-    implicit val LEDResourceProduct: DataProduct[LEDResource] =
-      new DataProduct[LEDResource] {
+    implicit val BaseInBoolProduct: DataProduct[BaseInBool] =
+      new DataProduct[BaseInBool] {
         def dataIterator(
-            res: LEDResource,
+            res: BaseInBool,
             path: String,
         ): Iterator[(Data, String)] =
           List(res.inst.get -> path).iterator
       }
 
-    implicit def view: DataView[LEDResource, Bool] =
+    implicit def view: DataView[BaseInBool, Bool] =
       DataView(res => Bool(), _.instOrMake() -> _)
 
-    implicit def LEDResource2Bool(res: LEDResource): Bool =
+    implicit def BaseInBool2Bool(res: BaseInBool): Bool =
       res.viewAs[Bool]
   }
 }

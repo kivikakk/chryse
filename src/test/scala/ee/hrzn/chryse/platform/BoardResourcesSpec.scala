@@ -6,8 +6,8 @@ import ee.hrzn.chryse.ChryseModule
 import ee.hrzn.chryse.chisel.BuilderContext
 import ee.hrzn.chryse.platform.ice40.ICE40Top
 import ee.hrzn.chryse.platform.ice40.IceBreakerPlatform
-import ee.hrzn.chryse.platform.resource.ButtonResource.Implicits._
-import ee.hrzn.chryse.platform.resource.LEDResource.Implicits._
+import ee.hrzn.chryse.platform.resource.BaseInBool.Implicits._
+import ee.hrzn.chryse.platform.resource.BaseOutBool.Implicits._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should._
 

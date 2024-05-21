@@ -2,7 +2,7 @@ package ee.hrzn.chryse.platform.resource
 
 import chisel3._
 
-trait BaseResource[HW <: Data] {
+trait Base[HW <: Data] {
   private[chryse] var pinNumber: Option[Int] = None
   private[chryse] var name: Option[String]   = None
 
