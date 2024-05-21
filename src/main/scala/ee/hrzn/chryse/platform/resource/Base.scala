@@ -9,7 +9,7 @@ abstract class Base[HW <: Data](gen: => HW) {
   final private[chryse] var pinId: Option[Pin]   = None
   final private[chryse] var name: Option[String] = None
 
-  // Should return Chisel datatype.
+  // Should return Chisel datatype with Input/Output attached.
   private[chryse] def makeIo(): HW = gen
 
   final private[chryse] var ioInst: Option[InstSides[HW]] = None
@@ -52,4 +52,7 @@ abstract class Base[HW <: Data](gen: => HW) {
 
 case class InstSides[HW](user: HW, top: HW)
 
+// Note that the DataView doesn't really need or care about the generated data's
+// direction or lack thereof, so this is sufficient for all Base[Bool]
+// subclasses.
 object BaseBool extends Base[Bool](Bool()) {}
