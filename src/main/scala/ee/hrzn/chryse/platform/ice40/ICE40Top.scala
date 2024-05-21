@@ -44,6 +44,10 @@ class ICE40Top[Top <: Module](platform: Platform, genTop: => Top)
   private val top =
     withClockAndReset(clk, finalReset)(Module(genTop))
 
+  // TODO: get clock from "defaultClock", hook that up to the SB_GB.
+  // TODO: allow clock override.
+  // TODO: refactor this out to a non-ICE40Top level.
+  // TODO: unit tests for PCF generation.
   platform match {
     case plat: BoardPlatform[_] =>
       val sb = new StringBuilder

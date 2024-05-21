@@ -9,6 +9,8 @@ import java.nio.file.Files
 import java.nio.file.Paths
 
 object BuildTask extends BaseTask {
+  // TODO: refactor for ECP5 — different steps and build products are involved
+  // after synthesis.
   def apply[Top <: Module](
       name: String,
       platform: BoardPlatform[_],

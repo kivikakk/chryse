@@ -6,6 +6,8 @@ import circt.stage.ChiselStage
 import java.io.Writer
 
 class BlackBoxGenerator(private val wr: Writer) {
+  // TODO: Can we just add attributes somehow and output Verilog instead?
+
   def runOn(bb: Class[_ <: BlackBox]): Unit = {
     wr.write("attribute \\cxxrtl_blackbox 1\n")
     wr.write("attribute \\blackbox 1\n")
