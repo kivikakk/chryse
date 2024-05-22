@@ -2,9 +2,9 @@ package ee.hrzn.chryse.platform.resource
 
 import chisel3._
 
-class InOut extends Resource with SinglePinResource {
-  val i = new Base[Bool](Input(Bool())) {}
-  val o = new Base[Bool](Output(Bool())) {}
+class InOut extends Base with SinglePinResource {
+  val i = new DataResource[Bool](Input(Bool())) {}
+  val o = new DataResource[Bool](Output(Bool())) {}
 
   def setName(name: String): Unit = {
     i.setName(s"$name")
@@ -17,7 +17,7 @@ class InOut extends Resource with SinglePinResource {
     this
   }
 
-  def bases(): Seq[Base[_ <: Data]] = Seq(i, o)
+  def bases(): Seq[DataResource[_ <: Data]] = Seq(i, o)
 }
 
 object InOut {

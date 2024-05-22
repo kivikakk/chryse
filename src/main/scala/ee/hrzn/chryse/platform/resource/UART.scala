@@ -2,9 +2,9 @@ package ee.hrzn.chryse.platform.resource
 
 import chisel3._
 
-class UART extends Resource {
-  val rx = new Base[Bool](Input(Bool())) {}
-  val tx = new Base[Bool](Output(Bool())) {}
+class UART extends Base {
+  val rx = new DataResource[Bool](Input(Bool())) {}
+  val tx = new DataResource[Bool](Output(Bool())) {}
 
   def setName(name: String): Unit = {
     rx.setName(s"${name}_rx")
@@ -17,7 +17,7 @@ class UART extends Resource {
     this
   }
 
-  def bases(): Seq[Base[_ <: Data]] = Seq(rx, tx)
+  def bases(): Seq[DataResource[_ <: Data]] = Seq(rx, tx)
 }
 
 object UART {
