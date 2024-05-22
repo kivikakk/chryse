@@ -2,17 +2,17 @@ package ee.hrzn.chryse.platform.resource
 
 import chisel3._
 
-class Connector[E <: SinglePinResource](
+class Connector[Ix, E <: SinglePinResource](
     gen: => E,
-    private val ixToPin: (Int, Pin)*,
+    private val ixToPin: (Ix, Pin)*,
 ) extends Resource {
-  private val mappings: Map[Int, E] = ixToPin
+  private val mappings: Map[Ix, E] = ixToPin
     .map { case (i, p) =>
       i -> gen.onPin(p)
     }
     .to(Map)
 
-  def apply(ix: Int): E = mappings(ix)
+  def apply(ix: Ix): E = mappings(ix)
 
   def setName(name: String): Unit =
     mappings.foreach { case (i, e) => e.setName(s"$name$i") }
@@ -21,6 +21,6 @@ class Connector[E <: SinglePinResource](
 }
 
 object Connector {
-  def apply[E <: SinglePinResource](gen: => E, ixToPin: (Int, Pin)*) =
+  def apply[Ix, E <: SinglePinResource](gen: => E, ixToPin: (Ix, Pin)*) =
     new Connector(gen, ixToPin: _*)
 }

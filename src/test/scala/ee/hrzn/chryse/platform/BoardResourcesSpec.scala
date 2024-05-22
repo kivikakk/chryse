@@ -134,6 +134,6 @@ class InOutTop(platform: Platform) extends Module {
   plat.resources.uart.tx     := plat.resources.pmod1a(2).i
 
   // Do the same with 1b1 and 1b2, but use inverted inputs/outputs.
-  plat.resources.pmod1b1.o := plat.resources.ubtn
-  plat.resources.ledr      := plat.resources.pmod1b2.i
+  plat.resources.pmod1b(1).o := plat.resources.ubtn
+  plat.resources.ledr        := plat.resources.pmod1b(2).i
 }
