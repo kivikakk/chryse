@@ -15,27 +15,22 @@ sevsegsim 0.1.0 (Chryse 0.1.0-SNAPSHOT)
 
 Subcommand: build
 Build the design, and optionally program it.
-  -b, --board  <arg>         Board to build for.  Choices: icebreaker
-  -F, --full-stacktrace      Include full Chisel stacktraces
-      --no-full-stacktrace
-  -p, --program              Program the design onto the board after building
-      --no-program
-  -h, --help                 Show help message
+  -b, --board  <board>    Board to build for.  Choices: icebreaker
+  -F, --full-stacktrace   Include full Chisel stacktraces
+  -p, --program           Program the design onto the board after building
+  -h, --help              Show help message
 
 Subcommand: cxxsim
 Run the C++ simulator tests.
   -c, --compile       Compile only; don't run
-      --no-compile
   -d, --debug         Generate source-level debug information
-      --no-debug
   -O, --optimize      Build with optimizations
-      --no-optimize
-  -v, --vcd  <arg>    Output a VCD file when running cxxsim (passes --vcd <file>
+  -v, --vcd  <file>   Output a VCD file when running cxxsim (passes --vcd <file>
                       to the executable)
   -h, --help          Show help message
 
  trailing arguments:
-  trailing (not required)   Other arguments for the cxxsim executable
+  <arg> ... (not required)   Other arguments for the cxxsim executable
 ```
 
 ## Quick feature overview
