@@ -111,7 +111,7 @@ abstract class ChryseApp {
             Conf.cxxsim.optimize(),
             Conf.cxxsim.compileOnly(),
             Conf.cxxsim.vcd.toOption,
-            Conf.cxxsim.args.toList,
+            Conf.cxxsim.trailing(),
           ),
         )
       case None =>
