@@ -82,10 +82,14 @@ class BoardResourcesSpec extends AnyFlatSpec with Matchers {
         PCF(
           Map(
             "clock"   -> 35,
-            "pmod1a1" -> 4,
-            "uart_rx" -> 6,
-            "pmod1b1" -> 43,
             "ubtn"    -> 10,
+            "uart_rx" -> 6,
+            "uart_tx" -> 9,
+            "ledr"    -> 11,
+            "pmod1a1" -> 4,
+            "pmod1a2" -> 2,
+            "pmod1b1" -> 43,
+            "pmod1b2" -> 38,
           ),
           Map("clock" -> 12_000_000),
         ),
@@ -97,7 +101,15 @@ class BoardResourcesSpec extends AnyFlatSpec with Matchers {
 
     "\\s+".r
       .replaceAllIn(rtl, " ") should include(
-      "module chrysetop( input clock, ubtn, uart_rx, output pmod1a1, pmod1b1 );",
+      "module chrysetop( " +
+        "input clock, ubtn, " +
+        "output uart_tx, " +
+        "input uart_rx, " +
+        "output ledr, pmod1a1, " +
+        "input pmod1a2, " +
+        "output pmod1b1, " +
+        "input pmod1b2 " +
+        ");",
     )
 
   }
@@ -122,9 +134,9 @@ class InOutTop(platform: Platform) extends Module {
   val plat = platform.asInstanceOf[IceBreakerPlatform]
   // Treat pmod1a1 as output, 1a2 as input.
   plat.resources.pmod1a1.o := plat.resources.uart_rx
-  // plat.resources.uart_tx   := plat.resources.pmod1a2.i
+  plat.resources.uart_tx   := plat.resources.pmod1a2.i
 
   // Do the same with 1b1 and 1b2, but use inverted inputs/outputs.
   plat.resources.pmod1b1.o := plat.resources.ubtn
-  // plat.resources.ledr      := plat.resources.pmod1b2.i
+  plat.resources.ledr      := plat.resources.pmod1b2.i
 }
