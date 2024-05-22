@@ -17,7 +17,7 @@ class UART extends Resource {
     this
   }
 
-  def bases(): List[Base[_ <: Data]] = List(rx, tx)
+  def bases(): Seq[Base[_ <: Data]] = Seq(rx, tx)
 }
 
 object UART {

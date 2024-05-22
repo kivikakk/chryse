@@ -20,7 +20,7 @@ class InterfaceExtractorSpec extends AnyFlatSpec with Matchers {
                          |""".stripMargin) should be(
       Map(
         "chrysetop" -> InterfaceExtractor.Module(
-          inputs = List("clock", "reset"),
+          inputs = Seq("clock", "reset"),
         ),
       ),
     )
@@ -65,13 +65,13 @@ class InterfaceExtractorSpec extends AnyFlatSpec with Matchers {
     ) should be(
       Map(
         "SevSeg" -> InterfaceExtractor.Module(
-          inputs = List("io_char"),
-          outputs = (for { i <- 0 until 7 } yield s"io_abcdefg_$i").toList,
+          inputs = Seq("io_char"),
+          outputs = (for { i <- 0 until 7 } yield s"io_abcdefg_$i").toSeq,
         ),
         "Top" -> InterfaceExtractor.Module(
-          inputs = List("clock", "reset", "def"),
-          outputs = List("xyz"),
-          inouts = List("abc"),
+          inputs = Seq("clock", "reset", "def"),
+          outputs = Seq("xyz"),
+          inouts = Seq("abc"),
         ),
       ),
     )

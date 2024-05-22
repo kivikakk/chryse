@@ -17,9 +17,9 @@ object InterfaceExtractor {
       raw"\s*(\w+)").r
 
   case class Module(
-      inputs: List[String] = List.empty,
-      outputs: List[String] = List.empty,
-      inouts: List[String] = List.empty,
+      inputs: Seq[String] = Seq.empty,
+      outputs: Seq[String] = Seq.empty,
+      inouts: Seq[String] = Seq.empty,
   )
 
   sealed private trait Mode
@@ -31,14 +31,14 @@ object InterfaceExtractor {
   def apply(sv: String): Map[String, Module] = {
     var map = mutable.Map[String, Module]()
     for {
-      List(moduleName, contents) <- reWhole.findAllMatchIn(sv).map(_.subgroups)
+      Seq(moduleName, contents) <- reWhole.findAllMatchIn(sv).map(_.subgroups)
     } {
       var mode: Mode = ModeNone
-      var inputs     = List[String]()
-      var outputs    = List[String]()
-      var inouts     = List[String]()
+      var inputs     = Seq[String]()
+      var outputs    = Seq[String]()
+      var inouts     = Seq[String]()
       for { el <- contents.split(",") if el.strip().length() != 0 } {
-        val List(kind, name) = reIndividual.findAllMatchIn(el).next().subgroups
+        val Seq(kind, name) = reIndividual.findAllMatchIn(el).next().subgroups
         kind match {
           case "input"  => mode = ModeInput
           case "output" => mode = ModeOutput

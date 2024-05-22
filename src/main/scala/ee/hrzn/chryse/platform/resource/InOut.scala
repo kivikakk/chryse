@@ -17,7 +17,7 @@ class InOut extends Resource {
     this
   }
 
-  def bases(): List[Base[_ <: Data]] = List(i, o)
+  def bases(): Seq[Base[_ <: Data]] = Seq(i, o)
 }
 
 object InOut {

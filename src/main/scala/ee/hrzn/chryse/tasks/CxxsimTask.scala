@@ -24,7 +24,7 @@ object CxxsimTask extends BaseTask {
       optimize: Boolean,
       compileOnly: Boolean,
       vcdOutPath: Option[String],
-      args: List[String],
+      args: Seq[String],
   )
 
   def apply[Top <: Module](

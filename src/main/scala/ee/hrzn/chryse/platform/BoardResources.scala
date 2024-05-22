@@ -19,5 +19,5 @@ abstract class BoardResources {
 
   val clock: resource.ClockSource
 
-  def all: List[Base[_ <: Data]] = Resource.allFromBoardResources(this)
+  def all: Seq[Base[_ <: Data]] = Resource.allFromBoardResources(this)
 }

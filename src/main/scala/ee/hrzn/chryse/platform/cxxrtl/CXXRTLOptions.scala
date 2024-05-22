@@ -4,7 +4,6 @@ import chisel3.BlackBox
 
 import scala.sys.process._
 
-// XXX: Seq or List better?
 final case class CXXRTLOptions(
     clockHz: Int,
     blackboxes: Seq[Class[_ <: BlackBox]] = Seq(),

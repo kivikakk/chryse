@@ -71,8 +71,8 @@ class BoardResourcesSpec extends AnyFlatSpec with Matchers {
 
     verilog.InterfaceExtractor(rtl) should contain(
       "chrysetop" -> verilog.InterfaceExtractor.Module(
-        inputs = List("clock", "ubtn"),
-        outputs = List("uart_tx", "ledg"),
+        inputs = Seq("clock", "ubtn"),
+        outputs = Seq("uart_tx", "ledg"),
       ),
     )
   }
@@ -105,8 +105,8 @@ class BoardResourcesSpec extends AnyFlatSpec with Matchers {
 
     verilog.InterfaceExtractor(rtl) should contain(
       "chrysetop" -> verilog.InterfaceExtractor.Module(
-        inputs = List("clock", "ubtn", "uart_rx", "pmod1a2", "pmod1b2"),
-        outputs = List("uart_tx", "ledr", "pmod1a1", "pmod1b1"),
+        inputs = Seq("clock", "ubtn", "uart_rx", "pmod1a2", "pmod1b2"),
+        outputs = Seq("uart_tx", "ledr", "pmod1a1", "pmod1b1"),
       ),
     )
   }

@@ -15,7 +15,7 @@ object implicits {
           res: Base[HW],
           path: String,
       ): Iterator[(Data, String)] =
-        List(res.ioInst.get.user -> path).iterator
+        Seq(res.ioInst.get.user -> path).iterator
     }
 
   implicit def viewBool: DataView[Base[Bool], Bool] =

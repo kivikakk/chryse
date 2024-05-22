@@ -7,13 +7,13 @@ import scala.collection.mutable.ArrayBuffer
 
 trait Resource {
   def setName(name: String): Unit
-  def bases(): List[Base[_ <: Data]]
+  def bases(): Seq[Base[_ <: Data]]
 }
 
 object Resource {
   def allFromBoardResources[T <: BoardResources](
       br: T,
-  ): List[Base[_ <: Data]] = {
+  ): Seq[Base[_ <: Data]] = {
     var out = ArrayBuffer[Base[_ <: Data]]()
     for { f <- br.getClass().getDeclaredFields().iterator } {
       f.setAccessible(true)
@@ -23,6 +23,6 @@ object Resource {
         case _ =>
       }
     }
-    out.toList
+    out.toSeq
   }
 }

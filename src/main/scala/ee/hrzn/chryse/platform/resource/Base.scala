@@ -31,7 +31,7 @@ abstract class Base[HW <: Data](gen: => HW) extends Resource {
     this
   }
 
-  def bases(): List[Base[_ <: Data]] = List(this)
+  def bases(): Seq[Base[_ <: Data]] = Seq(this)
 }
 
 case class InstSides[HW](user: HW, top: HW)
