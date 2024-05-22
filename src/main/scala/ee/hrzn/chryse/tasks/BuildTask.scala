@@ -17,7 +17,7 @@ object BuildTask extends BaseTask {
       fullStacktrace: Boolean,
   )
 
-  // TODO: refactor for ECP5 — different steps and build products are involved
+  // TODO (ECP5): refactor — different steps and build products are involved
   // after synthesis.
   def apply[Top <: Module](
       name: String,

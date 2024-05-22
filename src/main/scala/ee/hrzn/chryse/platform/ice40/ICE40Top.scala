@@ -40,7 +40,7 @@ class ICE40Top[Top <: Module](
   }
 
   private val finalReset = noPrefix {
-    // TODO: this no longer works. :)
+    // TODO (iCE40): this no longer works. :)
     if (platform.asInstanceOf[IceBreakerPlatform].ubtnReset) {
       val io_ubtn = IO(Input(Bool()))
       reset | ~io_ubtn
@@ -52,7 +52,7 @@ class ICE40Top[Top <: Module](
   private val top =
     withClockAndReset(clk, finalReset)(Module(genTop))
 
-  // TODO: allow clock override.
+  // TODO (iCE40): allow clock source override.
 
   private val ios   = mutable.Map[String, resource.Pin]()
   private val freqs = mutable.Map[String, Int]()
@@ -95,7 +95,7 @@ object ICE40Top {
       platform: BoardPlatform[_ <: BoardResources],
       genTop: => Top,
   ) = {
-    platform.resources.setNames() // XXX do this somewhere non-plat specific
+    platform.resources.setNames() // XXX refactor setNames call
     new ICE40Top(platform, genTop)
   }
 }

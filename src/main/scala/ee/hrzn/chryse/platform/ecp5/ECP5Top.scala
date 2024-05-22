@@ -10,7 +10,7 @@ class ECP5Top[Top <: Module](platform: Platform, genTop: => Top)
     extends ChryseModule {
   private val clki = IO(Input(Clock()))
 
-  // TODO: GSR stuff. (details follow.)
+  // TODO (ECP5): GSR stuff. (details follow.)
   // FD1S3AX D=1    Q=gsr0
   // FD1S3AX D=gsr0 Q=gsr1
   // SGSR    GSR=gsr1
@@ -31,7 +31,7 @@ object ECP5Top {
       platform: BoardPlatform[_ <: BoardResources],
       genTop: => Top,
   ) = {
-    platform.resources.setNames() // XXX refactor
+    platform.resources.setNames() // XXX: refactor setNames call
     new ECP5Top(platform, genTop)
   }
 }

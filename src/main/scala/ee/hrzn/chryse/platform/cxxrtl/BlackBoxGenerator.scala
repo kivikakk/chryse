@@ -24,7 +24,7 @@ class BlackBoxGenerator(private val wr: Writer) {
         ((name, dat)) <-
           io.elements.toSeq.reverseIterator
       } {
-        // TODO: "inout" (Chisel "Analog"? seems awk.)
+        // TODO: "inout"
         val dir = DirectionOf(dat)
         dat match {
           case vec: Vec[_] =>

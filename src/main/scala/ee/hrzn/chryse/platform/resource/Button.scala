@@ -3,7 +3,7 @@ package ee.hrzn.chryse.platform.resource
 import chisel3._
 
 class Button extends Base[Bool](Input(Bool())) {
-  private var invert = false // TODO: possibly belongs in a higher class
+  private var invert = false // TODO: invert possibly belongs in a higher class
 
   def inverted: this.type = {
     invert = true

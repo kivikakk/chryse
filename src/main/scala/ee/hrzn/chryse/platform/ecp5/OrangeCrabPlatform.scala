@@ -10,7 +10,7 @@ case object OrangeCrabPlatform extends BoardPlatform[ECP5Resources] {
   val id      = "orangecrab"
   val clockHz = 48_000_000
 
-  // TODO: --25k? define somewhere.
+  // TODO (ECP5): --25k? define somewhere.
   val nextpnrBinary = "nextpnr-ecp5"
   val nextpnrArgs   = Seq("--85k", "--package", "csfBGA285")
   val packBinary    = "ecppack"
