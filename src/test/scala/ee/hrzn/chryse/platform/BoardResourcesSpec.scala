@@ -105,10 +105,8 @@ class BoardResourcesSpec extends AnyFlatSpec with Matchers {
     "\\s+".r
       .replaceAllIn(rtl, " ") should include(
       "module chrysetop( " +
-        "input clock, ubtn, " +
-        "output uart_tx, " +
-        "input uart_rx, " +
-        "output ledr, pmod1a1, " +
+        "input clock, ubtn, uart_rx, " +
+        "output uart_tx, ledr, pmod1a1, " +
         "input pmod1a2, " +
         "output pmod1b1, " +
         "input pmod1b2 " +
@@ -120,14 +118,14 @@ class BoardResourcesSpec extends AnyFlatSpec with Matchers {
 class DetectionTop(platform: Platform) extends Module {
   val plat = platform.asInstanceOf[IceBreakerPlatform]
   plat.resources.ledg    := plat.resources.ubtn
-  plat.resources.uart_tx := plat.resources.uart_rx
+  plat.resources.uart.tx := plat.resources.uart.rx
 }
 
 class InversionTop(platform: Platform) extends Module {
   val plat = platform.asInstanceOf[IceBreakerPlatform]
   // User button is inverted.
   // UART isn't inverted.
-  plat.resources.uart_tx := plat.resources.ubtn
+  plat.resources.uart.tx := plat.resources.ubtn
   // LED is inverted.
   plat.resources.ledg := plat.resources.ubtn
 }
@@ -135,8 +133,8 @@ class InversionTop(platform: Platform) extends Module {
 class InOutTop(platform: Platform) extends Module {
   val plat = platform.asInstanceOf[IceBreakerPlatform]
   // Treat pmod1a1 as output, 1a2 as input.
-  plat.resources.pmod1a1.o := plat.resources.uart_rx
-  plat.resources.uart_tx   := plat.resources.pmod1a2.i
+  plat.resources.pmod1a1.o := plat.resources.uart.rx
+  plat.resources.uart.tx   := plat.resources.pmod1a2.i
 
   // Do the same with 1b1 and 1b2, but use inverted inputs/outputs.
   plat.resources.pmod1b1.o := plat.resources.ubtn

@@ -7,7 +7,6 @@ import scala.collection.mutable.ArrayBuffer
 
 trait Resource {
   def setName(name: String): Unit
-  def onPin(id: Pin): this.type
   def bases(): List[Base[_ <: Data]]
 }
 
