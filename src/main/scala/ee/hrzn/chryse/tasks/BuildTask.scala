@@ -3,6 +3,7 @@ package ee.hrzn.chryse.tasks
 import chisel3._
 import circt.stage.ChiselStage
 import ee.hrzn.chryse.platform.BoardPlatform
+import ee.hrzn.chryse.platform.BoardResources
 import ee.hrzn.chryse.platform.Platform
 import ee.hrzn.chryse.platform.ice40.ICE40Top
 import ee.hrzn.chryse.platform.ice40.PCF
@@ -11,14 +12,18 @@ import java.nio.file.Files
 import java.nio.file.Paths
 
 object BuildTask extends BaseTask {
+  case class Options(
+      program: Boolean,
+      fullStacktrace: Boolean,
+  )
+
   // TODO: refactor for ECP5 — different steps and build products are involved
   // after synthesis.
   def apply[Top <: Module](
       name: String,
-      platform: BoardPlatform[_],
+      platform: BoardPlatform[_ <: BoardResources],
       genTop: Platform => Top,
-      program: Boolean,
-      fullStacktrace: Boolean,
+      options: Options,
   ): Unit = {
     println(s"Building for ${platform.id} ...")
 
@@ -36,14 +41,10 @@ object BuildTask extends BaseTask {
           }
           elaborated
         },
-        if (fullStacktrace) Array("--full-stacktrace") else Array.empty,
+        if (options.fullStacktrace) Array("--full-stacktrace") else Array.empty,
         firtoolOpts = firtoolOpts,
       )
     writePath(verilogPath, verilog)
-
-    if (lastPCF.isDefined) {
-      println(s"PCF: [[$lastPCF]]")
-    }
 
     val yosysScriptPath = s"$buildDir/$name-${platform.id}.ys"
     val jsonPath        = s"$buildDir/$name-${platform.id}.json"
@@ -68,7 +69,7 @@ object BuildTask extends BaseTask {
         yosysScriptPath,
       ),
     )
-    runCu("synthesis", yosysCu)
+    runCu(CmdStepSynthesise, yosysCu)
 
     val pcfPath = s"$buildDir/$name-${platform.id}.pcf"
     writePath(pcfPath, lastPCF.get.toString())
@@ -91,7 +92,7 @@ object BuildTask extends BaseTask {
         ascPath,
       ) ++ platform.nextpnrArgs,
     )
-    runCu("place and route", ascCu)
+    runCu(CmdStepPNR, ascCu)
 
     val binPath = s"$buildDir/$name-${platform.id}.bin"
     val binCu = CompilationUnit(
@@ -100,11 +101,11 @@ object BuildTask extends BaseTask {
       binPath,
       Seq(platform.packBinary, ascPath, binPath),
     )
-    runCu("pack", binCu)
+    runCu(CmdStepPack, binCu)
 
-    if (program) {
+    if (options.program) {
       println(s"Programming ${platform.id} ...")
-      runCmd("program", Seq(platform.programBinary, binPath))
+      runCmd(CmdStepProgram, Seq(platform.programBinary, binPath))
     }
   }
 }

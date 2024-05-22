@@ -9,6 +9,7 @@ import java.security.MessageDigest
 import java.util.HexFormat
 import scala.jdk.CollectionConverters._
 import scala.sys.process._
+import scala.util.matching.Regex
 
 abstract class BaseTask {
   protected val buildDir = "build"
@@ -29,14 +30,55 @@ abstract class BaseTask {
   protected def writePath(path: String, content: String): Unit =
     writePath(path)(_.write(content))
 
-  protected def runCmd(step: String, cmd: Seq[String]) =
+  protected def runCmd(step: CmdStep, cmd: Seq[String]) =
     runCmds(step, Seq(cmd))
 
+  sealed protected class CmdStep(s: String) {
+    override def toString() = s
+  }
+  final protected case object CmdStepSynthesise extends CmdStep("synthesise")
+  final protected case object CmdStepPNR        extends CmdStep("place&route")
+  final protected case object CmdStepPack       extends CmdStep("pack")
+  final protected case object CmdStepProgram    extends CmdStep("program")
+  final protected case object CmdStepCompile    extends CmdStep("compile")
+  final protected case object CmdStepLink       extends CmdStep("link")
+  final protected case object CmdStepExecute    extends CmdStep("execute")
+
+  private def paddedStep(step: CmdStep): String = {
+    var r      = s"($step)"
+    val spaces = "(place&route) ".length() - r.length()
+    r + " " * spaces
+  }
+
+  private val specialChar = "[^a-zA-Z0-9,./=+-_:@%^]".r
+
+  private def formattedCmd(cmd: Seq[String]): String = {
+    def fmtPart(part: String) =
+      specialChar.replaceAllIn(part, Regex.quoteReplacement("\\") + "$0")
+    cmd.map(fmtPart).mkString(" ")
+  }
+
+  sealed protected trait CmdAction
+  final protected case object CmdActionRun  extends CmdAction
+  final protected case object CmdActionSkip extends CmdAction
+
+  protected def reportCmd(
+      step: CmdStep,
+      action: CmdAction,
+      cmd: Seq[String],
+  ): Unit = {
+    val paddedAction = action match {
+      case CmdActionRun  => "[run]  "
+      case CmdActionSkip => "[skip] "
+    }
+    println(s"${paddedStep(step)} $paddedAction ${formattedCmd(cmd)}")
+  }
+
   protected def runCmds(
-      step: String,
+      step: CmdStep,
       cmds: Iterable[Seq[String]],
   ): Unit = {
-    cmds.foreach(cmd => println(s"($step) running: $cmd"))
+    cmds.foreach(reportCmd(step, CmdActionRun, _))
     val processes = cmds.map(cmd => (cmd, cmd.run()))
     val failed = processes.collect {
       case (cmd, proc) if proc.exitValue() != 0 => cmd
@@ -44,19 +86,19 @@ abstract class BaseTask {
     if (!failed.isEmpty) {
       println("the following process(es) failed:")
       for { cmd <- failed } println(s"  $cmd")
-      throw new ChryseAppStepFailureException(step)
+      throw new ChryseAppStepFailureException(step.toString())
     }
   }
 
-  protected def runCu(step: String, cu: CompilationUnit) =
+  protected def runCu(step: CmdStep, cu: CompilationUnit) =
     runCus(step, Seq(cu))
 
   protected def runCus(
-      step: String,
+      step: CmdStep,
       cus: Iterable[CompilationUnit],
   ): Unit = {
     val (skip, run) = cus.partition(_.isUpToDate())
-    skip.foreach(cu => println(s"($step) skipping: ${cu.cmd}"))
+    skip.foreach(cu => reportCmd(step, CmdActionSkip, cu.cmd))
     runCmds(step, run.map(_.cmd))
     run.foreach(_.markUpToDate())
   }

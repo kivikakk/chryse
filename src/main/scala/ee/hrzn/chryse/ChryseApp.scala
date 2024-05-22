@@ -3,132 +3,121 @@ package ee.hrzn.chryse
 import chisel3._
 import circt.stage.ChiselStage
 import ee.hrzn.chryse.platform.BoardPlatform
+import ee.hrzn.chryse.platform.BoardResources
 import ee.hrzn.chryse.platform.Platform
 import ee.hrzn.chryse.platform.cxxrtl.CXXRTLOptions
-import scopt.DefaultOEffectSetup
-import scopt.DefaultOParserSetup
-import scopt.OParser
+import org.rogach.scallop._
 
 import scala.collection.mutable
 
-abstract class ChryseApp[Top <: Module] {
+abstract class ChryseApp {
   val name: String
-  val genTop: Platform => Top
-  val targetPlatforms: Seq[BoardPlatform[_]]
+  val genTop: Platform => Module
+  val targetPlatforms: Seq[BoardPlatform[_ <: BoardResources]]
   val cxxrtlOptions: Option[CXXRTLOptions] = None
 
   def main(args: Array[String]): Unit = {
     val appVersion = getClass().getPackage().getImplementationVersion()
-    val builder    = OParser.builder[ChryseAppConfig]
-    val boards     = targetPlatforms.map(_.id).mkString(",")
-    val parser = {
-      import builder._
-      val parsers: mutable.ArrayBuffer[OParser[Unit, ChryseAppConfig]] =
-        mutable.ArrayBuffer(
-          head(
-            name,
-            appVersion,
-            s"(Chryse ${ChryseApp.getChrysePackage().getImplementationVersion()})",
-          ),
-          help("help").text("prints this usage text"),
-          note(""),
-          cmd("build")
-            .action((_, c) => c.copy(mode = Some(ChryseAppModeBuild)))
-            .text("Build the design, and optionally program it.")
-            .children(
-              arg[String]("<board>")
-                .required()
-                .action((platform, c) => c.copy(buildPlatform = platform))
-                .text(s"board to build for {$boards}")
-                .validate(board =>
-                  if (targetPlatforms.exists(_.id == board)) success
-                  else failure(s"unknown board $board"),
-                ),
-              opt[Unit]('p', "program")
-                .action((_, c) => c.copy(buildProgram = true))
-                .text("program the design onto the board after building"),
-              opt[Unit]('F', "full-stacktrace")
-                .action((_, c) => c.copy(buildFullStacktrace = true))
-                .text("include full Chisel stacktraces"),
-              note(""),
-            ),
-        )
-      if (cxxrtlOptions.isDefined) {
-        parsers +=
-          cmd("cxxsim")
-            .action((_, c) => c.copy(mode = Some(ChryseAppModeCxxsim)))
-            .text("Run the C++ simulator tests.")
-            .children(
-              opt[Unit]('c', "compile")
-                .action((_, c) => c.copy(cxxrtlCompileOnly = true))
-                .text("compile only; don't run"),
-              opt[Unit]('O', "optimize")
-                .action((_, c) => c.copy(cxxrtlOptimize = true))
-                .text("build with optimizations"),
-              opt[Unit]('d', "debug")
-                .action((_, c) => c.copy(cxxrtlDebug = true))
-                .text("generate source-level debug information"),
-              opt[String]('v', "vcd")
-                .valueName("<file>")
-                .action((p, c) => c.copy(cxxrtlVcdOutPath = Some(p)))
-                .text(
-                  "output a VCD file when running cxxsim (passes --vcd <file> to the executable)",
-                ),
-              arg[String]("<arg>...")
-                .unbounded()
-                .optional()
-                .action((arg, c) => c.copy(cxxrtlArgs = c.cxxrtlArgs :+ arg))
-                .text("other arguments for the cxxsim executable"),
-              note(""),
-            )
-      }
-      parsers +=
-        checkConfig(c =>
-          if (c.mode.isEmpty) failure("no mode specified")
-          else success,
-        )
-      OParser.sequence(programName(name), parsers.toSeq: _*)
-    }
+    val versionBanner = s"$name $appVersion (Chryse " +
+      s"${ChryseApp.getChrysePackage().getImplementationVersion()})"
+    val boards = targetPlatforms.map(_.id).mkString(",")
 
-    val setup = new DefaultOParserSetup {
-      override def showUsageOnError = Some(true)
-    }
     var terminating = false
-    val config =
-      OParser.runParser(parser, args, ChryseAppConfig(), setup) match {
-        case (result, effects) =>
-          OParser.runEffects(
-            effects,
-            new DefaultOEffectSetup {
-              override def terminate(exitState: Either[String, Unit]): Unit =
-                terminating = true
-            },
-          )
 
-          result match {
-            case Some(config) => config
-            case _            => return
-          }
+    // TODO (Scallop): I'd love to remove the "no-" prefixed options entirely.
+    // TODO (Scallop): Show parent version string on subcommand help.
+    object Conf extends ScallopConf(args) {
+      exitHandler = _ => terminating = true
+
+      version(versionBanner)
+
+      object build extends Subcommand("build") {
+        banner("Build the design, and optionally program it.")
+        val board =
+          choice(
+            targetPlatforms.map(_.id),
+            descr = s"Board to build for. ", // XXX (Scallop): It appends " Choices: …". Kinda ugly.
+            required = true,
+          )
+        val program =
+          toggle(
+            descrYes = "Program the design onto the board after building",
+            default = Some(false),
+            prefix = "no-",
+          )
+        val fullStacktrace = toggle(
+          short = 'F',
+          descrYes = "Include full Chisel stacktraces",
+          default = Some(false),
+          prefix = "no-",
+        )
       }
+      addSubcommand(build)
+
+      object cxxsim extends Subcommand("cxxsim") {
+        banner("Run the C++ simulator tests.")
+        val compileOnly =
+          toggle(
+            name = "compile",
+            descrYes = "Compile only; don't run",
+            default = Some(false),
+            prefix = "no-",
+          )
+        val optimize =
+          toggle(
+            short = 'O',
+            descrYes = "Build with optimizations",
+            default = Some(false),
+            prefix = "no-",
+          )
+        val debug = toggle(
+          descrYes = "Generate source-level debug information",
+          default = Some(false),
+          prefix = "no-",
+        )
+        val vcd =
+          opt[String](descr = "Output a VCD file when running cxxsim (passes --vcd <file> to the executable)")
+        val trailing = trailArg[List[String]](
+          descr = "Other arguments for the cxxsim executable",
+          required = false,
+        )
+      }
+      if (cxxrtlOptions.isDefined) addSubcommand(cxxsim)
+    }
+    Conf.verify()
 
     if (terminating) return
 
-    println(
-      s"$name ${getClass().getPackage().getImplementationVersion()} " +
-        s"(Chryse ${ChryseApp.getChrysePackage().getImplementationVersion()})",
-    )
-
-    config.mode.get match {
-      case ChryseAppModeBuild =>
+    Conf.subcommand match {
+      case Some(Conf.build) =>
+        println(versionBanner)
         tasks.BuildTask(
           name,
-          targetPlatforms.find(_.id == config.buildPlatform).get,
+          targetPlatforms.find(_.id == Conf.build.board()).get,
           genTop,
-          config.buildProgram,
-          config.buildFullStacktrace,
+          tasks.BuildTask.Options(
+            Conf.build.program(),
+            Conf.build.fullStacktrace(),
+          ),
         )
-      case ChryseAppModeCxxsim =>
-        tasks.CxxsimTask(name, genTop, cxxrtlOptions.get, config)
+      case Some(Conf.cxxsim) =>
+        println(versionBanner)
+        tasks.CxxsimTask(
+          name,
+          genTop,
+          cxxrtlOptions.get,
+          tasks.CxxsimTask.Options(
+            Conf.cxxsim.debug(),
+            Conf.cxxsim.optimize(),
+            Conf.cxxsim.compileOnly(),
+            Conf.cxxsim.vcd.toOption,
+            Conf.cxxsim.args.toList,
+          ),
+        )
+      case None =>
+        Conf.printHelp()
+      case _ =>
+        throw new Exception("unhandled subcommand")
     }
   }
 }
@@ -136,22 +125,6 @@ abstract class ChryseApp[Top <: Module] {
 object ChryseApp {
   def getChrysePackage(): Package = this.getClass().getPackage()
 }
-
-sealed trait ChryseAppMode
-final case object ChryseAppModeBuild  extends ChryseAppMode
-final case object ChryseAppModeCxxsim extends ChryseAppMode
-
-final case class ChryseAppConfig(
-    mode: Option[ChryseAppMode] = None,
-    buildPlatform: String = "",
-    buildProgram: Boolean = false,
-    buildFullStacktrace: Boolean = false,
-    cxxrtlCompileOnly: Boolean = false,
-    cxxrtlOptimize: Boolean = false,
-    cxxrtlDebug: Boolean = false,
-    cxxrtlVcdOutPath: Option[String] = None,
-    cxxrtlArgs: List[String] = List(),
-)
 
 class ChryseAppStepFailureException(step: String)
     extends Exception(s"Chryse step failed: $step") {}

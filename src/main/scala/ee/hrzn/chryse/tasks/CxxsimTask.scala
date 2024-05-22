@@ -2,7 +2,6 @@ package ee.hrzn.chryse.tasks
 
 import chisel3._
 import circt.stage.ChiselStage
-import ee.hrzn.chryse.ChryseAppConfig
 import ee.hrzn.chryse.ChryseAppStepFailureException
 import ee.hrzn.chryse.platform.Platform
 import ee.hrzn.chryse.platform.cxxrtl.BlackBoxGenerator
@@ -20,13 +19,21 @@ object CxxsimTask extends BaseTask {
   private val baseCxxOpts = Seq("-std=c++17", "-g", "-pedantic", "-Wall",
     "-Wextra", "-Wno-zero-length-array", "-Wno-unused-parameter")
 
+  case class Options(
+      debug: Boolean,
+      optimize: Boolean,
+      compileOnly: Boolean,
+      vcdOutPath: Option[String],
+      args: List[String],
+  )
+
   def apply[Top <: Module](
       name: String,
       genTop: Platform => Top,
-      cxxrtlOptions: CXXRTLOptions,
-      config: ChryseAppConfig,
+      appOptions: CXXRTLOptions,
+      runOptions: Options,
   ): Unit = {
-    val platform = CXXRTLPlatform(cxxrtlOptions)
+    val platform = CXXRTLPlatform(appOptions.clockHz)
 
     println(s"Building cxxsim ...")
 
@@ -42,7 +49,7 @@ object CxxsimTask extends BaseTask {
 
     val blackboxIlPath = s"$buildDir/$name-${platform.id}-blackbox.il"
     writePath(blackboxIlPath) { wr =>
-      for { (bb, bbIx) <- cxxrtlOptions.blackboxes.zipWithIndex } {
+      for { (bb, bbIx) <- appOptions.blackboxes.zipWithIndex } {
         if (bbIx > 0) wr.write("\n")
         BlackBoxGenerator(wr, bb)
       }
@@ -71,7 +78,7 @@ object CxxsimTask extends BaseTask {
         yosysScriptPath,
       ),
     )
-    runCu("synthesis", yosysCu)
+    runCu(CmdStepSynthesise, yosysCu)
 
     // TODO: we need to decide how the simulation gets driven. How do we offer
     // enough control to the user? Do we assume they/let them do all the setup
@@ -87,9 +94,9 @@ object CxxsimTask extends BaseTask {
     val yosysDatDir = Seq("yosys-config", "--datdir").!!.trim()
     val cxxOpts     = new mutable.ArrayBuffer[String]
     cxxOpts.appendAll(baseCxxOpts)
-    cxxOpts.append(s"-DCLOCK_HZ=${cxxrtlOptions.clockHz}")
-    if (config.cxxrtlDebug) cxxOpts.append("-g")
-    if (config.cxxrtlOptimize) cxxOpts.append("-O3")
+    cxxOpts.append(s"-DCLOCK_HZ=${appOptions.clockHz}")
+    if (runOptions.debug) cxxOpts.append("-g")
+    if (runOptions.optimize) cxxOpts.append("-O3")
 
     def buildPathForCc(cc: String) =
       cc.replace(s"$cxxsimDir/", s"$buildDir/")
@@ -103,7 +110,7 @@ object CxxsimTask extends BaseTask {
       cc,
       "-o",
       obj,
-    ) ++ cxxOpts ++ cxxrtlOptions.allCxxFlags
+    ) ++ cxxOpts ++ appOptions.allCxxFlags
 
     // XXX: depend on what look like headers for now.
     val cus = for {
@@ -117,7 +124,7 @@ object CxxsimTask extends BaseTask {
       upickle.default.writeTo(cus.map(ClangdEntry(_)), wr)
     }
 
-    runCus("compilation", cus)
+    runCus(CmdStepCompile, cus)
 
     val binPath = s"$buildDir/$name"
     val linkCu = CompilationUnit(
@@ -126,19 +133,19 @@ object CxxsimTask extends BaseTask {
       binPath,
       Seq("c++", "-o", binPath) ++ cxxOpts ++ cus.map(
         _.outPath,
-      ) ++ cxxrtlOptions.allLdFlags,
+      ) ++ appOptions.allLdFlags,
     )
-    runCu("linking", linkCu)
+    runCu(CmdStepLink, linkCu)
 
-    if (config.cxxrtlCompileOnly) return
+    if (runOptions.compileOnly) return
 
-    val binArgs = config.cxxrtlVcdOutPath match {
+    val binArgs = runOptions.vcdOutPath match {
       case Some(vcdOutPath) => Seq("--vcd", vcdOutPath)
       case _                => Seq()
     }
-    val binCmd = Seq(binPath) ++ binArgs ++ config.cxxrtlArgs
+    val binCmd = Seq(binPath) ++ binArgs ++ runOptions.args
 
-    println(s"running: $binCmd")
+    reportCmd(CmdStepExecute, CmdActionRun, binCmd)
     val rc = binCmd.!
 
     println(s"$name exited with return code $rc")
