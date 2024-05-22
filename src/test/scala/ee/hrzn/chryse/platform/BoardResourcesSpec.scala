@@ -97,8 +97,11 @@ class BoardResourcesSpec extends AnyFlatSpec with Matchers {
     )
 
     rtl should include("pmod1a1_int = view__uart_rx_int")
+    rtl should include("uart_tx_int = view__pmod1a2_int")
     rtl should include("pmod1b1_int = ~view__ubtn_int")
+    rtl should include("ledr_int = ~view__pmod1b2_int")
 
+    // HACK: this is _extra_ brittle.
     "\\s+".r
       .replaceAllIn(rtl, " ") should include(
       "module chrysetop( " +
@@ -111,7 +114,6 @@ class BoardResourcesSpec extends AnyFlatSpec with Matchers {
         "input pmod1b2 " +
         ");",
     )
-
   }
 }
 
