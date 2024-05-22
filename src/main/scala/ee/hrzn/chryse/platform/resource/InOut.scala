@@ -2,6 +2,8 @@ package ee.hrzn.chryse.platform.resource
 
 import chisel3._
 
+// TODO: it's an error to use both "i" and "o" (tristate is a different kettle
+// of fish entirely).
 class InOut extends Base with SinglePinResource {
   val i = new DataResource[Bool](Input(Bool())) {}
   val o = new DataResource[Bool](Output(Bool())) {}
@@ -17,7 +19,7 @@ class InOut extends Base with SinglePinResource {
     this
   }
 
-  def bases(): Seq[DataResource[_ <: Data]] = Seq(i, o)
+  def data: Seq[DataResource[_ <: Data]] = Seq(i, o)
 }
 
 object InOut {

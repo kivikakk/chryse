@@ -17,8 +17,8 @@ class Connector[Ix, E <: SinglePinResource](
   def setName(name: String): Unit =
     mappings.foreach { case (i, e) => e.setName(s"$name$i") }
 
-  def bases(): Seq[DataResource[_ <: Data]] =
-    mappings.flatMap(_._2.bases()).toSeq
+  def data: Seq[DataResource[_ <: Data]] =
+    mappings.flatMap(_._2.data).toSeq
 }
 
 object Connector {

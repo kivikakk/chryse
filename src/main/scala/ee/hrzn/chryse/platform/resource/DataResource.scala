@@ -31,7 +31,7 @@ abstract class DataResource[HW <: Data](gen: => HW) extends SinglePinResource {
     this
   }
 
-  def bases(): Seq[DataResource[_ <: Data]] = Seq(this)
+  def data: Seq[DataResource[_ <: Data]] = Seq(this)
 }
 
 case class InstSides[HW](user: HW, top: HW)

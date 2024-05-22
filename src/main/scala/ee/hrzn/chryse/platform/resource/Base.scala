@@ -5,11 +5,9 @@ import ee.hrzn.chryse.platform.BoardResources
 
 import scala.collection.mutable.ArrayBuffer
 
-// XXX: This is more of a resource holder/container.
-// It's one or possibly many (or no?) resources. Hrm.
 trait Base {
   def setName(name: String): Unit
-  def bases(): Seq[DataResource[_ <: Data]]
+  def data: Seq[DataResource[_ <: Data]]
 }
 
 object Base {
@@ -21,7 +19,7 @@ object Base {
       f.setAccessible(true)
       f.get(br) match {
         case res: Base =>
-          out.appendAll(res.bases())
+          out.appendAll(res.data)
         case _ =>
       }
     }

@@ -35,6 +35,8 @@ class IceBreakerResources extends BoardResources {
   val ledg = resource.LED().inverted.onPin(37)
   val ledr = resource.LED().inverted.onPin(11)
 
+  // Ideally (per Amaranth) a user can refer to these connectors to make their
+  // own resources, instead of just getting pins out of them.
   val pmod1a = resource.Connector(
     resource.InOut(),
     1  -> 4,
