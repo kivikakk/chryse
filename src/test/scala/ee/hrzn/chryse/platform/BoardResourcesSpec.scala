@@ -8,6 +8,7 @@ import ee.hrzn.chryse.platform.ice40.ICE40Top
 import ee.hrzn.chryse.platform.ice40.IceBreakerPlatform
 import ee.hrzn.chryse.platform.ice40.PCF
 import ee.hrzn.chryse.platform.resource.implicits._
+import ee.hrzn.chryse.verilog
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should._
 
@@ -68,10 +69,11 @@ class BoardResourcesSpec extends AnyFlatSpec with Matchers {
     rtl should include("ledg_int = view__ubtn_int")
     rtl should include("uart_tx_int = ~view__ubtn_int")
 
-    // HACK: this is brittle. Parse the Verilog or something.
-    "\\s+".r
-      .replaceAllIn(rtl, " ") should include(
-      "module chrysetop( input clock, ubtn, output uart_tx, ledg );",
+    verilog.InterfaceExtractor(rtl) should contain(
+      "chrysetop" -> verilog.InterfaceExtractor.Module(
+        inputs = List("clock", "ubtn"),
+        outputs = List("uart_tx", "ledg"),
+      ),
     )
   }
 
@@ -101,16 +103,11 @@ class BoardResourcesSpec extends AnyFlatSpec with Matchers {
     rtl should include("pmod1b1_int = ~view__ubtn_int")
     rtl should include("ledr_int = ~view__pmod1b2_int")
 
-    // HACK: this is _extra_ brittle.
-    "\\s+".r
-      .replaceAllIn(rtl, " ") should include(
-      "module chrysetop( " +
-        "input clock, ubtn, uart_rx, " +
-        "output uart_tx, ledr, pmod1a1, " +
-        "input pmod1a2, " +
-        "output pmod1b1, " +
-        "input pmod1b2 " +
-        ");",
+    verilog.InterfaceExtractor(rtl) should contain(
+      "chrysetop" -> verilog.InterfaceExtractor.Module(
+        inputs = List("clock", "ubtn", "uart_rx", "pmod1a2", "pmod1b2"),
+        outputs = List("uart_tx", "ledr", "pmod1a1", "pmod1b1"),
+      ),
     )
   }
 }

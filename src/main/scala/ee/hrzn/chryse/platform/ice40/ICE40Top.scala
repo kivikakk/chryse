@@ -87,7 +87,7 @@ class ICE40Top[Top <: Module](
     }
   }
 
-  lastPCF = Some(PCF(ios.iterator.to(Map), freqs.iterator.to(Map)))
+  lastPCF = Some(PCF(ios.to(Map), freqs.to(Map)))
 }
 
 object ICE40Top {
