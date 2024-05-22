@@ -1,24 +1,24 @@
 package ee.hrzn.chryse.platform.resource
 
 import chisel3._
-import ee.hrzn.chryse.platform.BoardResources
+import ee.hrzn.chryse.platform.PlatformBoardResources
 
 import scala.collection.mutable.ArrayBuffer
 
-trait Base {
+trait ResourceBase {
   def setName(name: String): Unit
-  def data: Seq[DataResource[_ <: Data]]
+  def data: Seq[ResourceData[_ <: Data]]
 }
 
-object Base {
-  def allFromBoardResources[T <: BoardResources](
+object ResourceBase {
+  def allFromBoardResources[T <: PlatformBoardResources](
       br: T,
-  ): Seq[DataResource[_ <: Data]] = {
-    var out = ArrayBuffer[DataResource[_ <: Data]]()
+  ): Seq[ResourceData[_ <: Data]] = {
+    var out = ArrayBuffer[ResourceData[_ <: Data]]()
     for { f <- br.getClass().getDeclaredFields().iterator } {
       f.setAccessible(true)
       f.get(br) match {
-        case res: Base =>
+        case res: ResourceBase =>
           out.appendAll(res.data)
         case _ =>
       }

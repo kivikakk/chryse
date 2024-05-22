@@ -2,7 +2,7 @@ package ee.hrzn.chryse.platform.resource
 
 import chisel3._
 
-abstract class DataResource[HW <: Data](gen: => HW) extends SinglePinResource {
+abstract class ResourceData[HW <: Data](gen: => HW) extends ResourceSinglePin {
   final private[chryse] var pinId: Option[Pin] = None
   final var name: Option[String]               = None
 
@@ -31,7 +31,7 @@ abstract class DataResource[HW <: Data](gen: => HW) extends SinglePinResource {
     this
   }
 
-  def data: Seq[DataResource[_ <: Data]] = Seq(this)
+  def data: Seq[ResourceData[_ <: Data]] = Seq(this)
 }
 
 case class InstSides[HW](user: HW, top: HW)

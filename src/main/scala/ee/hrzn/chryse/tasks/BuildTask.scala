@@ -2,8 +2,8 @@ package ee.hrzn.chryse.tasks
 
 import chisel3._
 import circt.stage.ChiselStage
-import ee.hrzn.chryse.platform.BoardPlatform
-import ee.hrzn.chryse.platform.BoardResources
+import ee.hrzn.chryse.platform.PlatformBoard
+import ee.hrzn.chryse.platform.PlatformBoardResources
 import ee.hrzn.chryse.platform.Platform
 import ee.hrzn.chryse.platform.ice40.ICE40Top
 import ee.hrzn.chryse.platform.ice40.PCF
@@ -21,7 +21,7 @@ object BuildTask extends BaseTask {
   // after synthesis.
   def apply[Top <: Module](
       name: String,
-      platform: BoardPlatform[_ <: BoardResources],
+      platform: PlatformBoard[_ <: PlatformBoardResources],
       genTop: Platform => Top,
       options: Options,
   ): Unit = {

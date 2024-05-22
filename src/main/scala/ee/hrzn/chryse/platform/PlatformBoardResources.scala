@@ -1,17 +1,17 @@
 package ee.hrzn.chryse.platform
 
 import chisel3._
-import ee.hrzn.chryse.platform.resource.DataResource
-import ee.hrzn.chryse.platform.resource.Base
+import ee.hrzn.chryse.platform.resource.ResourceBase
+import ee.hrzn.chryse.platform.resource.ResourceData
 
 import scala.collection.mutable.ArrayBuffer
 
-abstract class BoardResources {
+abstract class PlatformBoardResources {
   private[chryse] def setNames() =
     for { f <- this.getClass().getDeclaredFields() } {
       f.setAccessible(true)
       f.get(this) match {
-        case res: Base =>
+        case res: ResourceBase =>
           res.setName(f.getName())
         case _ =>
       }
@@ -19,5 +19,6 @@ abstract class BoardResources {
 
   val clock: resource.ClockSource
 
-  def all: Seq[DataResource[_ <: Data]] = Base.allFromBoardResources(this)
+  def all: Seq[ResourceData[_ <: Data]] =
+    ResourceBase.allFromBoardResources(this)
 }

@@ -2,7 +2,8 @@ package ee.hrzn.chryse.platform
 
 import chisel3._
 
-trait BoardPlatform[BR <: BoardResources] extends ElaboratablePlatform {
+trait PlatformBoard[PBR <: PlatformBoardResources]
+    extends ElaboratablePlatform {
   val nextpnrBinary: String
   val nextpnrArgs: Seq[String]
 
@@ -10,5 +11,5 @@ trait BoardPlatform[BR <: BoardResources] extends ElaboratablePlatform {
 
   val programBinary: String
 
-  val resources: BR
+  val resources: PBR
 }

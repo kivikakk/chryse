@@ -1,14 +1,14 @@
 package ee.hrzn.chryse.platform.ice40
 
 import chisel3._
-import ee.hrzn.chryse.platform.BoardPlatform
-import ee.hrzn.chryse.platform.BoardResources
 import ee.hrzn.chryse.platform.Platform
+import ee.hrzn.chryse.platform.PlatformBoard
+import ee.hrzn.chryse.platform.PlatformBoardResources
 import ee.hrzn.chryse.platform.resource
 import ee.hrzn.chryse.platform.resource.Pin._
 
 final case class IceBreakerPlatform(ubtnReset: Boolean = false)
-    extends BoardPlatform[IceBreakerResources] {
+    extends PlatformBoard[IceBreakerResources] {
   val id      = "icebreaker"
   val clockHz = 12_000_000
 
@@ -25,7 +25,8 @@ final case class IceBreakerPlatform(ubtnReset: Boolean = false)
   }
 }
 
-class IceBreakerResources extends BoardResources {
+class IceBreakerResources extends PlatformBoardResources {
+  // TODO: IO_STANDARD=SB_LVCMOS needs to be set on most.
   val clock = resource.ClockSource(12_000_000).onPin(35)
 
   val ubtn = resource.Button().inverted.onPin(10)
@@ -34,6 +35,10 @@ class IceBreakerResources extends BoardResources {
 
   val ledg = resource.LED().inverted.onPin(37)
   val ledr = resource.LED().inverted.onPin(11)
+
+  var spiFlash = resource
+    .SPIFlash()
+    .onPins(csN = 16, clock = 15, copi = 14, cipo = 17, wpN = 12, holdN = 13)
 
   // Ideally (per Amaranth) a user can refer to these connectors to make their
   // own resources, instead of just getting pins out of them.

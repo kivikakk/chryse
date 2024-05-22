@@ -4,9 +4,9 @@ import chisel3._
 
 // TODO: it's an error to use both "i" and "o" (tristate is a different kettle
 // of fish entirely).
-class InOut extends Base with SinglePinResource {
-  val i = new DataResource[Bool](Input(Bool())) {}
-  val o = new DataResource[Bool](Output(Bool())) {}
+class InOut extends ResourceBase with ResourceSinglePin {
+  val i = new ResourceData[Bool](Input(Bool())) {}
+  val o = new ResourceData[Bool](Output(Bool())) {}
 
   def setName(name: String): Unit = {
     i.setName(s"$name")
@@ -19,7 +19,7 @@ class InOut extends Base with SinglePinResource {
     this
   }
 
-  def data: Seq[DataResource[_ <: Data]] = Seq(i, o)
+  def data: Seq[ResourceData[_ <: Data]] = Seq(i, o)
 }
 
 object InOut {

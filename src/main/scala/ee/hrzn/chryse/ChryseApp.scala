@@ -2,9 +2,9 @@ package ee.hrzn.chryse
 
 import chisel3._
 import circt.stage.ChiselStage
-import ee.hrzn.chryse.platform.BoardPlatform
-import ee.hrzn.chryse.platform.BoardResources
 import ee.hrzn.chryse.platform.Platform
+import ee.hrzn.chryse.platform.PlatformBoard
+import ee.hrzn.chryse.platform.PlatformBoardResources
 import ee.hrzn.chryse.platform.cxxrtl.CXXRTLOptions
 import org.rogach.scallop._
 
@@ -13,7 +13,7 @@ import scala.collection.mutable
 abstract class ChryseApp {
   val name: String
   val genTop: Platform => Module
-  val targetPlatforms: Seq[BoardPlatform[_ <: BoardResources]]
+  val targetPlatforms: Seq[PlatformBoard[_ <: PlatformBoardResources]]
   val cxxrtlOptions: Option[CXXRTLOptions] = None
 
   def main(args: Array[String]): Unit = {

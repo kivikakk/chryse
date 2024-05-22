@@ -2,10 +2,10 @@ package ee.hrzn.chryse.platform.resource
 
 import chisel3._
 
-class Connector[Ix, E <: SinglePinResource](
+class Connector[Ix, E <: ResourceSinglePin](
     gen: => E,
     private val ixToPin: (Ix, Pin)*,
-) extends Base {
+) extends ResourceBase {
   private val mappings: Map[Ix, E] = ixToPin
     .map { case (i, p) =>
       i -> gen.onPin(p)
@@ -17,11 +17,11 @@ class Connector[Ix, E <: SinglePinResource](
   def setName(name: String): Unit =
     mappings.foreach { case (i, e) => e.setName(s"$name$i") }
 
-  def data: Seq[DataResource[_ <: Data]] =
+  def data: Seq[ResourceData[_ <: Data]] =
     mappings.flatMap(_._2.data).toSeq
 }
 
 object Connector {
-  def apply[Ix, E <: SinglePinResource](gen: => E, ixToPin: (Ix, Pin)*) =
+  def apply[Ix, E <: ResourceSinglePin](gen: => E, ixToPin: (Ix, Pin)*) =
     new Connector(gen, ixToPin: _*)
 }

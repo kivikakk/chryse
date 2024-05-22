@@ -12,8 +12,8 @@ import ee.hrzn.chryse.verilog
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should._
 
-class BoardResourcesSpec extends AnyFlatSpec with Matchers {
-  behavior.of("BoardResources")
+class PlatformBoardResourcesSpec extends AnyFlatSpec with Matchers {
+  behavior.of("PlatformBoardResources")
 
   def iceBreakerSVAndTop[Top <: Module](
       gen: Platform => Top,

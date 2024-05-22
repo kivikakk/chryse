@@ -7,19 +7,21 @@ import chisel3.util._
 import chisel3.util.experimental.forceName
 import ee.hrzn.chryse.ChryseModule
 import ee.hrzn.chryse.chisel.DirectionOf
-import ee.hrzn.chryse.platform.BoardPlatform
-import ee.hrzn.chryse.platform.BoardResources
 import ee.hrzn.chryse.platform.Platform
+import ee.hrzn.chryse.platform.PlatformBoard
+import ee.hrzn.chryse.platform.PlatformBoardResources
 import ee.hrzn.chryse.platform.resource
 
 import java.lang.reflect.Modifier
 import scala.collection.mutable
 
 class ICE40Top[Top <: Module](
-    platform: BoardPlatform[_ <: BoardResources],
+    platform: PlatformBoard[_ <: PlatformBoardResources],
     genTop: => Top,
 ) extends ChryseModule {
   var lastPCF: Option[PCF] = None
+
+  // TODO (iCE40): SB_GBs between a lot more things.
 
   private val clki = Wire(Clock())
 

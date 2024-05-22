@@ -1,5 +1,5 @@
 package ee.hrzn.chryse.platform.resource
 
-trait SinglePinResource extends Base {
+trait ResourceSinglePin extends ResourceBase {
   def onPin(id: Pin): this.type
 }

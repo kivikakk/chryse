@@ -2,7 +2,7 @@ package ee.hrzn.chryse.platform.resource
 
 import chisel3._
 
-class LED extends DataResource[Bool](Output(Bool())) {
+class LED extends ResourceData[Bool](Output(Bool())) {
   private var invert = false // TODO: invert possibly belongs in a higher class
 
   def inverted: this.type = {

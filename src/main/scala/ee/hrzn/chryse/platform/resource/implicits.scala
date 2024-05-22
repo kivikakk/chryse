@@ -9,18 +9,18 @@ object implicits {
   // Note that the DataView doesn't really need or care about the generated
   // data's direction or lack thereof.
 
-  implicit def BaseProduct[HW <: Data]: DataProduct[DataResource[HW]] =
-    new DataProduct[DataResource[HW]] {
+  implicit def BaseProduct[HW <: Data]: DataProduct[ResourceData[HW]] =
+    new DataProduct[ResourceData[HW]] {
       def dataIterator(
-          res: DataResource[HW],
+          res: ResourceData[HW],
           path: String,
       ): Iterator[(Data, String)] =
         Seq(res.ioInst.get.user -> path).iterator
     }
 
-  implicit def viewBool: DataView[DataResource[Bool], Bool] =
+  implicit def viewBool: DataView[ResourceData[Bool], Bool] =
     DataView(res => Bool(), _.ioInstOrMake().user -> _)
 
-  implicit def base2Bool(res: DataResource[Bool]): Bool =
+  implicit def base2Bool(res: ResourceData[Bool]): Bool =
     res.viewAs[Bool]
 }
