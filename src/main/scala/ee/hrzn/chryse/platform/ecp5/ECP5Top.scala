@@ -30,8 +30,6 @@ object ECP5Top {
   def apply[Top <: Module](
       platform: BoardPlatform[_ <: BoardResources],
       genTop: => Top,
-  ) = {
-    platform.resources.setNames() // XXX: refactor setNames call
+  ) =
     new ECP5Top(platform, genTop)
-  }
 }

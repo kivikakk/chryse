@@ -2,7 +2,7 @@ package ee.hrzn.chryse.platform.resource
 
 import chisel3._
 
-class InOut extends Resource {
+class InOut extends Resource with SinglePinResource {
   val i = new Base[Bool](Input(Bool())) {}
   val o = new Base[Bool](Output(Bool())) {}
 

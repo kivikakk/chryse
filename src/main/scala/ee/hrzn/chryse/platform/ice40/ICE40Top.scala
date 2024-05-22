@@ -89,13 +89,3 @@ class ICE40Top[Top <: Module](
 
   lastPCF = Some(PCF(ios.to(Map), freqs.to(Map)))
 }
-
-object ICE40Top {
-  def apply[Top <: Module](
-      platform: BoardPlatform[_ <: BoardResources],
-      genTop: => Top,
-  ) = {
-    platform.resources.setNames() // XXX refactor setNames call
-    new ICE40Top(platform, genTop)
-  }
-}

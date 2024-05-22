@@ -19,8 +19,10 @@ final case class IceBreakerPlatform(ubtnReset: Boolean = false)
 
   val resources = new IceBreakerResources
 
-  override def apply[Top <: Module](genTop: Platform => Top) =
-    ICE40Top(this, genTop(this))
+  override def apply[Top <: Module](genTop: Platform => Top) = {
+    resources.setNames()
+    new ICE40Top(this, genTop(this))
+  }
 }
 
 class IceBreakerResources extends BoardResources {
@@ -33,14 +35,17 @@ class IceBreakerResources extends BoardResources {
   val ledg = resource.LED().inverted.onPin(37)
   val ledr = resource.LED().inverted.onPin(11)
 
-  val pmod1a1  = resource.InOut().onPin(4)
-  val pmod1a2  = resource.InOut().onPin(2)
-  val pmod1a3  = resource.InOut().onPin(47)
-  val pmod1a4  = resource.InOut().onPin(45)
-  val pmod1a7  = resource.InOut().onPin(3)
-  val pmod1a8  = resource.InOut().onPin(48)
-  val pmod1a9  = resource.InOut().onPin(46)
-  val pmod1a10 = resource.InOut().onPin(44)
+  val pmod1a = resource.Connector(
+    resource.InOut(),
+    1  -> 4,
+    2  -> 2,
+    3  -> 47,
+    4  -> 45,
+    7  -> 3,
+    8  -> 48,
+    9  -> 46,
+    10 -> 44,
+  )
 
   val pmod1b1  = resource.InOut().onPin(43)
   val pmod1b2  = resource.InOut().onPin(38)

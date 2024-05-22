@@ -130,8 +130,8 @@ class InversionTop(platform: Platform) extends Module {
 class InOutTop(platform: Platform) extends Module {
   val plat = platform.asInstanceOf[IceBreakerPlatform]
   // Treat pmod1a1 as output, 1a2 as input.
-  plat.resources.pmod1a1.o := plat.resources.uart.rx
-  plat.resources.uart.tx   := plat.resources.pmod1a2.i
+  plat.resources.pmod1a(1).o := plat.resources.uart.rx
+  plat.resources.uart.tx     := plat.resources.pmod1a(2).i
 
   // Do the same with 1b1 and 1b2, but use inverted inputs/outputs.
   plat.resources.pmod1b1.o := plat.resources.ubtn

@@ -2,7 +2,7 @@ package ee.hrzn.chryse.platform.resource
 
 import chisel3._
 
-abstract class Base[HW <: Data](gen: => HW) extends Resource {
+abstract class Base[HW <: Data](gen: => HW) extends SinglePinResource {
   final private[chryse] var pinId: Option[Pin] = None
   final var name: Option[String]               = None
 
