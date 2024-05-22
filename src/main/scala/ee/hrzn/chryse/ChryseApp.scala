@@ -24,10 +24,10 @@ abstract class ChryseApp {
 
     var terminating = false
 
-    // TODO (Scallop): I'd love to remove the "no-" prefixed options entirely.
     // TODO (Scallop): Show parent version string on subcommand help.
     object Conf extends ScallopConf(args) {
       exitHandler = _ => terminating = true
+      printedName = name
 
       version(versionBanner)
 
@@ -36,20 +36,17 @@ abstract class ChryseApp {
         val board =
           choice(
             targetPlatforms.map(_.id),
+            argName = "board",
             descr = s"Board to build for. ", // XXX (Scallop): It appends " Choices: …". Kinda ugly.
             required = true,
           )
         val program =
-          toggle(
-            descrYes = "Program the design onto the board after building",
-            default = Some(false),
-            prefix = "no-",
+          opt[Boolean](
+            descr = "Program the design onto the board after building",
           )
-        val fullStacktrace = toggle(
+        val fullStacktrace = opt[Boolean](
           short = 'F',
-          descrYes = "Include full Chisel stacktraces",
-          default = Some(false),
-          prefix = "no-",
+          descr = "Include full Chisel stacktraces",
         )
       }
       addSubcommand(build)
@@ -57,27 +54,25 @@ abstract class ChryseApp {
       object cxxsim extends Subcommand("cxxsim") {
         banner("Run the C++ simulator tests.")
         val compileOnly =
-          toggle(
+          opt[Boolean](
             name = "compile",
-            descrYes = "Compile only; don't run",
-            default = Some(false),
-            prefix = "no-",
+            descr = "Compile only; don't run",
           )
         val optimize =
-          toggle(
+          opt[Boolean](
             short = 'O',
-            descrYes = "Build with optimizations",
-            default = Some(false),
-            prefix = "no-",
+            descr = "Build with optimizations",
           )
-        val debug = toggle(
-          descrYes = "Generate source-level debug information",
-          default = Some(false),
-          prefix = "no-",
+        val debug = opt[Boolean](
+          descr = "Generate source-level debug information",
         )
         val vcd =
-          opt[String](descr = "Output a VCD file when running cxxsim (passes --vcd <file> to the executable)")
+          opt[String](
+            argName = "file",
+            descr = "Output a VCD file when running cxxsim (passes --vcd <file> to the executable)",
+          )
         val trailing = trailArg[List[String]](
+          name = "<arg> ...",
           descr = "Other arguments for the cxxsim executable",
           required = false,
         )
@@ -111,7 +106,7 @@ abstract class ChryseApp {
             Conf.cxxsim.optimize(),
             Conf.cxxsim.compileOnly(),
             Conf.cxxsim.vcd.toOption,
-            Conf.cxxsim.trailing(),
+            Conf.cxxsim.trailing.getOrElse(List.empty),
           ),
         )
       case None =>
