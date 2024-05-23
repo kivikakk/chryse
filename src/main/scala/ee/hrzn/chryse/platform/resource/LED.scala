@@ -15,7 +15,7 @@ class LED extends ResourceData[Bool](Output(Bool())) {
       case Some(r) => r
       case None =>
         val top  = IO(makeIo()).suggestName(s"${name.get}_int")
-        val user = Wire(Bool()).suggestName(s"${name.get}_inv")
+        val user = Wire(makeIo()).suggestName(s"${name.get}_inv")
         if (!invert) {
           top := user
         } else {

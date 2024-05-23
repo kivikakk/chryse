@@ -10,9 +10,11 @@ import org.rogach.scallop._
 
 import scala.collection.mutable
 
+// TODO: Restore sbt plugin to attach rm of buildDir to clean.
+
 abstract class ChryseApp {
   val name: String
-  val genTop: Platform => Module
+  def genTop()(implicit platform: Platform): Module
   val targetPlatforms: Seq[PlatformBoard[_ <: PlatformBoardResources]]
   val cxxrtlOptions: Option[CXXRTLOptions] = None
 
@@ -87,9 +89,8 @@ abstract class ChryseApp {
       case Some(Conf.build) =>
         println(versionBanner)
         tasks.BuildTask(
-          name,
+          this,
           targetPlatforms.find(_.id == Conf.build.board()).get,
-          genTop,
           tasks.BuildTask.Options(
             Conf.build.program(),
             Conf.build.fullStacktrace(),
@@ -98,8 +99,7 @@ abstract class ChryseApp {
       case Some(Conf.cxxsim) =>
         println(versionBanner)
         tasks.CxxsimTask(
-          name,
-          genTop,
+          this,
           cxxrtlOptions.get,
           tasks.CxxsimTask.Options(
             Conf.cxxsim.debug(),

@@ -5,7 +5,6 @@ import chisel3.experimental.dataview._
 import chisel3.experimental.noPrefix
 import chisel3.util._
 import chisel3.util.experimental.forceName
-import ee.hrzn.chryse.ChryseModule
 import ee.hrzn.chryse.chisel.DirectionOf
 import ee.hrzn.chryse.platform.Platform
 import ee.hrzn.chryse.platform.PlatformBoard
@@ -18,7 +17,9 @@ import scala.collection.mutable
 class ICE40Top[Top <: Module](
     platform: PlatformBoard[_ <: PlatformBoardResources],
     genTop: => Top,
-) extends ChryseModule {
+) extends RawModule {
+  override def desiredName = "ice40top"
+
   var lastPCF: Option[PCF] = None
 
   // TODO (iCE40): SB_GBs between a lot more things.

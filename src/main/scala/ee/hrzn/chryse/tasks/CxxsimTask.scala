@@ -2,6 +2,7 @@ package ee.hrzn.chryse.tasks
 
 import chisel3._
 import circt.stage.ChiselStage
+import ee.hrzn.chryse.ChryseApp
 import ee.hrzn.chryse.ChryseAppStepFailureException
 import ee.hrzn.chryse.platform.Platform
 import ee.hrzn.chryse.platform.cxxrtl.BlackBoxGenerator
@@ -28,8 +29,7 @@ object CxxsimTask extends BaseTask {
   )
 
   def apply[Top <: Module](
-      name: String,
-      genTop: Platform => Top,
+      chryse: ChryseApp,
       appOptions: CXXRTLOptions,
       runOptions: Options,
   ): Unit = {
@@ -39,10 +39,12 @@ object CxxsimTask extends BaseTask {
 
     Files.createDirectories(Paths.get(buildDir))
 
+    val name = chryse.name
+
     val verilogPath = s"$buildDir/$name-${platform.id}.sv"
     val verilog =
       ChiselStage.emitSystemVerilog(
-        platform(genTop),
+        platform(chryse.genTop()(platform)),
         firtoolOpts = firtoolOpts,
       )
     writePath(verilogPath, verilog)

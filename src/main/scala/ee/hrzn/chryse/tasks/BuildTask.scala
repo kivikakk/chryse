@@ -2,9 +2,10 @@ package ee.hrzn.chryse.tasks
 
 import chisel3._
 import circt.stage.ChiselStage
+import ee.hrzn.chryse.ChryseApp
+import ee.hrzn.chryse.platform.Platform
 import ee.hrzn.chryse.platform.PlatformBoard
 import ee.hrzn.chryse.platform.PlatformBoardResources
-import ee.hrzn.chryse.platform.Platform
 import ee.hrzn.chryse.platform.ice40.ICE40Top
 import ee.hrzn.chryse.platform.ice40.PCF
 
@@ -20,21 +21,22 @@ object BuildTask extends BaseTask {
   // TODO (ECP5): refactor — different steps and build products are involved
   // after synthesis.
   def apply[Top <: Module](
-      name: String,
+      chryse: ChryseApp,
       platform: PlatformBoard[_ <: PlatformBoardResources],
-      genTop: Platform => Top,
       options: Options,
   ): Unit = {
     println(s"Building for ${platform.id} ...")
 
     Files.createDirectories(Paths.get(buildDir))
 
+    val name = chryse.name
+
     val verilogPath          = s"$buildDir/$name-${platform.id}.sv"
     var lastPCF: Option[PCF] = None
     val verilog =
       ChiselStage.emitSystemVerilog(
         {
-          val elaborated = platform(genTop)
+          val elaborated = platform(chryse.genTop()(platform))
           lastPCF = elaborated match {
             case ice40: ICE40Top[_] => ice40.lastPCF
             case _                  => None
@@ -51,7 +53,7 @@ object BuildTask extends BaseTask {
     writePath(
       yosysScriptPath,
       s"""read_verilog -sv $verilogPath
-         |synth_ice40 -top chrysetop
+         |synth_ice40 -top ice40top
          |write_json $jsonPath""".stripMargin,
     )
 
