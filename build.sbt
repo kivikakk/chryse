@@ -10,11 +10,10 @@ lazy val root = (project in file("."))
     name         := "chryse",
     scalaVersion := "2.13.12",
     libraryDependencies ++= Seq(
-      "org.chipsalliance" %% "chisel"     % chiselVersion,
-      "org.scalatest"     %% "scalatest"  % "3.2.18" % "test",
-      "edu.berkeley.cs"   %% "chiseltest" % "6.0.0",
-      "org.rogach"        %% "scallop"    % "5.1.0",
-      "com.lihaoyi"       %% "upickle"    % "3.1.0",
+      "org.chipsalliance" %% "chisel"    % chiselVersion,
+      "org.scalatest"     %% "scalatest" % "3.2.18" % "test",
+      "org.rogach"        %% "scallop"   % "5.1.0",
+      "com.lihaoyi"       %% "upickle"   % "3.1.0",
     ),
     scalacOptions ++= Seq(
       "-language:reflectiveCalls", "-deprecation", "-feature", "-Xcheckinit",

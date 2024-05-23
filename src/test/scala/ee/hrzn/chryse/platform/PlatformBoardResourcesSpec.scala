@@ -1,16 +1,13 @@
 package ee.hrzn.chryse.platform
 
 import chisel3._
-import chiseltest._
+import chisel3.simulator.EphemeralSimulator._
 import circt.stage.ChiselStage
 import ee.hrzn.chryse.verilog
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should._
 
-class PlatformBoardResourcesSpec
-    extends AnyFlatSpec
-    with Matchers
-    with ChiselScalatestTester {
+class PlatformBoardResourcesSpec extends AnyFlatSpec with Matchers {
   behavior.of("PlatformBoardResources")
 
   def simSVAndTop[Top <: Module](
@@ -29,7 +26,7 @@ class PlatformBoardResourcesSpec
     (rtl, top)
   }
 
-  it should "detect resource use and generate PCFs accordingly" in {
+  it should "detect resource use" in {
     val (_, top) = simSVAndTop(new DetectionTop()(_))
     top.connectedResources should be(
       Map[String, top.ConnectedResource](
@@ -50,6 +47,9 @@ class PlatformBoardResourcesSpec
         "ubtn"    -> resource.Pin("B2"),
       ),
     )
+
+    // TODO
+    simulate(new InversionTop()(SimPlatform())) { c => }
 
     // HACK: We should behaviourally evaluate the result.
     rtl should include("ledg_int = view__ubtn_int")
