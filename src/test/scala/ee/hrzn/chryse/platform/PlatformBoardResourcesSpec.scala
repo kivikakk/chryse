@@ -6,7 +6,6 @@ import ee.hrzn.chryse.chisel.BuilderContext
 import ee.hrzn.chryse.platform.ice40.ICE40Top
 import ee.hrzn.chryse.platform.ice40.IceBreakerPlatform
 import ee.hrzn.chryse.platform.ice40.PCF
-import ee.hrzn.chryse.platform.resource.implicits._
 import ee.hrzn.chryse.verilog
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should._

@@ -1,6 +1,9 @@
 package ee.hrzn.chryse.platform.resource
 
 import chisel3._
+import chisel3.experimental.dataview._
+
+import scala.language.implicitConversions
 
 abstract class ResourceData[HW <: Data](gen: => HW) extends ResourceSinglePin {
   final private[chryse] var pinId: Option[Pin] = None
@@ -32,6 +35,27 @@ abstract class ResourceData[HW <: Data](gen: => HW) extends ResourceSinglePin {
   }
 
   def data: Seq[ResourceData[_ <: Data]] = Seq(this)
+}
+
+object ResourceData {
+  // Note that the DataView doesn't really need or care about the generated
+  // data's direction or lack thereof.
+
+  implicit def BaseProduct[HW <: Data]: DataProduct[ResourceData[HW]] =
+    new DataProduct[ResourceData[HW]] {
+      def dataIterator(
+          res: ResourceData[HW],
+          path: String,
+      ): Iterator[(Data, String)] =
+        Seq(res.ioInst.get.user -> path).iterator
+    }
+
+  implicit def viewBool: DataView[ResourceData[Bool], Bool] =
+    DataView(res => Bool(), _.ioInstOrMake().user -> _)
+
+  implicit def base2Bool(res: ResourceData[Bool]): Bool =
+    res.viewAs[Bool]
+
 }
 
 case class InstSides[HW](user: HW, top: HW)
