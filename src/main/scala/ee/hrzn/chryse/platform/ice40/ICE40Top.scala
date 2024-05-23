@@ -42,11 +42,11 @@ class ICE40Top[Top <: Module](
     resetTimerReg := resetTimerReg + 1.U
   }
 
+  var ubtn_reset: Option[Bool] = None
   private val finalReset = noPrefix {
-    // TODO (iCE40): this no longer works. :)
     if (platform.asInstanceOf[IceBreakerPlatform].ubtnReset) {
-      val io_ubtn = IO(Input(Bool()))
-      reset | ~io_ubtn
+      ubtn_reset = Some(Wire(Bool()))
+      reset | ~ubtn_reset.get
     } else {
       reset
     }
@@ -75,6 +75,15 @@ class ICE40Top[Top <: Module](
         clki := io
 
       case _ =>
+        if (name == "ubtn" && ubtn_reset.isDefined) {
+          if (res.ioInst.isDefined) {
+            throw new Exception("ubtnReset requested but ubtn used in design")
+          }
+          ios += name -> res.pinId.get
+          val io = IO(res.makeIo()).suggestName(name)
+          ubtn_reset.get := io
+        }
+
         if (res.ioInst.isDefined) {
           ios += name -> res.pinId.get
           val io = IO(res.makeIo()).suggestName(name)
