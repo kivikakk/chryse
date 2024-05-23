@@ -4,10 +4,9 @@ import chisel3._
 import ee.hrzn.chryse.platform.PlatformBoard
 import ee.hrzn.chryse.platform.PlatformBoardResources
 import ee.hrzn.chryse.platform.resource
-import ee.hrzn.chryse.platform.resource.Pin._
 
 final case class IceBreakerPlatform(ubtnReset: Boolean = false)
-    extends PlatformBoard[IceBreakerResources] {
+    extends PlatformBoard[IceBreakerPlatformResources] {
   val id      = "icebreaker"
   val clockHz = 12_000_000
 
@@ -16,7 +15,7 @@ final case class IceBreakerPlatform(ubtnReset: Boolean = false)
   val packBinary    = "icepack"
   val programBinary = "iceprog"
 
-  val resources = new IceBreakerResources
+  val resources = new IceBreakerPlatformResources
 
   override def apply[Top <: Module](genTop: => Top) = {
     resources.setNames()
@@ -24,7 +23,7 @@ final case class IceBreakerPlatform(ubtnReset: Boolean = false)
   }
 }
 
-class IceBreakerResources extends PlatformBoardResources {
+class IceBreakerPlatformResources extends PlatformBoardResources {
   // TODO: IO_STANDARD=SB_LVCMOS needs to be set on most.
   val clock = resource.ClockSource(12_000_000).onPin(35)
 

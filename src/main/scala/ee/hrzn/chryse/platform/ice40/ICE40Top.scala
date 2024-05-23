@@ -4,6 +4,7 @@ import chisel3._
 import chisel3.experimental.noPrefix
 import chisel3.util._
 import chisel3.util.experimental.forceName
+import ee.hrzn.chryse.platform.ChryseTop
 import ee.hrzn.chryse.platform.PlatformBoard
 import ee.hrzn.chryse.platform.PlatformBoardResources
 import ee.hrzn.chryse.platform.resource
@@ -13,9 +14,8 @@ import scala.collection.mutable
 class ICE40Top[Top <: Module](
     platform: PlatformBoard[_ <: PlatformBoardResources],
     genTop: => Top,
-) extends RawModule {
-  override def desiredName = "ice40top"
-
+) extends RawModule
+    with ChryseTop {
   var lastPCF: Option[PCF] = None
 
   // TODO (iCE40): SB_GBs between a lot more things.
@@ -53,39 +53,34 @@ class ICE40Top[Top <: Module](
 
   // TODO (iCE40): allow clock source override.
 
-  private val ios   = mutable.Map[String, resource.Pin]()
-  private val freqs = mutable.Map[String, Int]()
-  for { res <- platform.resources.all } {
-    val name = res.name.get
-    res match {
-      case clock: resource.ClockSource =>
-        if (clock.ioInst.isDefined) {
-          throw new Exception("clock must be manually handled for now")
-        }
-        // NOTE: we can't just say clki := platform.resources.clock in our top
-        // here, since that'll define an input IO in *this* module which we
-        // can't then sink like we would in the resource.Base[_] case.
-        ios   += name -> clock.pinId.get
-        freqs += name -> platform.clockHz
-        val io = IO(Input(Clock())).suggestName(name)
-        clki := io
+  private val ConnectionResult(connectedResources, clockIo) =
+    connectResources(platform)
 
-      case _ =>
-        if (name == "ubtn" && ubtn_reset.isDefined) {
-          if (res.ioInst.isDefined) {
-            throw new Exception("ubtnReset requested but ubtn used in design")
-          }
-          ios += name -> res.pinId.get
-          val io = IO(res.makeIo()).suggestName(name)
-          ubtn_reset.get := io
-        }
+  clki := clockIo
 
-        if (res.ioInst.isDefined) {
-          ios += name -> res.pinId.get
-          res.makeIoConnection()
-        }
+  override protected def platformConnect(
+      name: String,
+      res: resource.ResourceData[_ <: Data],
+  ): Boolean = {
+    if (name == "ubtn" && ubtn_reset.isDefined) {
+      if (res.ioInst.isDefined)
+        throw new Exception("ubtnReset requested but ubtn used in design")
+
+      ubtn_reset.get := IO(res.makeIo()).suggestName("ubtn")
+      return true
     }
+
+    false
   }
 
-  lastPCF = Some(PCF(ios.to(Map), freqs.to(Map)))
+  lastPCF = Some(
+    PCF(
+      connectedResources
+        .map { case (name, cr) => (name, cr.pin) }
+        .to(Map),
+      connectedResources
+        .flatMap { case (name, cr) => cr.frequencyHz.map((name, _)) }
+        .to(Map),
+    ),
+  )
 }

@@ -1,6 +1,7 @@
 package ee.hrzn.chryse.platform
 
 import chisel3._
+import chiseltest._
 import circt.stage.ChiselStage
 import ee.hrzn.chryse.chisel.BuilderContext
 import ee.hrzn.chryse.platform.ice40.ICE40Top
@@ -10,7 +11,10 @@ import ee.hrzn.chryse.verilog
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should._
 
-class PlatformBoardResourcesSpec extends AnyFlatSpec with Matchers {
+class PlatformBoardResourcesSpec
+    extends AnyFlatSpec
+    with Matchers
+    with ChiselScalatestTester {
   behavior.of("PlatformBoardResources")
 
   def iceBreakerSVAndTop[Top <: Module](
