@@ -3,10 +3,6 @@ package ee.hrzn.chryse.platform
 import chisel3._
 import chiseltest._
 import circt.stage.ChiselStage
-import ee.hrzn.chryse.chisel.BuilderContext
-import ee.hrzn.chryse.platform.ice40.ICE40Top
-import ee.hrzn.chryse.platform.ice40.IceBreakerPlatform
-import ee.hrzn.chryse.platform.ice40.PCF
 import ee.hrzn.chryse.verilog
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should._
@@ -17,12 +13,12 @@ class PlatformBoardResourcesSpec
     with ChiselScalatestTester {
   behavior.of("PlatformBoardResources")
 
-  def iceBreakerSVAndTop[Top <: Module](
+  def simSVAndTop[Top <: Module](
       gen: Platform => Top,
-  ): (String, ICE40Top[Top]) = {
-    val plat = IceBreakerPlatform()
+  ): (String, SimTop[Top]) = {
+    val plat = SimPlatform()
 
-    var top: ICE40Top[Top] = null
+    var top: SimTop[Top] = null
     val rtl = ChiselStage.emitSystemVerilog(
       {
         top = plat(gen(plat))
@@ -34,36 +30,24 @@ class PlatformBoardResourcesSpec
   }
 
   it should "detect resource use and generate PCFs accordingly" in {
-    val (_, top) = iceBreakerSVAndTop(new DetectionTop()(_))
-    top.lastPCF should be(
-      Some(
-        PCF(
-          Map(
-            "clock"   -> 35,
-            "ledg"    -> 37,
-            "uart_rx" -> 6,
-            "uart_tx" -> 9,
-            "ubtn"    -> 10,
-          ),
-          Map("clock" -> 12_000_000),
-        ),
+    val (_, top) = simSVAndTop(new DetectionTop()(_))
+    top.connectedResources should be(
+      Map[String, top.ConnectedResource](
+        "ledg"    -> resource.Pin("E5"),
+        "uart_rx" -> resource.Pin("C3"),
+        "uart_tx" -> resource.Pin("D4"),
+        "ubtn"    -> resource.Pin("B2"),
       ),
     )
   }
 
   it should "invert inputs as requested and use the correct top-level IO names" in {
-    val (rtl, top) = iceBreakerSVAndTop(new InversionTop()(_))
-    top.lastPCF should be(
-      Some(
-        PCF(
-          Map(
-            "clock"   -> 35,
-            "ledg"    -> 37,
-            "uart_tx" -> 9,
-            "ubtn"    -> 10,
-          ),
-          Map("clock" -> 12_000_000),
-        ),
+    val (rtl, top) = simSVAndTop(new InversionTop()(_))
+    top.connectedResources should be(
+      Map[String, top.ConnectedResource](
+        "ledg"    -> resource.Pin("E5"),
+        "uart_tx" -> resource.Pin("D4"),
+        "ubtn"    -> resource.Pin("B2"),
       ),
     )
 
@@ -74,59 +58,53 @@ class PlatformBoardResourcesSpec
 
     verilog.InterfaceExtractor(rtl) should contain(
       "chrysetop" -> verilog.InterfaceExtractor.Module(
-        inputs = Seq("clock", "ubtn"),
+        inputs = Seq("clock", "reset", "ubtn"),
         outputs = Seq("uart_tx", "ledg"),
       ),
     )
   }
 
   it should "handle in/out resources" in {
-    val (rtl, top) = iceBreakerSVAndTop(new InOutTop()(_))
-    top.lastPCF should be(
-      Some(
-        PCF(
-          Map(
-            "clock"   -> 35,
-            "ubtn"    -> 10,
-            "uart_rx" -> 6,
-            "uart_tx" -> 9,
-            "ledr"    -> 11,
-            "pmod1a1" -> 4,
-            "pmod1a2" -> 2,
-            "pmod1b1" -> 43,
-            "pmod1b2" -> 38,
-          ),
-          Map("clock" -> 12_000_000),
-        ),
+    val (rtl, top) = simSVAndTop(new InOutTop()(_))
+    top.connectedResources should be(
+      Map[String, top.ConnectedResource](
+        "ubtn"    -> resource.Pin("B2"),
+        "uart_rx" -> resource.Pin("C3"),
+        "uart_tx" -> resource.Pin("D4"),
+        "ledr"    -> resource.Pin("F6"),
+        "pmod1"   -> resource.Pin("H8"),
+        "pmod2"   -> resource.Pin("I9"),
+        "pmod7"   -> resource.Pin("L12"),
+        "pmod8"   -> resource.Pin("M13"),
       ),
     )
 
     // HACK: We should behaviourally evaluate the result.
-    rtl should include("pmod1a1_int = view__uart_rx_int")
-    rtl should include("uart_tx_int = view__pmod1a2_int")
-    rtl should include("pmod1b1_int = view__ubtn_int")
+    rtl should include("pmod1_int = view__uart_rx_int")
+    rtl should include("uart_tx_int = view__pmod2_int")
+    rtl should include("pmod7_int = view__ubtn_int")
     (rtl should include).regex(raw"\.view__ubtn_int\s*\(~ubtn\),")
-    rtl should include("ledr_int = view__pmod1b2_int")
+    rtl should include("ledr_int = view__pmod8_int")
     (rtl should include).regex(raw"\.ledr_int\s*\(_top_ledr_int\),")
     (rtl should include).regex(raw"assign ledr = ~_top_ledr_int;")
 
     verilog.InterfaceExtractor(rtl) should contain(
       "chrysetop" -> verilog.InterfaceExtractor.Module(
-        inputs = Seq("clock", "ubtn", "uart_rx", "pmod1a2", "pmod1b2"),
-        outputs = Seq("uart_tx", "ledr", "pmod1a1", "pmod1b1"),
+        inputs = Seq("clock", "reset", "ubtn", "uart_rx", "pmod2", "pmod8"),
+        outputs = Seq("uart_tx", "ledr", "pmod1", "pmod7"),
       ),
     )
   }
 }
 
 class DetectionTop(implicit platform: Platform) extends Module {
-  val plat = platform.asInstanceOf[IceBreakerPlatform]
+  val plat = platform.asInstanceOf[SimPlatform]
   plat.resources.ledg    := plat.resources.ubtn
   plat.resources.uart.tx := plat.resources.uart.rx
 }
 
 class InversionTop(implicit platform: Platform) extends Module {
-  val plat = platform.asInstanceOf[IceBreakerPlatform]
+  val plat = platform.asInstanceOf[SimPlatform]
   // User button is inverted.
   // UART isn't inverted.
   plat.resources.uart.tx := plat.resources.ubtn
@@ -135,12 +113,12 @@ class InversionTop(implicit platform: Platform) extends Module {
 }
 
 class InOutTop(implicit platform: Platform) extends Module {
-  val plat = platform.asInstanceOf[IceBreakerPlatform]
+  val plat = platform.asInstanceOf[SimPlatform]
   // Treat pmod1a1 as output, 1a2 as input.
-  plat.resources.pmod1a(1).o := plat.resources.uart.rx
-  plat.resources.uart.tx     := plat.resources.pmod1a(2).i
+  plat.resources.pmod(1).o := plat.resources.uart.rx
+  plat.resources.uart.tx   := plat.resources.pmod(2).i
 
   // Do the same with 1b1 and 1b2, but use inverted inputs/outputs.
-  plat.resources.pmod1b(1).o := plat.resources.ubtn
-  plat.resources.ledr        := plat.resources.pmod1b(2).i
+  plat.resources.pmod(7).o := plat.resources.ubtn
+  plat.resources.ledr      := plat.resources.pmod(8).i
 }

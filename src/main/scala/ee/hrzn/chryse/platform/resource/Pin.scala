@@ -11,6 +11,8 @@ case class PinInt(p: Int) extends Pin {
 }
 
 object Pin {
+  def apply(p: String): Pin = string2Pin(p)
+
   implicit def string2Pin(p: String): Pin = PinString(p)
   implicit def int2Pin(p: Int): Pin       = PinInt(p)
 }

@@ -17,8 +17,6 @@ abstract class PlatformBoardResources {
       }
     }
 
-  val clock: resource.ClockSource
-
   def all: Seq[ResourceData[_ <: Data]] =
     ResourceBase.allFromBoardResources(this)
 }
