@@ -1,23 +1,20 @@
 package ee.hrzn.chryse.platform
 
 import chisel3._
+import chisel3.experimental.noPrefix
 
 import scala.collection.mutable
 
 trait ChryseTop extends RawModule {
-  override def desiredName = "ice40top"
+  override def desiredName = "chrysetop"
 
   case class ConnectedResource(pin: resource.Pin, frequencyHz: Option[Int])
-  case class ConnectionResult(
-      connectedResources: Map[String, ConnectedResource],
-      clockIo: Clock,
-  )
 
   protected def connectResources(
       platform: PlatformBoard[_ <: PlatformBoardResources],
-  ): ConnectionResult = {
-    val connected              = mutable.Map[String, ConnectedResource]()
-    var clockIo: Option[Clock] = None
+      clock: Clock,
+  ): Map[String, ConnectedResource] = {
+    val connected = mutable.Map[String, ConnectedResource]()
 
     for { res <- platform.resources.all } {
       val name = res.name.get
@@ -33,8 +30,7 @@ trait ChryseTop extends RawModule {
             res.pinId.get,
             Some(platform.clockHz),
           )
-          val io = IO(Input(Clock())).suggestName(name)
-          clockIo = Some(io)
+          clock := noPrefix(IO(Input(Clock())).suggestName(name))
 
         case _ =>
           if (platformConnect(name, res)) {
@@ -46,7 +42,7 @@ trait ChryseTop extends RawModule {
       }
     }
 
-    ConnectionResult(connected.to(Map), clockIo.get)
+    connected.to(Map)
   }
 
   protected def platformConnect(

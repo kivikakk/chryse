@@ -53,7 +53,7 @@ object BuildTask extends BaseTask {
     writePath(
       yosysScriptPath,
       s"""read_verilog -sv $verilogPath
-         |synth_ice40 -top ice40top
+         |synth_ice40 -top chrysetop
          |write_json $jsonPath""".stripMargin,
     )
 

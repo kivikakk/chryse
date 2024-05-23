@@ -73,7 +73,7 @@ class PlatformBoardResourcesSpec
     (rtl should include).regex(raw"\.view__ubtn_int\s*\(~ubtn\),")
 
     verilog.InterfaceExtractor(rtl) should contain(
-      "ice40top" -> verilog.InterfaceExtractor.Module(
+      "chrysetop" -> verilog.InterfaceExtractor.Module(
         inputs = Seq("clock", "ubtn"),
         outputs = Seq("uart_tx", "ledg"),
       ),
@@ -111,7 +111,7 @@ class PlatformBoardResourcesSpec
     (rtl should include).regex(raw"assign ledr = ~_top_ledr_int;")
 
     verilog.InterfaceExtractor(rtl) should contain(
-      "ice40top" -> verilog.InterfaceExtractor.Module(
+      "chrysetop" -> verilog.InterfaceExtractor.Module(
         inputs = Seq("clock", "ubtn", "uart_rx", "pmod1a2", "pmod1b2"),
         outputs = Seq("uart_tx", "ledr", "pmod1a1", "pmod1b1"),
       ),

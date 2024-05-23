@@ -53,10 +53,8 @@ class ICE40Top[Top <: Module](
 
   // TODO (iCE40): allow clock source override.
 
-  private val ConnectionResult(connectedResources, clockIo) =
-    connectResources(platform)
-
-  clki := clockIo
+  private val connectedResources =
+    connectResources(platform, clki)
 
   override protected def platformConnect(
       name: String,
