@@ -3,23 +3,15 @@ package ee.hrzn.chryse.platform.resource
 import chisel3._
 
 class Button extends ResourceData[Bool](Input(Bool())) {
-  private var invert = false // TODO: invert possibly belongs in a higher class
+  private var invert = false
 
   def inverted: this.type = {
     invert = true
     this
   }
 
-  override private[chryse] def ioInstOrMake(): InstSides[Bool] = {
-    ioInst match {
-      case Some(r) => r
-      case None =>
-        val top  = IO(makeIo()).suggestName(s"${name.get}_int")
-        val user = if (!invert) top else ~top
-        ioInst = Some(InstSides(user, top))
-        ioInst.get
-    }
-  }
+  override def connectIo(user: Bool, top: Bool) =
+    user := (if (!invert) top else ~top)
 }
 
 object Button {

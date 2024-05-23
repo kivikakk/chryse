@@ -1,17 +1,13 @@
 package ee.hrzn.chryse.platform.ice40
 
 import chisel3._
-import chisel3.experimental.dataview._
 import chisel3.experimental.noPrefix
 import chisel3.util._
 import chisel3.util.experimental.forceName
-import ee.hrzn.chryse.chisel.DirectionOf
-import ee.hrzn.chryse.platform.Platform
 import ee.hrzn.chryse.platform.PlatformBoard
 import ee.hrzn.chryse.platform.PlatformBoardResources
 import ee.hrzn.chryse.platform.resource
 
-import java.lang.reflect.Modifier
 import scala.collection.mutable
 
 class ICE40Top[Top <: Module](
@@ -86,15 +82,7 @@ class ICE40Top[Top <: Module](
 
         if (res.ioInst.isDefined) {
           ios += name -> res.pinId.get
-          val io = IO(res.makeIo()).suggestName(name)
-          DirectionOf(io) match {
-            case SpecifiedDirection.Input =>
-              res.ioInst.get.top := io
-            case SpecifiedDirection.Output =>
-              io := res.ioInst.get.top
-            case dir =>
-              throw new Exception(s"unhandled direction: $dir")
-          }
+          res.makeIoConnection()
         }
     }
   }

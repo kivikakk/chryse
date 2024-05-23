@@ -2,6 +2,7 @@ package ee.hrzn.chryse.platform.resource
 
 import chisel3._
 import chisel3.experimental.dataview._
+import ee.hrzn.chryse.chisel.DirectionOf
 
 import scala.language.implicitConversions
 
@@ -10,20 +11,36 @@ abstract class ResourceData[HW <: Data](gen: => HW) extends ResourceSinglePin {
   final var name: Option[String]               = None
 
   // Should return Chisel datatype with Input/Output attached.
-  private[chryse] def makeIo(): HW = gen
+  def makeIo(): HW = gen
 
-  final private[chryse] var ioInst: Option[InstSides[HW]] = None
+  final private[chryse] var ioInst: Option[HW] = None
 
   /* Instantiate an IO in the module at the point of connecting to this
    * resource. These will be connected to in turn by the platform toplevel
    * (which implies they can only be used in the user toplevel). */
-  private[chryse] def ioInstOrMake(): InstSides[HW] = {
+  final private[chryse] def ioInstOrMake(): HW = {
     ioInst match {
       case Some(r) => r
       case None =>
         val r = IO(makeIo()).suggestName(s"${name.get}_int")
-        ioInst = Some(InstSides(r, r))
-        ioInst.get
+        ioInst = Some(r)
+        r
+    }
+  }
+
+  final def makeIoConnection(): Unit = {
+    val io = IO(makeIo()).suggestName(name.get)
+    connectIo(ioInst.get, io)
+  }
+
+  protected def connectIo(user: HW, top: HW): Unit = {
+    DirectionOf(top) match {
+      case SpecifiedDirection.Input =>
+        user := top
+      case SpecifiedDirection.Output =>
+        top := user
+      case dir =>
+        throw new Exception(s"unhandled direction: $dir")
     }
   }
 
@@ -47,15 +64,13 @@ object ResourceData {
           res: ResourceData[HW],
           path: String,
       ): Iterator[(Data, String)] =
-        Seq(res.ioInst.get.user -> path).iterator
+        Seq(res.ioInst.get -> path).iterator
     }
 
   implicit def viewBool: DataView[ResourceData[Bool], Bool] =
-    DataView(res => Bool(), _.ioInstOrMake().user -> _)
+    DataView(res => Bool(), _.ioInstOrMake() -> _)
 
-  implicit def base2Bool(res: ResourceData[Bool]): Bool =
+  implicit def res2bool(res: ResourceData[Bool]): Bool =
     res.viewAs[Bool]
 
 }
-
-case class InstSides[HW](user: HW, top: HW)

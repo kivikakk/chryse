@@ -80,6 +80,7 @@ abstract class BaseTask {
   ): Unit = {
     cmds.foreach(reportCmd(step, CmdActionRun, _))
     val processes = cmds.map(cmd => (cmd, cmd.run()))
+    // TODO: consider an upper limit on concurrency.
     val failed = processes.collect {
       case (cmd, proc) if proc.exitValue() != 0 => cmd
     }

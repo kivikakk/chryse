@@ -3,28 +3,15 @@ package ee.hrzn.chryse.platform.resource
 import chisel3._
 
 class LED extends ResourceData[Bool](Output(Bool())) {
-  private var invert = false // TODO: invert possibly belongs in a higher class
+  private var invert = false
 
   def inverted: this.type = {
     invert = true
     this
   }
 
-  override private[chryse] def ioInstOrMake(): InstSides[Bool] = {
-    ioInst match {
-      case Some(r) => r
-      case None =>
-        val top  = IO(makeIo()).suggestName(s"${name.get}_int")
-        val user = Wire(makeIo()).suggestName(s"${name.get}_inv")
-        if (!invert) {
-          top := user
-        } else {
-          top := ~user
-        }
-        ioInst = Some(InstSides(user, top))
-        ioInst.get
-    }
-  }
+  override def connectIo(user: Bool, top: Bool) =
+    top := (if (!invert) user else ~user)
 }
 
 object LED {
