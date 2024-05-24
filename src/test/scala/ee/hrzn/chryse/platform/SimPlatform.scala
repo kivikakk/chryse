@@ -17,6 +17,8 @@ final case class SimPlatform() extends PlatformBoard[SimPlatformResources] {
   val resources = new SimPlatformResources
 
   override def apply[Top <: Module](genTop: => Top) = {
+    // TODO: detect when `this` isn't the same as the Platform the Top was
+    // constructed with. Resources won't match if so.
     resources.setNames()
     new SimTop(this, genTop)
   }

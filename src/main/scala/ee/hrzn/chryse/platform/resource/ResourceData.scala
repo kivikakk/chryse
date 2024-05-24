@@ -13,7 +13,8 @@ abstract class ResourceData[HW <: Data](gen: => HW) extends ResourceSinglePin {
   // Should return Chisel datatype with Input/Output attached.
   def makeIo(): HW = gen
 
-  final private[chryse] var ioInst: Option[HW] = None
+  final private[chryse] var ioInst: Option[HW]    = None
+  final private[chryse] var topIoInst: Option[HW] = None
 
   /* Instantiate an IO in the module at the point of connecting to this
    * resource. These will be connected to in turn by the platform toplevel
@@ -29,8 +30,11 @@ abstract class ResourceData[HW <: Data](gen: => HW) extends ResourceSinglePin {
   }
 
   final def makeIoConnection(): Unit = {
-    val io = IO(makeIo()).suggestName(name.get)
-    connectIo(ioInst.get, io)
+    if (topIoInst.isDefined)
+      throw new IllegalStateException("topIoInst already defined")
+    val topIo = IO(makeIo()).suggestName(name.get)
+    topIoInst = Some(topIo)
+    connectIo(ioInst.get, topIo)
   }
 
   protected def connectIo(user: HW, top: HW): Unit = {

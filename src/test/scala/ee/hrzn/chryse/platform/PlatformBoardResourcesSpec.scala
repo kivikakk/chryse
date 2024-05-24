@@ -48,13 +48,20 @@ class PlatformBoardResourcesSpec extends AnyFlatSpec with Matchers {
       ),
     )
 
-    // TODO
-    simulate(new InversionTop()(SimPlatform())) { c => }
+    val plat = SimPlatform()
+    simulate(plat(new InversionTop()(plat))) { c =>
+      // InversionTop connects uart.tx and ledg to ubtn. ubtn and ledg are both
+      // inverted components, uart.tx isn't. Note that what we poke and peek are
+      // the signals on the pins, not transformed for the user, otherwise
+      // there'd be nothing to test.
+      plat.resources.ubtn.topIoInst.get.poke(false.B)
+      plat.resources.ledg.topIoInst.get.expect(false.B) // inverted twice
+      plat.resources.uart.tx.topIoInst.get.expect(true.B)
 
-    // HACK: We should behaviourally evaluate the result.
-    rtl should include("ledg_int = view__ubtn_int")
-    rtl should include("uart_tx_int = view__ubtn_int")
-    (rtl should include).regex(raw"\.view__ubtn_int\s*\(~ubtn\),")
+      plat.resources.ubtn.topIoInst.get.poke(true.B)
+      plat.resources.ledg.topIoInst.get.expect(true.B)
+      plat.resources.uart.tx.topIoInst.get.expect(false.B)
+    }
 
     verilog.InterfaceExtractor(rtl) should contain(
       "chrysetop" -> verilog.InterfaceExtractor.Module(
@@ -79,14 +86,20 @@ class PlatformBoardResourcesSpec extends AnyFlatSpec with Matchers {
       ),
     )
 
-    // HACK: We should behaviourally evaluate the result.
-    rtl should include("pmod1_int = view__uart_rx_int")
-    rtl should include("uart_tx_int = view__pmod2_int")
-    rtl should include("pmod7_int = view__ubtn_int")
-    (rtl should include).regex(raw"\.view__ubtn_int\s*\(~ubtn\),")
-    rtl should include("ledr_int = view__pmod8_int")
-    (rtl should include).regex(raw"\.ledr_int\s*\(_top_ledr_int\),")
-    (rtl should include).regex(raw"assign ledr = ~_top_ledr_int;")
+    val plat = SimPlatform()
+    simulate(plat(new InOutTop()(plat))) { c =>
+      for { v <- Seq(true, false) } {
+        plat.resources.uart.rx.topIoInst.get.poke(v.B)
+        plat.resources.pmod(2).i.topIoInst.get.poke(v.B)
+        plat.resources.ubtn.topIoInst.get.poke(v.B)
+        plat.resources.pmod(8).i.topIoInst.get.poke(v.B)
+
+        plat.resources.pmod(1).o.topIoInst.get.expect(v.B)
+        plat.resources.uart.tx.topIoInst.get.expect(v.B)
+        plat.resources.pmod(7).o.topIoInst.get.expect((!v).B)
+        plat.resources.ledr.topIoInst.get.expect((!v).B)
+      }
+    }
 
     verilog.InterfaceExtractor(rtl) should contain(
       "chrysetop" -> verilog.InterfaceExtractor.Module(
