@@ -21,6 +21,6 @@ jobs:
         distribution: 'temurin'
         cache: 'sbt'
     - name: Install Verilator
-      run: sudo apt-get install -y verilator
+      uses: V0XNIHILI/install-verilator-action@v0.0.2
     - name: Run tests
       run: sbt test
