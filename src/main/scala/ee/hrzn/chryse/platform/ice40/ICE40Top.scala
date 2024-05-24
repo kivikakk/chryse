@@ -22,8 +22,8 @@ class ICE40Top[Top <: Module](
 
   private val clki = Wire(Clock())
 
-  private val clk_gb = Module(new SB_GB)
-  clk_gb.USER_SIGNAL_TO_GLOBAL_BUFFER := clki
+  private val clk_gb = Module(new SB_GB_IO)
+  clk_gb.PACKAGE_PIN := clki
   private val clk = clk_gb.GLOBAL_BUFFER_OUTPUT
 
   private val timerLimit = (15e-6 * platform.clockHz).toInt

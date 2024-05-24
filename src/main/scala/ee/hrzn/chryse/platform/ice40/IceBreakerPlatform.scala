@@ -24,7 +24,7 @@ final case class IceBreakerPlatform(ubtnReset: Boolean = false)
 }
 
 class IceBreakerPlatformResources extends PlatformBoardResources {
-  // TODO: IO_STANDARD=SB_LVCMOS needs to be set on most.
+  // TODO: IO_STANDARD=SB_LVCMOS needs to be set on most SB_IOs.
   val clock = resource.ClockSource(12_000_000).onPin(35)
 
   val ubtn = resource.Button().inverted.onPin(10)
