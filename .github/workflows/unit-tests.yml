@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   unit-tests:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
     - uses: actions/checkout@v4
     - name: Set up JDK 22
@@ -21,6 +21,6 @@ jobs:
         distribution: 'temurin'
         cache: 'sbt'
     - name: Install Verilator
-      uses: V0XNIHILI/install-verilator-action@v0.0.2
+      uses: sudo apt-get install -y verilator
     - name: Run tests
       run: sbt test
