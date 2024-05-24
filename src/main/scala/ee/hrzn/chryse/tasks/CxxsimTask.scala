@@ -45,6 +45,9 @@ object CxxsimTask extends BaseTask {
     val verilog =
       ChiselStage.emitSystemVerilog(
         platform(chryse.genTop()(platform)),
+        Array(
+          "--firtool-binary-path=/Users/kivikakk/g/circt/build/bin/firtool",
+        ),
         firtoolOpts = firtoolOpts,
       )
     writePath(verilogPath, verilog)
