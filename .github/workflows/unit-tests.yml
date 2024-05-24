@@ -20,7 +20,7 @@ jobs:
         java-version: '22'
         distribution: 'temurin'
         cache: 'sbt'
-    - name: Install Verilator
-      run: sudo apt-get install -y verilator
+    - name: Install sbt and Verilator
+      run: sudo apt-get install -y sbt verilator
     - name: Run tests
       run: sbt test
