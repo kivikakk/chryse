@@ -20,7 +20,11 @@ jobs:
         java-version: '22'
         distribution: 'temurin'
         cache: 'sbt'
-    - name: Install sbt and Verilator
-      run: sudo apt-get install -y sbt verilator
+    - name: Install sbt
+      run: |
+        wget https://github.com/sbt/sbt/releases/download/v1.9.8/sbt-1.9.8.tgz
+        tar xf sbt-1.9.8.tgz
+    - name: Install Verilator
+      run: sudo apt-get install -y verilator
     - name: Run tests
-      run: sbt test
+      run: sbt/bin/sbt test
