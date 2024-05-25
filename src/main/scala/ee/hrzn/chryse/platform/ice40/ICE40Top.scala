@@ -1,9 +1,12 @@
 package ee.hrzn.chryse.platform.ice40
 
 import chisel3._
+import chisel3.experimental.IntParam
+import chisel3.experimental.StringParam
 import chisel3.experimental.noPrefix
 import chisel3.util._
 import chisel3.util.experimental.forceName
+import ee.hrzn.chryse.chisel.DirectionOf
 import ee.hrzn.chryse.platform.ChryseTop
 import ee.hrzn.chryse.platform.PlatformBoard
 import ee.hrzn.chryse.platform.PlatformBoardResources
@@ -19,21 +22,59 @@ class ICE40Top[Top <: Module](
   override protected def platformConnect(
       name: String,
       res: resource.ResourceData[_ <: Data],
-  ): Option[Data] = {
+  ): Option[(Data, Data)] = {
     if (name == "ubtn" && ubtn_reset.isDefined) {
       if (res.ioInst.isDefined)
         throw new Exception("ubtnReset requested but ubtn used in design")
 
-      // ubtn_reset.get := IO(res.makeIo()).suggestName("ubtn")
-      val topIo = Wire(res.makeIo())
-      ubtn_reset.get := topIo
-      return Some(topIo)
-    }
+      // XXX: do we need to bother hooking up res.topIoInst/portIoInst?
 
+      val topIo = Wire(res.makeIo()).suggestName("ubtn_top")
+      ubtn_reset.get := topIo
+
+      val portIo = IO(res.makeIo()).suggestName("ubtn")
+      return Some((topIo, portIo))
+    }
     None
   }
 
-  // TODO (iCE40): actually create IO buffers.
+  override protected def platformPort(
+      res: resource.ResourceData[_ <: Data],
+      topIo: Data,
+      portIo: Data,
+  ) = {
+    // when we do DDR we'll need to use PIN_INPUT_DDR.
+    val i_type = PinType.PIN_INPUT
+
+    // as above, PIN_OUTPUT_{REGISTERED,DDR}_ENABLE_REGISTERED
+    val o_type = DirectionOf(portIo) match {
+      case DirectionOf.Input  => PinType.PIN_NO_OUTPUT
+      case DirectionOf.Output => PinType.PIN_OUTPUT_TRISTATE
+    }
+
+    val buffer = Module(
+      new SB_IO(
+        i_type | o_type,
+        res.attributes("IO_STANDARD").asInstanceOf[StringParam].value,
+        res.attributes
+          .get("PULLUP")
+          .map(_.asInstanceOf[IntParam].value == 1)
+          .getOrElse(false),
+      ),
+    ).suggestName(s"${res.name.get}_SB_IO")
+
+    DirectionOf(portIo) match {
+      case DirectionOf.Input =>
+        buffer.PACKAGE_PIN   := portIo
+        topIo                := buffer.D_IN_0
+        buffer.OUTPUT_ENABLE := DontCare
+        buffer.D_OUT_0       := DontCare
+      case DirectionOf.Output =>
+        portIo               := buffer.PACKAGE_PIN
+        buffer.OUTPUT_ENABLE := true.B
+        buffer.D_OUT_0       := topIo
+    }
+  }
 
   private val clki = Wire(Clock())
 

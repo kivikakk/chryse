@@ -54,13 +54,13 @@ class PlatformBoardResourcesSpec extends AnyFlatSpec with Matchers {
       // inverted components, uart.tx isn't. Note that what we poke and peek are
       // the signals on the pins, not transformed for the user, otherwise
       // there'd be nothing to test.
-      plat.resources.ubtn.topIoInst.get.poke(false.B)
-      plat.resources.ledg.topIoInst.get.expect(false.B) // inverted twice
-      plat.resources.uart.tx.topIoInst.get.expect(true.B)
+      plat.resources.ubtn.portIoInst.get.poke(false.B)
+      plat.resources.ledg.portIoInst.get.expect(false.B) // inverted twice
+      plat.resources.uart.tx.portIoInst.get.expect(true.B)
 
-      plat.resources.ubtn.topIoInst.get.poke(true.B)
-      plat.resources.ledg.topIoInst.get.expect(true.B)
-      plat.resources.uart.tx.topIoInst.get.expect(false.B)
+      plat.resources.ubtn.portIoInst.get.poke(true.B)
+      plat.resources.ledg.portIoInst.get.expect(true.B)
+      plat.resources.uart.tx.portIoInst.get.expect(false.B)
     }
 
     verilog.InterfaceExtractor(rtl) should contain(
@@ -89,15 +89,15 @@ class PlatformBoardResourcesSpec extends AnyFlatSpec with Matchers {
     val plat = SimPlatform()
     simulate(plat(new InOutTop()(plat))) { c =>
       for { v <- Seq(true, false) } {
-        plat.resources.uart.rx.topIoInst.get.poke(v.B)
-        plat.resources.pmod(2).i.topIoInst.get.poke(v.B)
-        plat.resources.ubtn.topIoInst.get.poke(v.B)
-        plat.resources.pmod(8).i.topIoInst.get.poke(v.B)
+        plat.resources.uart.rx.portIoInst.get.poke(v.B)
+        plat.resources.pmod(2).i.portIoInst.get.poke(v.B)
+        plat.resources.ubtn.portIoInst.get.poke(v.B)
+        plat.resources.pmod(8).i.portIoInst.get.poke(v.B)
 
-        plat.resources.pmod(1).o.topIoInst.get.expect(v.B)
-        plat.resources.uart.tx.topIoInst.get.expect(v.B)
-        plat.resources.pmod(7).o.topIoInst.get.expect((!v).B)
-        plat.resources.ledr.topIoInst.get.expect((!v).B)
+        plat.resources.pmod(1).o.portIoInst.get.expect(v.B)
+        plat.resources.uart.tx.portIoInst.get.expect(v.B)
+        plat.resources.pmod(7).o.portIoInst.get.expect((!v).B)
+        plat.resources.ledr.portIoInst.get.expect((!v).B)
       }
     }
 

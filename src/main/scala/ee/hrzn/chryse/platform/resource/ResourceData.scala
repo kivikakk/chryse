@@ -19,13 +19,14 @@ abstract class ResourceData[HW <: Data](gen: => HW, invert: Boolean = false)
   final private[chryse] var pinId: Option[Pin] = None
   final var name: Option[String]               = None
   final protected var _invert                  = invert
-  final protected var _attribs                 = Map[String, Param]()
+  final var attributes                         = Map[String, Param]()
 
   // Should return Chisel datatype with Input/Output attached.
   def makeIo(): HW = gen
 
-  final private[chryse] var ioInst: Option[HW]    = None
-  final private[chryse] var topIoInst: Option[HW] = None
+  final private[chryse] var ioInst: Option[HW]     = None
+  final private[chryse] var topIoInst: Option[HW]  = None
+  final private[chryse] var portIoInst: Option[HW] = None
 
   /* Instantiate an IO in the module at the point of connecting to this
    * resource. These will be connected to in turn by the platform toplevel
@@ -40,24 +41,27 @@ abstract class ResourceData[HW <: Data](gen: => HW, invert: Boolean = false)
     }
   }
 
-  final def makeIoConnection(): HW = {
+  final def makeIoConnection(): (HW, HW) = {
     if (topIoInst.isDefined)
       throw new IllegalStateException("topIoInst already defined")
-    // val topIo = IO(makeIo()).suggestName(name.get)
-    val topIo = Wire(makeIo()) // .suggestName(name.get)
+    if (portIoInst.isDefined)
+      throw new IllegalStateException("portIoInst already defined")
+    val topIo = Wire(makeIo()).suggestName(s"${name.get}_top")
     topIoInst = Some(topIo)
     connectIo(ioInst.get, topIo)
-    topIo
+
+    val portIo = IO(makeIo()).suggestName(name.get)
+    portIoInst = Some(portIo)
+
+    (topIo, portIo)
   }
 
   protected def connectIo(user: HW, top: HW): Unit = {
     DirectionOf(top) match {
-      case SpecifiedDirection.Input =>
+      case DirectionOf.Input =>
         user := (if (!_invert) top else ~top.asInstanceOf[Bits])
-      case SpecifiedDirection.Output =>
+      case DirectionOf.Output =>
         top := (if (!_invert) user else ~user.asInstanceOf[Bits])
-      case dir =>
-        throw new Exception(s"unhandled direction: $dir")
     }
   }
 
@@ -69,9 +73,13 @@ abstract class ResourceData[HW <: Data](gen: => HW, invert: Boolean = false)
   }
 
   def withAttributes(attribs: (String, Param)*): this.type = {
-    _attribs = attribs.to(Map)
+    attributes = attribs.to(Map)
     this
   }
+
+  def setDefaultAttributes(defaultAttributes: Map[String, Param]): Unit =
+    for { (name, value) <- defaultAttributes if !attributes.isDefinedAt(name) }
+      attributes += name -> value
 
   def data: Seq[ResourceData[_ <: Data]] = Seq(this)
 }

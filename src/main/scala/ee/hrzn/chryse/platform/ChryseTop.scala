@@ -5,6 +5,7 @@ import chisel3.experimental.noPrefix
 import ee.hrzn.chryse.chisel.DirectionOf
 
 import scala.collection.mutable
+import scala.language.existentials
 import scala.language.implicitConversions
 
 trait ChryseTop extends RawModule {
@@ -20,7 +21,20 @@ trait ChryseTop extends RawModule {
   protected def platformConnect(
       name: String,
       res: resource.ResourceData[_ <: Data],
-  ): Option[Data] = None
+  ): Option[(Data, Data)] = None
+
+  protected def platformPort(
+      res: resource.ResourceData[_ <: Data],
+      topIo: Data,
+      portIo: Data,
+  ): Unit = {
+    DirectionOf(topIo) match {
+      case DirectionOf.Input =>
+        topIo := portIo
+      case DirectionOf.Output =>
+        portIo := topIo
+    }
+  }
 
   protected def connectResources(
       platform: PlatformBoard[_ <: PlatformBoardResources],
@@ -47,27 +61,15 @@ trait ChryseTop extends RawModule {
           clock.get := noPrefix(IO(Input(Clock())).suggestName(name))
 
         case _ =>
-          val topIo: Option[Data] = platformConnect(name, res) match {
-            case Some(t) =>
+          platformConnect(name, res) match {
+            case Some((topIo, portIo)) =>
               connected += name -> res.pinId.get
-              Some(t)
+              platformPort(res, topIo, portIo)
             case None =>
               if (res.ioInst.isDefined) {
                 connected += name -> res.pinId.get
-                Some(res.makeIoConnection())
-              } else None
-          }
-          topIo match {
-            case None =>
-            case Some(t) =>
-              val port = IO(res.makeIo()).suggestName(name)
-              DirectionOf(port) match {
-                case SpecifiedDirection.Input =>
-                  t := port
-                case SpecifiedDirection.Output =>
-                  port := t
-                case dir =>
-                  throw new Exception(s"unhandled direction: $dir")
+                val (topIo, portIo) = res.makeIoConnection()
+                platformPort(res, topIo, portIo)
               }
           }
       }

@@ -1,12 +1,14 @@
 package ee.hrzn.chryse.platform.resource
 
 import chisel3._
+import chisel3.experimental.Param
 import ee.hrzn.chryse.platform.PlatformBoardResources
 
 import scala.collection.mutable.ArrayBuffer
 
 trait ResourceBase {
   def setName(name: String): Unit
+  def setDefaultAttributes(defaultAttributes: Map[String, Param]): Unit
   def data: Seq[ResourceData[_ <: Data]]
 }
 

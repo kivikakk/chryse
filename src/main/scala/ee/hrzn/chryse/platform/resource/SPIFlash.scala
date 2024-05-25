@@ -1,6 +1,7 @@
 package ee.hrzn.chryse.platform.resource
 
 import chisel3._
+import chisel3.experimental.Param
 
 class SPIFlash extends ResourceBase {
   // TODO: DSPI, QSPI
@@ -19,6 +20,15 @@ class SPIFlash extends ResourceBase {
     cipo.setName(s"${name}_cipo")
     wp.setName(s"${name}_wp")
     hold.setName(s"${name}_hold")
+  }
+
+  def setDefaultAttributes(defaultAttributes: Map[String, Param]): Unit = {
+    cs.setDefaultAttributes(defaultAttributes)
+    clock.setDefaultAttributes(defaultAttributes)
+    copi.setDefaultAttributes(defaultAttributes)
+    cipo.setDefaultAttributes(defaultAttributes)
+    wp.setDefaultAttributes(defaultAttributes)
+    hold.setDefaultAttributes(defaultAttributes)
   }
 
   def onPins(

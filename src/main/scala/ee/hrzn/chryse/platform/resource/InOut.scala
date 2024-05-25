@@ -27,6 +27,11 @@ class InOut extends ResourceBase with ResourceSinglePin {
     this
   }
 
+  def setDefaultAttributes(defaultAttributes: Map[String, Param]): Unit = {
+    i.setDefaultAttributes(defaultAttributes)
+    o.setDefaultAttributes(defaultAttributes)
+  }
+
   def data: Seq[ResourceData[_ <: Data]] = Seq(i, o)
 }
 

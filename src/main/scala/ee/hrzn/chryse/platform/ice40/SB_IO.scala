@@ -16,17 +16,19 @@ class SB_IO(
       ),
     ) {
 
-  private def genPin(): Data = {
-    if (pinType == PinType.PIN_INPUT)
-      Input(Bool())
-    else if (pinType == PinType.PIN_OUTPUT)
-      Output(Bool())
-    else if (pinType == (PinType.PIN_INPUT | PinType.PIN_OUTPUT_TRISTATE))
-      Analog(1.W)
-    else
-      throw new IllegalArgumentException(s"unhandled pinType: $pinType")
+  // XXX: hyperspecific to ICE40Top's SB_IO generation and doesn't support
+  // tristates.
+  private val isOutput = (pinType & PinType.PIN_OUTPUT_TRISTATE) != 0
 
+  private def genPin(): Bool = {
+    if (isOutput)
+      Output(Bool())
+    else
+      Input(Bool())
   }
-  val PACKAGE_PIN          = IO(genPin())
-  val GLOBAL_BUFFER_OUTPUT = IO(genPin())
+
+  val PACKAGE_PIN   = IO(genPin())
+  val OUTPUT_ENABLE = IO(Input(Bool()))
+  val D_IN_0        = IO(Output(Bool()))
+  val D_OUT_0       = IO(Input(Bool()))
 }

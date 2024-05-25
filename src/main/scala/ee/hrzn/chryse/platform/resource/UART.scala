@@ -18,6 +18,11 @@ class UART extends ResourceBase {
     this
   }
 
+  def setDefaultAttributes(defaultAttributes: Map[String, Param]): Unit = {
+    rx.setDefaultAttributes(defaultAttributes)
+    tx.setDefaultAttributes(defaultAttributes)
+  }
+
   def withAttributes(attribs: (String, Param)*): this.type = {
     rx.withAttributes(attribs: _*)
     tx.withAttributes(attribs: _*)

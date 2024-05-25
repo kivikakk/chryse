@@ -3,11 +3,11 @@ package ee.hrzn.chryse.platform.ice40
 import chisel3._
 import chisel3.experimental.ExtModule
 
-class SB_GB_IO(pinType: Int = (PinType.PIN_INPUT | PinType.PIN_NO_OUTPUT))
+class SB_GB_IO
     extends ExtModule(
       Map(
         "IO_STANDARD" -> IOStandard.LVCMOS,
-        "PIN_TYPE"    -> pinType,
+        "PIN_TYPE"    -> (PinType.PIN_INPUT | PinType.PIN_NO_OUTPUT),
       ),
     ) {
   val PACKAGE_PIN          = IO(Input(Clock()))

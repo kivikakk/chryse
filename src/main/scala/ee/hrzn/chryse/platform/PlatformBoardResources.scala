@@ -15,6 +15,7 @@ abstract class PlatformBoardResources {
       f.setAccessible(true)
       f.get(this) match {
         case res: ResourceBase =>
+          res.setDefaultAttributes(defaultAttributes)
           res.setName(f.getName())
         case _ =>
       }
