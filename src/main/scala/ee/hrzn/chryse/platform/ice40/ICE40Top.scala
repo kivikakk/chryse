@@ -16,9 +16,24 @@ class ICE40Top[Top <: Module](
     genTop: => Top,
 ) extends RawModule
     with ChryseTop {
-  var lastPCF: Option[PCF] = None
+  override protected def platformConnect(
+      name: String,
+      res: resource.ResourceData[_ <: Data],
+  ): Option[Data] = {
+    if (name == "ubtn" && ubtn_reset.isDefined) {
+      if (res.ioInst.isDefined)
+        throw new Exception("ubtnReset requested but ubtn used in design")
 
-  // TODO (iCE40): SB_GBs between a lot more things.
+      // ubtn_reset.get := IO(res.makeIo()).suggestName("ubtn")
+      val topIo = Wire(res.makeIo())
+      ubtn_reset.get := topIo
+      return Some(topIo)
+    }
+
+    None
+  }
+
+  // TODO (iCE40): actually create IO buffers.
 
   private val clki = Wire(Clock())
 
@@ -58,22 +73,7 @@ class ICE40Top[Top <: Module](
   private val connectedResources =
     connectResources(platform, Some(clki))
 
-  override protected def platformConnect(
-      name: String,
-      res: resource.ResourceData[_ <: Data],
-  ): Boolean = {
-    if (name == "ubtn" && ubtn_reset.isDefined) {
-      if (res.ioInst.isDefined)
-        throw new Exception("ubtnReset requested but ubtn used in design")
-
-      ubtn_reset.get := IO(res.makeIo()).suggestName("ubtn")
-      return true
-    }
-
-    false
-  }
-
-  lastPCF = Some(
+  val lastPCF = Some(
     PCF(
       connectedResources
         .map { case (name, cr) => (name, cr.pin) }

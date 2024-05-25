@@ -6,7 +6,7 @@ import chisel3.experimental.ExtModule
 class SB_GB_IO(pinType: Int = (PinType.PIN_INPUT | PinType.PIN_NO_OUTPUT))
     extends ExtModule(
       Map(
-        "IO_STANDARD" -> IOStandard.LV_CMOS,
+        "IO_STANDARD" -> IOStandard.LVCMOS,
         "PIN_TYPE"    -> pinType,
       ),
     ) {

@@ -1,6 +1,7 @@
 package ee.hrzn.chryse.platform.resource
 
 import chisel3._
+import chisel3.experimental.Param
 import chisel3.experimental.dataview._
 import ee.hrzn.chryse.chisel.DirectionOf
 
@@ -18,6 +19,7 @@ abstract class ResourceData[HW <: Data](gen: => HW, invert: Boolean = false)
   final private[chryse] var pinId: Option[Pin] = None
   final var name: Option[String]               = None
   final protected var _invert                  = invert
+  final protected var _attribs                 = Map[String, Param]()
 
   // Should return Chisel datatype with Input/Output attached.
   def makeIo(): HW = gen
@@ -38,12 +40,14 @@ abstract class ResourceData[HW <: Data](gen: => HW, invert: Boolean = false)
     }
   }
 
-  final def makeIoConnection(): Unit = {
+  final def makeIoConnection(): HW = {
     if (topIoInst.isDefined)
       throw new IllegalStateException("topIoInst already defined")
-    val topIo = IO(makeIo()).suggestName(name.get)
+    // val topIo = IO(makeIo()).suggestName(name.get)
+    val topIo = Wire(makeIo()) // .suggestName(name.get)
     topIoInst = Some(topIo)
     connectIo(ioInst.get, topIo)
+    topIo
   }
 
   protected def connectIo(user: HW, top: HW): Unit = {
@@ -61,6 +65,11 @@ abstract class ResourceData[HW <: Data](gen: => HW, invert: Boolean = false)
 
   def onPin(id: Pin): this.type = {
     pinId = Some(id)
+    this
+  }
+
+  def withAttributes(attribs: (String, Param)*): this.type = {
+    _attribs = attribs.to(Map)
     this
   }
 

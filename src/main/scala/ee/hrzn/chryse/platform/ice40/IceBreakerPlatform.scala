@@ -1,6 +1,7 @@
 package ee.hrzn.chryse.platform.ice40
 
 import chisel3._
+import chisel3.experimental.Param
 import ee.hrzn.chryse.platform.PlatformBoard
 import ee.hrzn.chryse.platform.PlatformBoardResources
 import ee.hrzn.chryse.platform.resource
@@ -24,12 +25,16 @@ final case class IceBreakerPlatform(ubtnReset: Boolean = false)
 }
 
 class IceBreakerPlatformResources extends PlatformBoardResources {
-  // TODO: IO_STANDARD=SB_LVCMOS needs to be set on most SB_IOs.
+  override val defaultAttributes = Map("IO_STANDARD" -> IOStandard.LVCMOS)
+
   val clock = resource.ClockSource(12_000_000).onPin(35)
 
   val ubtn = resource.Button().inverted.onPin(10)
 
-  val uart = resource.UART().onPins(rx = 6, tx = 9)
+  val uart = resource
+    .UART()
+    .onPins(rx = 6, tx = 9)
+    .withAttributes("IO_STANDARD" -> IOStandard.LVTTL, "PULLUP" -> 1)
 
   val ledg = resource.LED().inverted.onPin(37)
   val ledr = resource.LED().inverted.onPin(11)

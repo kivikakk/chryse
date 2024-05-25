@@ -3,6 +3,8 @@ package ee.hrzn.chryse.platform.resource
 import chisel3._
 
 class SPIFlash extends ResourceBase {
+  // TODO: DSPI, QSPI
+
   val cs    = ResourceData(Output(Bool()), invert = true)
   val clock = ResourceData(Output(Clock()))
   val copi  = ResourceData(Output(Bool()))

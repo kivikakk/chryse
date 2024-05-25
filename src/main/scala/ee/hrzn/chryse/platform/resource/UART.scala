@@ -1,10 +1,9 @@
 package ee.hrzn.chryse.platform.resource
 
 import chisel3._
+import chisel3.experimental.Param
 
 class UART extends ResourceBase {
-  // TODO (iCE40): lower IO_STANDARD=SB_LVTTL and PULLUP=1.
-  // TODO: these will differ per-platform so need to come in from outside.
   val rx = ResourceData(Input(Bool()))
   val tx = ResourceData(Output(Bool()))
 
@@ -16,6 +15,12 @@ class UART extends ResourceBase {
   def onPins(rx: Pin, tx: Pin): this.type = {
     this.rx.onPin(rx)
     this.tx.onPin(tx)
+    this
+  }
+
+  def withAttributes(attribs: (String, Param)*): this.type = {
+    rx.withAttributes(attribs: _*)
+    tx.withAttributes(attribs: _*)
     this
   }
 

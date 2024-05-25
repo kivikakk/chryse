@@ -2,6 +2,7 @@ package ee.hrzn.chryse.platform
 
 import chisel3._
 import chisel3.experimental.noPrefix
+import ee.hrzn.chryse.chisel.DirectionOf
 
 import scala.collection.mutable
 import scala.language.implicitConversions
@@ -15,6 +16,11 @@ trait ChryseTop extends RawModule {
     implicit def pin2Cr(pin: resource.Pin): ConnectedResource =
       ConnectedResource(pin, None)
   }
+
+  protected def platformConnect(
+      name: String,
+      res: resource.ResourceData[_ <: Data],
+  ): Option[Data] = None
 
   protected def connectResources(
       platform: PlatformBoard[_ <: PlatformBoardResources],
@@ -41,20 +47,32 @@ trait ChryseTop extends RawModule {
           clock.get := noPrefix(IO(Input(Clock())).suggestName(name))
 
         case _ =>
-          if (platformConnect(name, res)) {
-            connected += name -> res.pinId.get
-          } else if (res.ioInst.isDefined) {
-            res.makeIoConnection()
-            connected += name -> res.pinId.get
+          val topIo: Option[Data] = platformConnect(name, res) match {
+            case Some(t) =>
+              connected += name -> res.pinId.get
+              Some(t)
+            case None =>
+              if (res.ioInst.isDefined) {
+                connected += name -> res.pinId.get
+                Some(res.makeIoConnection())
+              } else None
+          }
+          topIo match {
+            case None =>
+            case Some(t) =>
+              val port = IO(res.makeIo()).suggestName(name)
+              DirectionOf(port) match {
+                case SpecifiedDirection.Input =>
+                  t := port
+                case SpecifiedDirection.Output =>
+                  port := t
+                case dir =>
+                  throw new Exception(s"unhandled direction: $dir")
+              }
           }
       }
     }
 
     connected.to(Map)
   }
-
-  protected def platformConnect(
-      name: String,
-      res: resource.ResourceData[_ <: Data],
-  ): Boolean = false
 }

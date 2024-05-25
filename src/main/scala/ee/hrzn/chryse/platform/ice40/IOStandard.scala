@@ -1,5 +1,6 @@
 package ee.hrzn.chryse.platform.ice40
 
 object IOStandard {
-  val LV_CMOS = "SB_LVCMOS"
+  val LVCMOS = "SB_LVCMOS"
+  val LVTTL  = "SB_LVTTL"
 }

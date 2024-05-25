@@ -1,6 +1,7 @@
 package ee.hrzn.chryse.platform.resource
 
 import chisel3._
+import chisel3.experimental.Param
 
 // TODO: it's an error to use both "i" and "o" (tristate is a different kettle
 // of fish entirely) — this'll currently throw an obscure Chisel error (since
@@ -17,6 +18,12 @@ class InOut extends ResourceBase with ResourceSinglePin {
   def onPin(id: Pin): this.type = {
     i.onPin(id)
     o.onPin(id)
+    this
+  }
+
+  def withAttributes(attribs: (String, Param)*): this.type = {
+    i.withAttributes(attribs: _*)
+    o.withAttributes(attribs: _*)
     this
   }
 
