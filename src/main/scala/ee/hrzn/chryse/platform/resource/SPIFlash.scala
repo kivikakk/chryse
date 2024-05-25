@@ -3,13 +3,12 @@ package ee.hrzn.chryse.platform.resource
 import chisel3._
 
 class SPIFlash extends ResourceBase {
-  // TODO NEXT: refactoring out inversion (and other interposed) logic here should be fruitful.
-  val cs    = new ResourceData[Bool](Output(Bool())) {}   // TODO: invert
-  val clock = new ResourceData[Clock](Output(Clock())) {} // XXX: Clock here OK?
-  val copi  = new ResourceData[Bool](Output(Bool())) {}
-  val cipo  = new ResourceData[Bool](Input(Bool())) {}
-  val wp    = new ResourceData[Bool](Output(Bool())) {}   // TODO: invert
-  val hold  = new ResourceData[Bool](Output(Bool())) {}   // TODO: invert
+  val cs    = ResourceData(Output(Bool()), invert = true)
+  val clock = ResourceData(Output(Clock()))
+  val copi  = ResourceData(Output(Bool()))
+  val cipo  = ResourceData(Input(Bool()))
+  val wp    = ResourceData(Output(Bool()), invert = true)
+  val hold  = ResourceData(Output(Bool()), invert = true)
 
   def setName(name: String): Unit = {
     cs.setName(s"${name}_cs")

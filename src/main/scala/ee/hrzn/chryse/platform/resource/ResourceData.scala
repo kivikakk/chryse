@@ -6,9 +6,18 @@ import ee.hrzn.chryse.chisel.DirectionOf
 
 import scala.language.implicitConversions
 
-abstract class ResourceData[HW <: Data](gen: => HW) extends ResourceSinglePin {
+trait ResourceDataUserInvertible[HW <: Data] extends ResourceData[HW] {
+  def inverted: this.type = {
+    _invert = true
+    this
+  }
+}
+
+abstract class ResourceData[HW <: Data](gen: => HW, invert: Boolean = false)
+    extends ResourceSinglePin {
   final private[chryse] var pinId: Option[Pin] = None
   final var name: Option[String]               = None
+  final protected var _invert                  = invert
 
   // Should return Chisel datatype with Input/Output attached.
   def makeIo(): HW = gen
@@ -40,9 +49,9 @@ abstract class ResourceData[HW <: Data](gen: => HW) extends ResourceSinglePin {
   protected def connectIo(user: HW, top: HW): Unit = {
     DirectionOf(top) match {
       case SpecifiedDirection.Input =>
-        user := top
+        user := (if (!_invert) top else ~top.asInstanceOf[Bits])
       case SpecifiedDirection.Output =>
-        top := user
+        top := (if (!_invert) user else ~user.asInstanceOf[Bits])
       case dir =>
         throw new Exception(s"unhandled direction: $dir")
     }
@@ -59,6 +68,9 @@ abstract class ResourceData[HW <: Data](gen: => HW) extends ResourceSinglePin {
 }
 
 object ResourceData {
+  def apply[HW <: Data](gen: => HW, invert: Boolean = false): ResourceData[HW] =
+    new ResourceData(gen, invert) {}
+
   // Note that the DataView doesn't really need or care about the generated
   // data's direction or lack thereof.
 

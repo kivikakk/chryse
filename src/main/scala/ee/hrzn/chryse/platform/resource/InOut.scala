@@ -6,8 +6,8 @@ import chisel3._
 // of fish entirely) — this'll currently throw an obscure Chisel error (since
 // they'll both get the same name).
 class InOut extends ResourceBase with ResourceSinglePin {
-  val i = new ResourceData[Bool](Input(Bool())) {}
-  val o = new ResourceData[Bool](Output(Bool())) {}
+  val i = ResourceData(Input(Bool()))
+  val o = ResourceData(Output(Bool()))
 
   def setName(name: String): Unit = {
     i.setName(s"$name")
