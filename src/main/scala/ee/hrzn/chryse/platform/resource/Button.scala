@@ -4,7 +4,7 @@ import chisel3._
 
 class Button
     extends ResourceData[Bool](Input(Bool()))
-    with ResourceDataUserInvertible[Bool] {}
+    with ResourceDataUserInvertible {}
 
 object Button {
   def apply() = new Button

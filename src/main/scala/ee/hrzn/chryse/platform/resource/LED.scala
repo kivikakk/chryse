@@ -4,7 +4,7 @@ import chisel3._
 
 class LED
     extends ResourceData[Bool](Output(Bool()))
-    with ResourceDataUserInvertible[Bool] {}
+    with ResourceDataUserInvertible {}
 
 object LED {
   def apply() = new LED

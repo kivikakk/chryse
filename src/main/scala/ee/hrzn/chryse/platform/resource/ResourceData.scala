@@ -6,7 +6,7 @@ import ee.hrzn.chryse.chisel.DirectionOf
 
 import scala.language.implicitConversions
 
-trait ResourceDataUserInvertible[HW <: Data] extends ResourceData[HW] {
+trait ResourceDataUserInvertible { this: ResourceData[_] =>
   def inverted: this.type = {
     _invert = true
     this
