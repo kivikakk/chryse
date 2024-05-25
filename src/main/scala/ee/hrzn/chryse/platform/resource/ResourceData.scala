@@ -41,6 +41,10 @@ abstract class ResourceData[HW <: Data](gen: => HW, invert: Boolean = false)
     }
   }
 
+  // XXX: This stuff is getting pretty ugly — do we need a separate topIo as
+  // opposed to the io from ioInstOrMake? We can probably chop out a level, and
+  // possibly two if we move the inversion logic into the SB_IO generation like
+  // Amaranth (assuming there's no other kind of connectIo we want to do).
   final def makeIoConnection(): (HW, HW) = {
     if (topIoInst.isDefined)
       throw new IllegalStateException("topIoInst already defined")
