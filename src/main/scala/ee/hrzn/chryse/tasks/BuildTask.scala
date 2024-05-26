@@ -27,11 +27,11 @@ object BuildTask extends BaseTask {
   ): Unit = {
     println(s"Building for ${platform.id} ...")
 
-    Files.createDirectories(Paths.get(buildDir))
+    Files.createDirectories(Paths.get(buildDir, platform.id))
 
     val name = chryse.name
 
-    val verilogPath          = s"$buildDir/$name-${platform.id}.sv"
+    val verilogPath          = s"$buildDir/${platform.id}/$name.sv"
     var lastPCF: Option[PCF] = None
     val verilog =
       ChiselStage.emitSystemVerilog(
@@ -48,8 +48,8 @@ object BuildTask extends BaseTask {
       )
     writePath(verilogPath, verilog)
 
-    val yosysScriptPath = s"$buildDir/$name-${platform.id}.ys"
-    val jsonPath        = s"$buildDir/$name-${platform.id}.json"
+    val yosysScriptPath = s"$buildDir/${platform.id}/$name.ys"
+    val jsonPath        = s"$buildDir/${platform.id}/$name.json"
     writePath(
       yosysScriptPath,
       s"""read_verilog -sv $verilogPath
@@ -66,17 +66,17 @@ object BuildTask extends BaseTask {
         "-q",
         "-g",
         "-l",
-        s"$buildDir/$name-${platform.id}.rpt",
+        s"$buildDir/${platform.id}/$name.rpt",
         "-s",
         yosysScriptPath,
       ),
     )
     runCu(CmdStepSynthesise, yosysCu)
 
-    val pcfPath = s"$buildDir/$name-${platform.id}.pcf"
+    val pcfPath = s"$buildDir/${platform.id}/$name.pcf"
     writePath(pcfPath, lastPCF.get.toString())
 
-    val ascPath = s"$buildDir/$name-${platform.id}.asc"
+    val ascPath = s"$buildDir/${platform.id}/$name.asc"
     val ascCu = CompilationUnit(
       Some(jsonPath),
       Seq(pcfPath),
@@ -85,7 +85,7 @@ object BuildTask extends BaseTask {
         platform.nextpnrBinary,
         "-q",
         "--log",
-        s"$buildDir/$name-${platform.id}.tim",
+        s"$buildDir/${platform.id}/$name.tim",
         "--json",
         jsonPath,
         "--pcf",
@@ -96,7 +96,7 @@ object BuildTask extends BaseTask {
     )
     runCu(CmdStepPNR, ascCu)
 
-    val binPath = s"$buildDir/$name-${platform.id}.bin"
+    val binPath = s"$buildDir/${platform.id}/$name.bin"
     val binCu = CompilationUnit(
       Some(ascPath),
       Seq(),

@@ -36,14 +36,22 @@ abstract class ChryseApp {
       version(versionBanner)
 
       object build extends Subcommand("build") {
-        banner("Build the design, and optionally program it.")
+        val onto =
+          if (targetPlatforms.length > 1) ""
+          else s" onto ${targetPlatforms(0).id}"
+        banner(s"Build the design$onto, and optionally program it.")
+
         val board =
-          choice(
-            targetPlatforms.map(_.id),
-            argName = "board",
-            descr = s"Board to build for.", // XXX (Scallop): It appends " Choices: …". Kinda ugly.
-            required = true,
-          )
+          if (targetPlatforms.length > 1)
+            Some(
+              choice(
+                targetPlatforms.map(_.id),
+                argName = "board",
+                descr = s"Board to build for.", // XXX (Scallop): It appends " Choices: …". Kinda ugly.
+                required = true,
+              ),
+            )
+          else None
         val program =
           opt[Boolean](
             descr = "Program the design onto the board after building",
@@ -113,9 +121,14 @@ abstract class ChryseApp {
     Conf.subcommand match {
       case Some(Conf.build) =>
         println(versionBanner)
+        val platform =
+          if (targetPlatforms.length > 1)
+            targetPlatforms.find(_.id == Conf.build.board.get()).get
+          else
+            targetPlatforms(0)
         tasks.BuildTask(
           this,
-          targetPlatforms.find(_.id == Conf.build.board()).get,
+          platform,
           tasks.BuildTask.Options(
             Conf.build.program(),
             Conf.build.fullStacktrace(),
