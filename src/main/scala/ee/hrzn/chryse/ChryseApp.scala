@@ -46,6 +46,7 @@ abstract class ChryseApp {
             Some(
               choice(
                 targetPlatforms.map(_.id),
+                name = "board",
                 argName = "board",
                 descr = s"Board to build for.", // XXX (Scallop): It appends " Choices: …". Kinda ugly.
                 required = true,
