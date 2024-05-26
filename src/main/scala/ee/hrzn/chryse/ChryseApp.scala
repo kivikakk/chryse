@@ -67,9 +67,7 @@ abstract class ChryseApp {
       object cxxsim extends Subcommand("cxxsim") {
         banner("Run the C++ simulator tests.")
 
-        val platformChoices: Seq[_ <: CXXRTLPlatform] = cxxrtlOptions
-          .map(_.platforms.map(_.getConstructor().newInstance()))
-          .getOrElse(Seq())
+        val platformChoices = cxxrtlOptions.map(_.platforms).getOrElse(Seq())
 
         val platform =
           if (platformChoices.length > 1)
