@@ -14,8 +14,7 @@ sevsegsim 0.1.0 (Chryse 0.1.0-SNAPSHOT)
   -v, --version   Show version of this program
 
 Subcommand: build
-Build the design, and optionally program it.
-  -b, --board  <board>    Board to build for.  Choices: icebreaker
+Build the design onto icebreaker, and optionally program it.
   -F, --full-stacktrace   Include full Chisel stacktraces
   -p, --program           Program the design onto the board after building
   -h, --help              Show help message
