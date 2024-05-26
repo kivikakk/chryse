@@ -16,7 +16,8 @@ abstract class ChryseApp {
   val name: String
   def genTop()(implicit platform: Platform): Module
   val targetPlatforms: Seq[PlatformBoard[_ <: PlatformBoardResources]]
-  val cxxrtlOptions: Option[CXXRTLOptions] = None
+  val cxxrtlOptions: Option[CXXRTLOptions]         = None
+  val additionalSubcommands: Seq[ChryseSubcommand] = Seq()
 
   def main(args: Array[String]): Unit = {
     val appVersion = getClass().getPackage().getImplementationVersion()
@@ -80,6 +81,9 @@ abstract class ChryseApp {
         )
       }
       if (cxxrtlOptions.isDefined) addSubcommand(cxxsim)
+
+      for { sc <- additionalSubcommands }
+        addSubcommand(sc)
     }
     Conf.verify()
 
@@ -111,7 +115,12 @@ abstract class ChryseApp {
         )
       case None =>
         Conf.printHelp()
-      case _ =>
+      case Some(chosen) =>
+        for { sc <- additionalSubcommands }
+          if (sc == chosen) {
+            sc.execute()
+            return
+          }
         throw new Exception("unhandled subcommand")
     }
   }
@@ -123,3 +132,8 @@ object ChryseApp {
 
 class ChryseAppStepFailureException(step: String)
     extends Exception(s"Chryse step failed: $step") {}
+
+abstract class ChryseSubcommand(commandNameAndAliases: String*)
+    extends Subcommand(commandNameAndAliases: _*) {
+  def execute(): Unit
+}
