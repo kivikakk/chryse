@@ -38,8 +38,8 @@ class ICE40Top[Top <: Module](
     None
   }
 
-  override protected def platformPort(
-      res: resource.ResourceData[_ <: Data],
+  override protected def platformPort[HW <: Data](
+      res: resource.ResourceData[HW],
       topIo: Data,
       portIo: Data,
   ) = {
@@ -60,6 +60,7 @@ class ICE40Top[Top <: Module](
           .get("PULLUP")
           .map(_.asInstanceOf[IntParam].value == 1)
           .getOrElse(false),
+        gen = res.makeIo(),
       ),
     ).suggestName(s"${res.name.get}_SB_IO")
 

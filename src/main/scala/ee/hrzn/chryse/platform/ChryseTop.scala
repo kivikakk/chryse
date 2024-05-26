@@ -23,8 +23,8 @@ trait ChryseTop extends RawModule {
       res: resource.ResourceData[_ <: Data],
   ): Option[(Data, Data)] = None
 
-  protected def platformPort(
-      res: resource.ResourceData[_ <: Data],
+  protected def platformPort[HW <: Data](
+      res: resource.ResourceData[HW],
       topIo: Data,
       portIo: Data,
   ): Unit = {
