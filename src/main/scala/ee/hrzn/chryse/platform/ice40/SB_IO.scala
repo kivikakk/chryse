@@ -4,11 +4,10 @@ import chisel3._
 import chisel3.experimental.Analog
 import chisel3.experimental.ExtModule
 
-class SB_IO[T <: Data](
+class SB_IO(
     pinType: Int,
     ioStandard: String = IOStandard.LVCMOS,
     pullup: Boolean = false,
-    gen: => T = Bool(),
 ) extends ExtModule(
       Map(
         "IO_STANDARD" -> ioStandard,
@@ -21,15 +20,15 @@ class SB_IO[T <: Data](
   // tristates.
   private val isOutput = (pinType & PinType.PIN_OUTPUT_TRISTATE) != 0
 
-  private def genPin(): T = {
+  private def genPin(): Bool = {
     if (isOutput)
-      Output(gen)
+      Output(Bool())
     else
-      Input(gen)
+      Input(Bool())
   }
 
   val PACKAGE_PIN   = IO(genPin())
   val OUTPUT_ENABLE = IO(Input(Bool()))
-  val D_IN_0        = IO(Output(gen))
-  val D_OUT_0       = IO(Input(gen))
+  val D_IN_0        = IO(Output(Bool()))
+  val D_OUT_0       = IO(Input(Bool()))
 }

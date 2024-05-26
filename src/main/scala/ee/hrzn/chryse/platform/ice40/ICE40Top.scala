@@ -60,7 +60,6 @@ class ICE40Top[Top <: Module](
           .get("PULLUP")
           .map(_.asInstanceOf[IntParam].value == 1)
           .getOrElse(false),
-        gen = res.makeIo(),
       ),
     ).suggestName(s"${res.name.get}_SB_IO")
 
@@ -71,9 +70,14 @@ class ICE40Top[Top <: Module](
         buffer.OUTPUT_ENABLE := DontCare
         buffer.D_OUT_0       := DontCare
       case DirectionOf.Output =>
-        portIo               := buffer.PACKAGE_PIN
         buffer.OUTPUT_ENABLE := true.B
-        buffer.D_OUT_0       := topIo
+        if (portIo.isInstanceOf[Clock]) {
+          portIo         := buffer.PACKAGE_PIN.asClock
+          buffer.D_OUT_0 := topIo.asUInt
+        } else {
+          portIo         := buffer.PACKAGE_PIN
+          buffer.D_OUT_0 := topIo
+        }
     }
   }
 
