@@ -6,6 +6,7 @@ import ee.hrzn.chryse.platform.Platform
 import ee.hrzn.chryse.platform.PlatformBoard
 import ee.hrzn.chryse.platform.PlatformBoardResources
 import ee.hrzn.chryse.platform.cxxrtl.CXXRTLOptions
+import ee.hrzn.chryse.platform.cxxrtl.CXXRTLPlatform
 import org.rogach.scallop._
 
 import scala.collection.mutable
@@ -40,7 +41,7 @@ abstract class ChryseApp {
           choice(
             targetPlatforms.map(_.id),
             argName = "board",
-            descr = s"Board to build for. ", // XXX (Scallop): It appends " Choices: …". Kinda ugly.
+            descr = s"Board to build for.", // XXX (Scallop): It appends " Choices: …". Kinda ugly.
             required = true,
           )
         val program =
@@ -56,6 +57,24 @@ abstract class ChryseApp {
 
       object cxxsim extends Subcommand("cxxsim") {
         banner("Run the C++ simulator tests.")
+
+        val platformChoices: Seq[_ <: CXXRTLPlatform] = cxxrtlOptions
+          .map(_.platforms.map(_.getConstructor().newInstance()))
+          .getOrElse(Seq())
+
+        val platform =
+          if (platformChoices.length > 1)
+            Some(
+              choice(
+                platformChoices.map(_.id),
+                name = "platform",
+                argName = "platform",
+                descr = "CXXRTL platform to use.",
+                required = true,
+              ),
+            )
+          else
+            None
         val compileOnly =
           opt[Boolean](
             name = "compile",
@@ -80,7 +99,9 @@ abstract class ChryseApp {
           required = false,
         )
       }
-      if (cxxrtlOptions.isDefined) addSubcommand(cxxsim)
+      if (cxxrtlOptions.isDefined) {
+        addSubcommand(cxxsim)
+      }
 
       for { sc <- additionalSubcommands }
         addSubcommand(sc)
@@ -102,8 +123,16 @@ abstract class ChryseApp {
         )
       case Some(Conf.cxxsim) =>
         println(versionBanner)
+        val platform =
+          if (Conf.cxxsim.platformChoices.length > 1)
+            Conf.cxxsim.platformChoices
+              .find(_.id == Conf.cxxsim.platform.get())
+              .get
+          else
+            Conf.cxxsim.platformChoices(0)
         tasks.CxxsimTask(
           this,
+          platform,
           cxxrtlOptions.get,
           tasks.CxxsimTask.Options(
             Conf.cxxsim.debug(),

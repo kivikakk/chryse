@@ -5,7 +5,7 @@ import chisel3.BlackBox
 import scala.sys.process._
 
 final case class CXXRTLOptions(
-    clockHz: Int,
+    platforms: Seq[Class[_ <: CXXRTLPlatform]],
     blackboxes: Seq[Class[_ <: BlackBox]] = Seq(),
     cxxFlags: Seq[String] = Seq(),
     ldFlags: Seq[String] = Seq(),

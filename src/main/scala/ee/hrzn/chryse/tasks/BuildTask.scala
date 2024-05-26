@@ -20,7 +20,7 @@ object BuildTask extends BaseTask {
 
   // TODO (ECP5): refactor — different steps and build products are involved
   // after synthesis.
-  def apply[Top <: Module](
+  def apply(
       chryse: ChryseApp,
       platform: PlatformBoard[_ <: PlatformBoardResources],
       options: Options,

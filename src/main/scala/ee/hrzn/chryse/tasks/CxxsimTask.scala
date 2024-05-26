@@ -28,20 +28,19 @@ object CxxsimTask extends BaseTask {
       args: Seq[String],
   )
 
-  def apply[Top <: Module](
+  def apply[P <: CXXRTLPlatform](
       chryse: ChryseApp,
+      platform: P,
       appOptions: CXXRTLOptions,
       runOptions: Options,
   ): Unit = {
-    val platform = CXXRTLPlatform(appOptions.clockHz)
+    println(s"Building cxxsim ${platform.id} ...")
 
-    println(s"Building cxxsim ...")
-
-    Files.createDirectories(Paths.get(buildDir))
+    Files.createDirectories(Paths.get(buildDir, platform.id))
 
     val name = chryse.name
 
-    val verilogPath = s"$buildDir/$name-${platform.id}.sv"
+    val verilogPath = s"$buildDir/${platform.id}/$name.sv"
     val verilog =
       ChiselStage.emitSystemVerilog(
         platform(chryse.genTop()(platform)),
@@ -49,7 +48,7 @@ object CxxsimTask extends BaseTask {
       )
     writePath(verilogPath, verilog)
 
-    val blackboxIlPath = s"$buildDir/$name-${platform.id}-blackbox.il"
+    val blackboxIlPath = s"$buildDir/${platform.id}/$name-blackbox.il"
     writePath(blackboxIlPath) { wr =>
       for { (bb, bbIx) <- appOptions.blackboxes.zipWithIndex } {
         if (bbIx > 0) wr.write("\n")
@@ -57,8 +56,11 @@ object CxxsimTask extends BaseTask {
       }
     }
 
-    val yosysScriptPath = s"$buildDir/$name-${platform.id}.ys"
-    val ccPath          = s"$buildDir/$name.cc"
+    // XXX: We don't call ccPath buildDir/name-platform.cc because that'd imply
+    // the user needs to include different .h files depending on the chosen plat
+    // too.
+    val yosysScriptPath = s"$buildDir/${platform.id}/$name.ys"
+    val ccPath          = s"$buildDir/${platform.id}/$name.cc"
     writePath(
       yosysScriptPath,
       s"""read_rtlil $blackboxIlPath
@@ -75,7 +77,7 @@ object CxxsimTask extends BaseTask {
         "-q",
         "-g",
         "-l",
-        s"$buildDir/$name-${platform.id}.rpt",
+        s"$buildDir/${platform.id}/$name.rpt",
         "-s",
         yosysScriptPath,
       ),
@@ -96,17 +98,18 @@ object CxxsimTask extends BaseTask {
     val yosysDatDir = Seq("yosys-config", "--datdir").!!.trim()
     val cxxOpts     = new mutable.ArrayBuffer[String]
     cxxOpts.appendAll(baseCxxOpts)
-    cxxOpts.append(s"-DCLOCK_HZ=${appOptions.clockHz}")
+    cxxOpts.append(s"-DCLOCK_HZ=${platform.clockHz}")
     if (runOptions.debug) cxxOpts.append("-g")
     if (runOptions.optimize) cxxOpts.append("-O3")
 
     def buildPathForCc(cc: String) =
-      cc.replace(s"$cxxsimDir/", s"$buildDir/")
+      cc.replace(s"$cxxsimDir/", s"$buildDir/${platform.id}/")
         .replace(".cc", ".o")
 
     def compileCmdForCc(cc: String, obj: String): Seq[String] = Seq(
       "c++",
-      s"-I$buildDir",
+      s"-I$buildDir/${platform.id}",
+      s"-I$buildDir", // XXX: other artefacts the user might generate
       s"-I$yosysDatDir/include/backends/cxxrtl/runtime",
       "-c",
       cc,
@@ -121,14 +124,14 @@ object CxxsimTask extends BaseTask {
       cmd = compileCmdForCc(cc, obj)
     } yield CompilationUnit(Some(cc), headers, obj, cmd)
 
-    val cwd = System.getProperty("user.dir")
+    // clangd won't look deeper than $buildDir, so just overwrite.
     writePath(s"$buildDir/compile_commands.json") { wr =>
       upickle.default.writeTo(cus.map(ClangdEntry(_)), wr)
     }
 
     runCus(CmdStepCompile, cus)
 
-    val binPath = s"$buildDir/$name"
+    val binPath = s"$buildDir/${platform.id}/$name"
     val linkCu = CompilationUnit(
       None,
       cus.map(_.outPath),

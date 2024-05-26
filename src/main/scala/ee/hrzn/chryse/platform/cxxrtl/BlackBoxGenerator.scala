@@ -8,7 +8,16 @@ import ee.hrzn.chryse.chisel.DirectionOf
 import java.io.Writer
 
 class BlackBoxGenerator(private val wr: Writer) {
-  // TODO: Can we just add attributes somehow and output Verilog instead?
+  // Can we just add attributes somehow and output Verilog instead?
+  //
+  // -- I looked into this and there's many levels of things missing:
+  // https://github.com/chipsalliance/chisel/pull/4023#issuecomment-2130283723
+  // Note that annotations on ports are also very required, and not even in
+  // firtool yet.
+  //
+  // It'd still be nice to do it even if hackily — I'd like to support bundles
+  // and normal stuff like that, which right now will require quite a bit more
+  // fun. TODO: bundles, proper descent, flipping etc.
 
   def runOn(bb: Class[_ <: BlackBox]): Unit = {
     wr.write("attribute \\cxxrtl_blackbox 1\n")
