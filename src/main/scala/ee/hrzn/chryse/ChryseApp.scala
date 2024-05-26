@@ -30,7 +30,8 @@ abstract class ChryseApp {
 
     // TODO (Scallop): Show parent version string on subcommand help.
     object Conf extends ScallopConf(args) {
-      exitHandler = _ => terminating = true
+      if (System.getenv().getOrDefault("CHRYSE_APP_NOEXIT", "") == "1")
+        exitHandler = _ => terminating = true
       printedName = name
 
       version(versionBanner)
