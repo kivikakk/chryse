@@ -11,7 +11,7 @@ import scala.jdk.CollectionConverters._
 import scala.sys.process._
 import scala.util.matching.Regex
 
-abstract class BaseTask {
+trait BaseTask {
   protected val buildDir = "build"
 
   protected val firtoolOpts = Array(
