@@ -3,9 +3,13 @@
 A little framework to build projects in Chisel, but it might end up turning into
 its own HDL depending on how much I love Scala. :)
 
-## Example
+## Examples
 
-<https://github.com/kivikakk/sevsegsim>
+* <https://github.com/kivikakk/sevsegsim>
+* <https://github.com/kivikakk/spifrbb> — used as part of a presentation on
+  CXXRTL at the Yosys Users Group ([slides])
+
+[slides]: https://f.hrzn.ee/chiselcxx.pdf
 
 ```console
 $ sbt run
@@ -37,9 +41,9 @@ Run the C++ simulator tests.
 * Provides an App that facilitates synthesis for multiple target platforms.
 * Boards provide resources — refer to them in your design, and Chryse adds them
   to the PCF (or equivalent) used during build.
-* [CXXRTL] support: it's just another platform. Chisel blackboxes are
+* [CXXRTL] support: it's just another kind of platform. Chisel blackboxes are
   automatically lowered into CXXRTL, and Chryse's build system takes care of the
-  details. You write the main loop and blackbox implementation.
+  details. You write the sim driver and blackbox implementations.
 
 [CXXRTL]: https://yosyshq.readthedocs.io/projects/yosys/en/latest/cmd/write_cxxrtl.html
 
