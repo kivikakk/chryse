@@ -86,7 +86,7 @@ trait BaseTask {
     }
     if (!failed.isEmpty) {
       println("the following process(es) failed:")
-      for { cmd <- failed } println(s"  $cmd")
+      for { cmd <- failed } println(s"  ${formattedCmd(cmd)}")
       throw new ChryseAppStepFailureException(step.toString())
     }
   }
