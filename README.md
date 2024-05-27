@@ -51,7 +51,8 @@ Run the C++ simulator tests.
 
 ### Planned
 
-* ECP5: [OrangeCrab]
+* ECP5: [ULX3S], [OrangeCrab]
 
 [iCEBreaker]: https://yosyshq.readthedocs.io/projects/yosys/en/latest/cmd/write_cxxrtl.html
+[ULX3S]: https://f.hrzn.ee/chiselcxx.pdf
 [OrangeCrab]: https://1bitsquared.com/products/orangecrab
