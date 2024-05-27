@@ -8,6 +8,7 @@ import ee.hrzn.chryse.platform.Platform
 import ee.hrzn.chryse.platform.cxxrtl.BlackBoxGenerator
 import ee.hrzn.chryse.platform.cxxrtl.CXXRTLOptions
 import ee.hrzn.chryse.platform.cxxrtl.CXXRTLPlatform
+import org.apache.commons.io.FileUtils
 
 import java.io.PrintWriter
 import java.nio.file.Files
@@ -23,6 +24,7 @@ object CxxsimTask extends BaseTask {
   case class Options(
       debug: Boolean,
       optimize: Boolean,
+      force: Boolean,
       compileOnly: Boolean,
       vcdOutPath: Option[String],
       args: Seq[String],
@@ -37,6 +39,11 @@ object CxxsimTask extends BaseTask {
     println(s"Building cxxsim ${platform.id} ...")
 
     Files.createDirectories(Paths.get(buildDir, platform.id))
+    if (runOptions.force) {
+      println(s"Cleaning build dir $buildDir/${platform.id}")
+      FileUtils.deleteDirectory(Paths.get(buildDir, platform.id).toFile());
+      Files.createDirectories(Paths.get(buildDir, platform.id))
+    }
 
     val name = chryse.name
 

@@ -83,6 +83,10 @@ abstract class ChryseApp {
             )
           else
             None
+        val force =
+          opt[Boolean](
+            descr = "Clean before build",
+          )
         val compileOnly =
           opt[Boolean](
             name = "compile",
@@ -150,6 +154,7 @@ abstract class ChryseApp {
           tasks.CxxsimTask.Options(
             Conf.cxxsim.debug(),
             Conf.cxxsim.optimize(),
+            Conf.cxxsim.force(),
             Conf.cxxsim.compileOnly(),
             Conf.cxxsim.vcd.toOption,
             Conf.cxxsim.trailing.getOrElse(List.empty),
