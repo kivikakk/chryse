@@ -122,7 +122,10 @@ class ICE40Top[Top <: Module](
   val lastPCF = Some(
     PCF(
       connectedResources
-        .map { case (name, cr) => (name, cr.pin) }
+        .map { case (name, cr) =>
+          // iCE40 has no PinPlatforms.
+          (name, cr.pin.asInstanceOf[resource.PinConnected])
+        }
         .to(Map),
       connectedResources
         .flatMap { case (name, cr) => cr.frequencyHz.map((name, _)) }

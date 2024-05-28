@@ -26,6 +26,9 @@ class Connector[Ix, E <: ResourceSinglePin](
 }
 
 object Connector {
-  def apply[Ix, E <: ResourceSinglePin](gen: => E, ixToPin: (Ix, Pin)*) =
+  def apply[Ix, E <: ResourceSinglePin](
+      gen: => E,
+      ixToPin: (Ix, Pin)*,
+  ) =
     new Connector(gen, ixToPin: _*)
 }

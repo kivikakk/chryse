@@ -1,12 +1,14 @@
 package ee.hrzn.chryse.platform.ecp5
 
 import chisel3._
+import ee.hrzn.chryse.platform.ChryseTop
 import ee.hrzn.chryse.platform.Platform
 import ee.hrzn.chryse.platform.PlatformBoard
 import ee.hrzn.chryse.platform.PlatformBoardResources
 
 class ECP5Top[Top <: Module](platform: Platform, genTop: => Top)
-    extends RawModule {
+    extends RawModule
+    with ChryseTop {
   override def desiredName = "ecp5top"
 
   private val clki = IO(Input(Clock()))
@@ -25,12 +27,4 @@ class ECP5Top[Top <: Module](platform: Platform, genTop: => Top)
 
   private val top =
     withClockAndReset(clki, false.B)(Module(genTop))
-}
-
-object ECP5Top {
-  def apply[Top <: Module](
-      platform: PlatformBoard[_ <: PlatformBoardResources],
-      genTop: => Top,
-  ) =
-    new ECP5Top(platform, genTop)
 }

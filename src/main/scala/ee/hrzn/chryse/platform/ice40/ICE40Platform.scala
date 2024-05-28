@@ -3,13 +3,19 @@ package ee.hrzn.chryse.platform.ice40
 import chisel3._
 import ee.hrzn.chryse.ChryseApp
 import ee.hrzn.chryse.platform.PlatformBoard
+import ee.hrzn.chryse.platform.PlatformBoardResources
 import ee.hrzn.chryse.tasks.BaseTask
 
-trait ICE40Platform { this: PlatformBoard[_] =>
+trait ICE40Platform { this: PlatformBoard[_ <: PlatformBoardResources] =>
   type TopPlatform[Top <: Module] = ICE40Top[Top]
 
   val ice40Variant: ICE40Variant
   val ice40Package: String
+
+  override def apply[Top <: Module](genTop: => Top) = {
+    resources.setNames()
+    new ICE40Top(this, genTop)
+  }
 
   def yosysSynthCommand(top: String) = s"synth_ice40 -top $top"
 

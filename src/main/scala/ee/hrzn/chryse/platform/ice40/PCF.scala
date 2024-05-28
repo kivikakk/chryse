@@ -1,8 +1,8 @@
 package ee.hrzn.chryse.platform.ice40
 
-import ee.hrzn.chryse.platform.resource.Pin
+import ee.hrzn.chryse.platform.resource.PinConnected
 
-case class PCF(ios: Map[String, Pin], freqs: Map[String, Int]) {
+case class PCF(ios: Map[String, PinConnected], freqs: Map[String, Int]) {
   for { name <- freqs.keysIterator }
     if (!ios.isDefinedAt(name))
       throw new IllegalArgumentException(

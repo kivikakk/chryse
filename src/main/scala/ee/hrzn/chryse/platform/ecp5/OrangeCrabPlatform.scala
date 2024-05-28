@@ -15,9 +15,6 @@ case class OrangeCrabPlatform(ecp5Variant: ECP5Variant)
   val ecp5Package = "csfBGA285"
 
   val resources = new OrangeCrabPlatformResources
-
-  override def apply[Top <: Module](genTop: => Top) =
-    ECP5Top(this, genTop)
 }
 
 class OrangeCrabPlatformResources extends PlatformBoardResources {

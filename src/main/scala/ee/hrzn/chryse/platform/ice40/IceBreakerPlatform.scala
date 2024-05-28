@@ -17,11 +17,6 @@ case class IceBreakerPlatform(
   val ice40Package          = "sg48"
 
   val resources = new IceBreakerPlatformResources
-
-  override def apply[Top <: Module](genTop: => Top) = {
-    resources.setNames()
-    new ICE40Top(this, genTop)
-  }
 }
 
 class IceBreakerPlatformResources extends PlatformBoardResources {

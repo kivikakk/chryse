@@ -22,6 +22,16 @@ class SPIFlash extends ResourceBase {
     hold.setName(s"${name}_hold")
   }
 
+  def withAttributes(attribs: (String, Param)*): this.type = {
+    cs.withAttributes(attribs: _*)
+    clock.withAttributes(attribs: _*)
+    copi.withAttributes(attribs: _*)
+    cipo.withAttributes(attribs: _*)
+    wp.withAttributes(attribs: _*)
+    hold.withAttributes(attribs: _*)
+    this
+  }
+
   def setDefaultAttributes(defaultAttributes: Map[String, Param]): Unit = {
     cs.setDefaultAttributes(defaultAttributes)
     clock.setDefaultAttributes(defaultAttributes)

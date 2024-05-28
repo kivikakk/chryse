@@ -3,13 +3,19 @@ package ee.hrzn.chryse.platform.ecp5
 import chisel3._
 import ee.hrzn.chryse.ChryseApp
 import ee.hrzn.chryse.platform.PlatformBoard
+import ee.hrzn.chryse.platform.PlatformBoardResources
 import ee.hrzn.chryse.tasks.BaseTask
 
-trait ECP5Platform { this: PlatformBoard[_] =>
+trait ECP5Platform { this: PlatformBoard[_ <: PlatformBoardResources] =>
   type TopPlatform[Top <: Module] = ECP5Top[Top]
 
   val ecp5Variant: ECP5Variant
   val ecp5Package: String
+
+  override def apply[Top <: Module](genTop: => Top) = {
+    resources.setNames()
+    new ECP5Top(this, genTop)
+  }
 
   def yosysSynthCommand(top: String) = s"synth_ecp5 -top $top"
 

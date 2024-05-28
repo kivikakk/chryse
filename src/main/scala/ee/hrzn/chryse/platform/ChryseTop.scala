@@ -3,6 +3,7 @@ package ee.hrzn.chryse.platform
 import chisel3._
 import chisel3.experimental.noPrefix
 import ee.hrzn.chryse.chisel.directionOf
+import ee.hrzn.chryse.platform.resource.Pin
 
 import scala.collection.mutable
 import scala.language.existentials
@@ -11,10 +12,13 @@ import scala.language.implicitConversions
 trait ChryseTop extends RawModule {
   override def desiredName = "chrysetop"
 
-  case class ConnectedResource(pin: resource.Pin, frequencyHz: Option[Int])
+  case class ConnectedResource(
+      pin: Pin,
+      frequencyHz: Option[Int],
+  )
 
   object ConnectedResource {
-    implicit def pin2Cr(pin: resource.Pin): ConnectedResource =
+    implicit def pin2Cr(pin: Pin): ConnectedResource =
       ConnectedResource(pin, None)
   }
 

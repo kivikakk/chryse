@@ -11,15 +11,12 @@ import ee.hrzn.chryse.platform.resource
 case class ULX3SPlatform(ecp5Variant: ECP5Variant)
     extends PlatformBoard[ULX3SPlatformResources]
     with ECP5Platform {
-  val id      = "orangecrab"
+  val id      = s"ulx3s-${ecp5Variant.id}"
   val clockHz = 25_000_000
 
   val ecp5Package = "caBGA381"
 
   val resources = new ULX3SPlatformResources
-
-  override def apply[Top <: Module](genTop: => Top) =
-    ECP5Top(this, genTop)
 }
 
 class ULX3SPlatformResources extends PlatformBoardResources {
@@ -30,11 +27,27 @@ class ULX3SPlatformResources extends PlatformBoardResources {
   val program =
     resource.Button().inverted.onPin("M4").withAttributes("PULLMODE" -> "UP")
 
+  // TODO: also expose RTS, DTR.
+  var uart = resource
+    .UART()
+    .onPins(rx = "M1", tx = "L4")
+  var uartTxEnable = new resource.ResourceData[Bool](Bool()) {
+    name = Some("uartTxEnable")
+  }
+
 //   val leds =
 //     resource
 //       .LEDs()
 //       .onPins("B2", "C2", "C1", "D2", "D1", "E2", "E1", "H3")
 //       .withAttributes("DRIVE" -> "4")
+
+  val spiFlash = resource
+    .SPIFlash()
+    .onPins(
+      csN = "R2", clock = USRMCLK, copi = "W2", cipo = "V2", wpN = "Y2",
+      holdN = "W1",
+    )
+    .withAttributes("PULLMODE" -> "NONE", "DRIVE" -> "4")
 
 // val buttons =
   // DIP switches
