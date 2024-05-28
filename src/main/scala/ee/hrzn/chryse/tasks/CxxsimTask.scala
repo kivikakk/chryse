@@ -4,6 +4,7 @@ import chisel3._
 import circt.stage.ChiselStage
 import ee.hrzn.chryse.ChryseApp
 import ee.hrzn.chryse.ChryseAppStepFailureException
+import ee.hrzn.chryse.ExampleApp.cxxrtlOptions
 import ee.hrzn.chryse.platform.Platform
 import ee.hrzn.chryse.platform.cxxrtl.BlackBoxGenerator
 import ee.hrzn.chryse.platform.cxxrtl.CXXRTLOptions
@@ -41,11 +42,13 @@ object CxxsimTask extends BaseTask {
     Files.createDirectories(Paths.get(buildDir, platform.id))
     if (runOptions.force) {
       println(s"Cleaning build dir $buildDir/${platform.id}")
-      FileUtils.deleteDirectory(Paths.get(buildDir, platform.id).toFile());
+      FileUtils.deleteDirectory(Paths.get(buildDir, platform.id).toFile())
       Files.createDirectories(Paths.get(buildDir, platform.id))
     }
 
     val name = chryse.name
+
+    appOptions.buildHooks.foreach(_())
 
     val verilogPath = s"$buildDir/${platform.id}/$name.sv"
     val verilog =
