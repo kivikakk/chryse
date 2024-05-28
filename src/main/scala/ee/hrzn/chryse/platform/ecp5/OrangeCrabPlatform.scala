@@ -6,7 +6,7 @@ import ee.hrzn.chryse.platform.PlatformBoardResources
 import ee.hrzn.chryse.platform.resource
 
 // TODO: restrict the variants to those the OrangeCrab was delivered with.
-final case class OrangeCrabPlatform(ecp5Variant: ECP5Variant)
+case class OrangeCrabPlatform(ecp5Variant: ECP5Variant)
     extends PlatformBoard[OrangeCrabPlatformResources]
     with ECP5Platform {
   val id      = "orangecrab"

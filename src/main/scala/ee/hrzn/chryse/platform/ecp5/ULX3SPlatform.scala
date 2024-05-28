@@ -8,7 +8,7 @@ import ee.hrzn.chryse.platform.resource
 
 // TODO: restrict the variants to those the ULX3S was delivered with.
 // TODO: try one of these: https://github.com/emard/ulx3s/blob/master/doc/MANUAL.md#programming-over-wifi-esp32-micropython
-final case class ULX3SPlatform(ecp5Variant: ECP5Variant)
+case class ULX3SPlatform(ecp5Variant: ECP5Variant)
     extends PlatformBoard[ULX3SPlatformResources]
     with ECP5Platform {
   val id      = "orangecrab"
