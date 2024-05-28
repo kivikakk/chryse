@@ -13,8 +13,8 @@ object ExampleApp extends ChryseApp {
   override def genTop()(implicit platform: Platform) = new Top
   override val targetPlatforms                       = Seq(IceBreakerPlatform())
   override val cxxrtlOptions = Some(
-    CXXRTLOptions(platforms =
-      Seq(new CXXRTLPlatform(id = "ex", clockHz = 3_000_000) {}),
-    ),
+    CXXRTLOptions(platforms = Seq(new CXXRTLPlatform("ex") {
+      val clockHz = 3_000_000
+    })),
   )
 }

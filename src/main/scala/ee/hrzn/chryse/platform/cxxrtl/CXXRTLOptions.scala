@@ -1,12 +1,11 @@
 package ee.hrzn.chryse.platform.cxxrtl
 
-import chisel3.BlackBox
-
 import scala.sys.process._
+import chisel3.experimental.ExtModule
 
 final case class CXXRTLOptions(
     platforms: Seq[CXXRTLPlatform],
-    blackboxes: Seq[Class[_ <: BlackBox]] = Seq(),
+    blackboxes: Seq[Class[_ <: ExtModule]] = Seq(),
     cxxFlags: Seq[String] = Seq(),
     ldFlags: Seq[String] = Seq(),
     pkgConfig: Seq[String] = Seq(),

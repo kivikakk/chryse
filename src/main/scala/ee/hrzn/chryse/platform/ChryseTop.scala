@@ -2,7 +2,7 @@ package ee.hrzn.chryse.platform
 
 import chisel3._
 import chisel3.experimental.noPrefix
-import ee.hrzn.chryse.chisel.DirectionOf
+import ee.hrzn.chryse.chisel.directionOf
 
 import scala.collection.mutable
 import scala.language.existentials
@@ -28,10 +28,10 @@ trait ChryseTop extends RawModule {
       topIo: Data,
       portIo: Data,
   ): Unit = {
-    DirectionOf(topIo) match {
-      case DirectionOf.Input =>
+    directionOf(topIo) match {
+      case directionOf.Input =>
         topIo := portIo
-      case DirectionOf.Output =>
+      case directionOf.Output =>
         portIo := topIo
     }
   }

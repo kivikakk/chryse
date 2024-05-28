@@ -6,7 +6,7 @@ import chisel3.experimental.StringParam
 import chisel3.experimental.noPrefix
 import chisel3.util._
 import chisel3.util.experimental.forceName
-import ee.hrzn.chryse.chisel.DirectionOf
+import ee.hrzn.chryse.chisel.directionOf
 import ee.hrzn.chryse.platform.ChryseTop
 import ee.hrzn.chryse.platform.PlatformBoard
 import ee.hrzn.chryse.platform.PlatformBoardResources
@@ -47,9 +47,9 @@ class ICE40Top[Top <: Module](
     val i_type = PinType.PIN_INPUT
 
     // as above, PIN_OUTPUT_{REGISTERED,DDR}_ENABLE_REGISTERED
-    val o_type = DirectionOf(portIo) match {
-      case DirectionOf.Input  => PinType.PIN_NO_OUTPUT
-      case DirectionOf.Output => PinType.PIN_OUTPUT_TRISTATE
+    val o_type = directionOf(portIo) match {
+      case directionOf.Input  => PinType.PIN_NO_OUTPUT
+      case directionOf.Output => PinType.PIN_OUTPUT_TRISTATE
     }
 
     val buffer = Module(
@@ -63,13 +63,13 @@ class ICE40Top[Top <: Module](
       ),
     ).suggestName(s"${res.name.get}_SB_IO")
 
-    DirectionOf(portIo) match {
-      case DirectionOf.Input =>
+    directionOf(portIo) match {
+      case directionOf.Input =>
         buffer.PACKAGE_PIN   := portIo
         topIo                := buffer.D_IN_0
         buffer.OUTPUT_ENABLE := DontCare
         buffer.D_OUT_0       := DontCare
-      case DirectionOf.Output =>
+      case directionOf.Output =>
         buffer.OUTPUT_ENABLE := true.B
         if (portIo.isInstanceOf[Clock]) {
           portIo         := buffer.PACKAGE_PIN.asClock

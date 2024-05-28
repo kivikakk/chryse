@@ -4,12 +4,9 @@ import chisel3._
 
 import scala.language.implicitConversions
 
-private[chryse] object DirectionOf {
+private[chryse] object directionOf {
   def apply[T <: Data](data: T): Direction =
-    classOf[Data]
-      .getMethod("specifiedDirection") // private[chisel3]
-      .invoke(data)
-      .asInstanceOf[SpecifiedDirection] match {
+    specifiedDirectionOf(data) match {
       case SpecifiedDirection.Input  => Input
       case SpecifiedDirection.Output => Output
       case dir                       => throw new Exception(s"unhandled direction $dir")

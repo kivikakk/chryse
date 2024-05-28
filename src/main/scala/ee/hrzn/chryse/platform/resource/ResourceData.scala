@@ -3,7 +3,7 @@ package ee.hrzn.chryse.platform.resource
 import chisel3._
 import chisel3.experimental.Param
 import chisel3.experimental.dataview._
-import ee.hrzn.chryse.chisel.DirectionOf
+import ee.hrzn.chryse.chisel.directionOf
 
 import scala.language.implicitConversions
 
@@ -61,10 +61,10 @@ abstract class ResourceData[HW <: Data](gen: => HW, invert: Boolean = false)
   }
 
   protected def connectIo(user: HW, top: HW): Unit = {
-    DirectionOf(top) match {
-      case DirectionOf.Input =>
+    directionOf(top) match {
+      case directionOf.Input =>
         user := (if (!_invert) top else ~top.asInstanceOf[Bits])
-      case DirectionOf.Output =>
+      case directionOf.Output =>
         top := (if (!_invert) user else ~user.asInstanceOf[Bits])
     }
   }
