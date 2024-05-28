@@ -5,16 +5,14 @@ import ee.hrzn.chryse.platform.PlatformBoard
 import ee.hrzn.chryse.platform.PlatformBoardResources
 import ee.hrzn.chryse.platform.resource
 
-case object OrangeCrabPlatform
-    extends PlatformBoard[OrangeCrabPlatformResources] {
+// TODO: restrict the variants to those the OrangeCrab was delivered with.
+final case class OrangeCrabPlatform(ecp5Variant: ECP5Variant)
+    extends PlatformBoard[OrangeCrabPlatformResources]
+    with ECP5Platform {
   val id      = "orangecrab"
   val clockHz = 48_000_000
 
-  // TODO (ECP5): --25k? define somewhere.
-  val nextpnrBinary = "nextpnr-ecp5"
-  val nextpnrArgs   = Seq("--85k", "--package", "csfBGA285")
-  val packBinary    = "ecppack"
-  val programBinary = "dfu-util"
+  val ecp5Package = "csfBGA285"
 
   val resources = new OrangeCrabPlatformResources
 

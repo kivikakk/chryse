@@ -3,8 +3,8 @@ package ee.hrzn.chryse
 import chisel3._
 import ee.hrzn.chryse.platform.Platform
 import ee.hrzn.chryse.platform.cxxrtl.CXXRTLOptions
-import ee.hrzn.chryse.platform.ice40.IceBreakerPlatform
 import ee.hrzn.chryse.platform.cxxrtl.CXXRTLPlatform
+import ee.hrzn.chryse.platform.ice40.IceBreakerPlatform
 
 object ExampleApp extends ChryseApp {
   class Top(implicit platform: Platform) extends Module {}

@@ -7,14 +7,13 @@ import ee.hrzn.chryse.platform.PlatformBoardResources
 import ee.hrzn.chryse.platform.resource
 
 final case class IceBreakerPlatform(ubtnReset: Boolean = false)
-    extends PlatformBoard[IceBreakerPlatformResources] {
+    extends PlatformBoard[IceBreakerPlatformResources]
+    with ICE40Platform {
   val id      = "icebreaker"
   val clockHz = 12_000_000
 
-  val nextpnrBinary = "nextpnr-ice40"
-  val nextpnrArgs   = Seq("--up5k", "--package", "sg48")
-  val packBinary    = "icepack"
-  val programBinary = "iceprog"
+  override val ice40Variant = UP5K
+  val ice40Package          = "sg48"
 
   val resources = new IceBreakerPlatformResources
 
