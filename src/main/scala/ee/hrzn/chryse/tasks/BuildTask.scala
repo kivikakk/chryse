@@ -31,17 +31,13 @@ object BuildTask extends BaseTask {
 
     val name = chryse.name
 
-    val verilogPath          = s"$buildDir/${platform.id}/$name.sv"
-    var lastPCF: Option[PCF] = None
+    val verilogPath                                  = s"$buildDir/${platform.id}/$name.sv"
+    var topPlatform: Option[platform.TopPlatform[_]] = None
     val verilog =
       ChiselStage.emitSystemVerilog(
         {
-          val elaborated = platform(chryse.genTop()(platform))
-          lastPCF = elaborated match {
-            case ice40: ICE40Top[_] => ice40.lastPCF
-            case _                  => None
-          }
-          elaborated
+          topPlatform = Some(platform(chryse.genTop()(platform)))
+          topPlatform.get
         },
         if (options.fullStacktrace) Array("--full-stacktrace") else Array.empty,
         firtoolOpts = firtoolOpts,
@@ -73,41 +69,11 @@ object BuildTask extends BaseTask {
     )
     runCu(CmdStepSynthesise, yosysCu)
 
-    val pcfPath = s"$buildDir/${platform.id}/$name.pcf"
-    writePath(pcfPath, lastPCF.get.toString())
-
-    val ascPath = s"$buildDir/${platform.id}/$name.asc"
-    val ascCu = CompilationUnit(
-      Some(jsonPath),
-      Seq(pcfPath),
-      ascPath,
-      Seq(
-        platform.nextpnrBinary,
-        "-q",
-        "--log",
-        s"$buildDir/${platform.id}/$name.tim",
-        "--json",
-        jsonPath,
-        "--pcf",
-        pcfPath,
-        "--asc",
-        ascPath,
-      ) ++ platform.nextpnrArgs,
-    )
-    runCu(CmdStepPNR, ascCu)
-
-    val binPath = s"$buildDir/${platform.id}/$name.bin"
-    val binCu = CompilationUnit(
-      Some(ascPath),
-      Seq(),
-      binPath,
-      Seq(platform.packBinary, ascPath, binPath),
-    )
-    runCu(CmdStepPack, binCu)
+    val binPath = platform.build(chryse, topPlatform.get, jsonPath)
 
     if (options.program) {
       println(s"Programming ${platform.id} ...")
-      runCmd(CmdStepProgram, Seq(platform.programBinary, binPath))
+      platform.program(binPath)
     }
   }
 }

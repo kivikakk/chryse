@@ -3,5 +3,7 @@ package ee.hrzn.chryse.platform
 import chisel3._
 
 trait ElaboratablePlatform extends Platform {
-  def apply[Top <: Module](top: => Top): RawModule
+  type TopPlatform[Top <: Module] <: RawModule
+
+  def apply[Top <: Module](top: => Top): TopPlatform[Top]
 }

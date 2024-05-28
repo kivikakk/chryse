@@ -171,6 +171,28 @@ abstract class ChryseApp {
         throw new Exception("unhandled subcommand")
     }
   }
+
+  abstract class ChryseSubcommand(
+      commandName: String,
+      addBoardOption: Boolean = false,
+      commandAliases: Seq[String] = Seq(),
+  ) extends Subcommand((commandName +: commandAliases): _*) {
+    // TODO: deduplicate board option with the one in build!
+    val board =
+      if (addBoardOption && targetPlatforms.length > 1)
+        Some(
+          choice(
+            targetPlatforms.map(_.id),
+            name = "board",
+            argName = "board",
+            descr = s"Board to build for.",
+            required = true,
+          ),
+        )
+      else None
+
+    def execute(): Unit
+  }
 }
 
 object ChryseApp {
@@ -179,8 +201,3 @@ object ChryseApp {
 
 class ChryseAppStepFailureException(step: String)
     extends Exception(s"Chryse step failed: $step") {}
-
-abstract class ChryseSubcommand(commandNameAndAliases: String*)
-    extends Subcommand(commandNameAndAliases: _*) {
-  def execute(): Unit
-}

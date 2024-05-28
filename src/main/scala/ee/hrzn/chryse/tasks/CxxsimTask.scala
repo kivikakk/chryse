@@ -48,7 +48,7 @@ object CxxsimTask extends BaseTask {
 
     val name = chryse.name
 
-    appOptions.buildHooks.foreach(_())
+    appOptions.buildHooks.foreach(_(platform))
 
     val verilogPath = s"$buildDir/${platform.id}/$name.sv"
     val verilog =

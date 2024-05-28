@@ -10,7 +10,7 @@ final case class CXXRTLOptions(
     cxxFlags: Seq[String] = Seq(),
     ldFlags: Seq[String] = Seq(),
     pkgConfig: Seq[String] = Seq(),
-    buildHooks: Seq[() => Any] = Seq(),
+    buildHooks: Seq[CXXRTLPlatform => Any] = Seq(),
 ) {
   lazy val allCxxFlags: Seq[String] = cxxFlags ++ pkgConfig.flatMap(
     Seq("pkg-config", "--cflags", _).!!.trim.split(' '),

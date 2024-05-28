@@ -6,8 +6,9 @@ import ee.hrzn.chryse.platform.PlatformBoard
 import ee.hrzn.chryse.platform.PlatformBoardResources
 import ee.hrzn.chryse.platform.resource
 
-final case class IceBreakerPlatform(ubtnReset: Boolean = false)
-    extends PlatformBoard[IceBreakerPlatformResources]
+case class IceBreakerPlatform(
+    ubtnReset: Boolean = false,
+) extends PlatformBoard[IceBreakerPlatformResources]
     with ICE40Platform {
   val id      = "icebreaker"
   val clockHz = 12_000_000
