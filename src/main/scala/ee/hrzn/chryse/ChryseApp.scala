@@ -49,7 +49,7 @@ abstract class ChryseApp {
                 targetPlatforms.map(_.id),
                 name = "board",
                 argName = "board",
-                descr = s"Board to build for.", // XXX (Scallop): It appends " Choices: …". Kinda ugly.
+                descr = s"Board to build for.", // + " Choices: ..."
                 required = true,
               ),
             )
@@ -174,23 +174,8 @@ abstract class ChryseApp {
 
   abstract class ChryseSubcommand(
       commandName: String,
-      addBoardOption: Boolean = false,
       commandAliases: Seq[String] = Seq(),
   ) extends Subcommand((commandName +: commandAliases): _*) {
-    // TODO: deduplicate board option with the one in build!
-    val board =
-      if (addBoardOption && targetPlatforms.length > 1)
-        Some(
-          choice(
-            targetPlatforms.map(_.id),
-            name = "board",
-            argName = "board",
-            descr = s"Board to build for.",
-            required = true,
-          ),
-        )
-      else None
-
     def execute(): Unit
   }
 }
