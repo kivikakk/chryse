@@ -72,6 +72,7 @@ class ULX3SPlatformResources extends PlatformBoardResources {
     )
     .withAttributes("PULLMODE" -> "NONE", "DRIVE" -> "4")
 
+  val butt0 = Button().inverted.onPin("D6").withAttributes("PULLMODE" -> "UP")
 // val buttons =
   // DIP switches
   // UART

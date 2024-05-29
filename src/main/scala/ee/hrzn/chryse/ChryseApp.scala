@@ -11,7 +11,7 @@ import org.rogach.scallop._
 
 import scala.collection.mutable
 
-// TODO: Restore sbt plugin to attach rm of buildDir to clean.
+// TODO: some platform may program in different ways (ULX3S: flash or SRAM).
 
 abstract class ChryseApp {
   val name: String

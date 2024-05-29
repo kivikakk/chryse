@@ -1,6 +1,8 @@
 package ee.hrzn.chryse.platform.ecp5
 
 import chisel3._
+import chisel3.util.unsignedBitLength
+import ee.hrzn.chryse.chisel.directionOf
 import ee.hrzn.chryse.platform.ChryseTop
 import ee.hrzn.chryse.platform.Platform
 import ee.hrzn.chryse.platform.PlatformBoard
@@ -28,30 +30,61 @@ class ECP5Top[Top <: Module](
     PlatformConnectResultFallthrough
   }
 
-  private val clki = Wire(Clock())
+  override protected def platformPort[HW <: Data](
+      res: ResourceData[HW],
+      topIo: Data,
+      portIo: Data,
+  ) = {
+    directionOf(portIo) match {
+      case directionOf.Input =>
+        val ib = Module(new IB).suggestName(s"${res.name.get}_IB")
+        ib.I  := portIo
+        topIo := ib.O
+      case directionOf.Output =>
+        val obz = Module(new OBZ).suggestName(s"${res.name.get}_OBZ")
+        obz.T  := false.B // OE=1
+        obz.I  := topIo
+        portIo := obz.O
+    }
+  }
+
+  private val clk = Wire(Clock())
 
   private val gsr0 = Wire(Bool())
   private val i0   = Module(new FD1S3AX)
-  i0.CK := clki
+  i0.CK := clk
   i0.D  := true.B
   gsr0  := i0.Q
 
   private val gsr1 = Wire(Bool())
   private val i1   = Module(new FD1S3AX)
-  i1.CK := clki
+  i1.CK := clk
   i1.D  := gsr0
   gsr1  := i1.Q
 
   private val sgsr = Module(new SGSR)
-  sgsr.CLK := clki
+  sgsr.CLK := clk
   sgsr.GSR := gsr1
 
+  // Provide a POR so RegNexts get their value.
+  private val timerLimit = 2
+  private val resetTimerReg =
+    withClock(clk)(Reg(UInt(unsignedBitLength(timerLimit).W)))
+  private val reset = Wire(Bool())
+
+  when(resetTimerReg === timerLimit.U) {
+    reset := false.B
+  }.otherwise {
+    reset         := true.B
+    resetTimerReg := resetTimerReg + 1.U
+  }
+
   private val top =
-    withClockAndReset(clki, false.B)(Module(genTop))
+    withClockAndReset(clk, reset)(Module(genTop))
 
   // TODO (ECP5): allow clock source override.
 
-  val connectedResources = connectResources(platform, Some(clki))
+  val connectedResources = connectResources(platform, Some(clk))
 
   val lpf = LPF(
     connectedResources
