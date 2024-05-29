@@ -49,8 +49,11 @@ class ULX3SPlatformResources extends PlatformBoardResources {
   // TODO: also expose RTS, DTR.
   var uart = UART()
     .onPins(rx = "M1", tx = "L4")
+  // TODO: either just unconditionally set this on, or only when uart.tx is
+  // accessed.
   var uartTxEnable = ResourceData(Output(Bool())).onPin("L3")
 
+  // TODO
   val led0 = LED().inverted.onPin("B2").withAttributes("DRIVE" -> 4)
   val led1 = LED().inverted.onPin("C2").withAttributes("DRIVE" -> 4)
   val led2 = LED().inverted.onPin("C1").withAttributes("DRIVE" -> 4)
@@ -72,6 +75,7 @@ class ULX3SPlatformResources extends PlatformBoardResources {
     )
     .withAttributes("PULLMODE" -> "NONE", "DRIVE" -> "4")
 
+  // TODO
   val butt0 = Button().inverted.onPin("D6").withAttributes("PULLMODE" -> "UP")
 // val buttons =
   // DIP switches
