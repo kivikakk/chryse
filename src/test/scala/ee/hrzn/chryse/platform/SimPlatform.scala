@@ -4,12 +4,12 @@ import chisel3._
 import ee.hrzn.chryse.ChryseApp
 import ee.hrzn.chryse.platform.PlatformBoard
 import ee.hrzn.chryse.platform.PlatformBoardResources
-import ee.hrzn.chryse.platform.ecp5.USRMCLK
+import ee.hrzn.chryse.platform.ecp5.USRMCLKPin
+import ee.hrzn.chryse.platform.resource.Button
 import ee.hrzn.chryse.platform.resource.Connector
+import ee.hrzn.chryse.platform.resource.InOut
 import ee.hrzn.chryse.platform.resource.LED
 import ee.hrzn.chryse.platform.resource.UART
-import ee.hrzn.chryse.platform.resource.Button
-import ee.hrzn.chryse.platform.resource.InOut
 
 final case class SimPlatform() extends PlatformBoard[SimPlatformResources] {
   type TopPlatform[Top <: Module] = SimTop[Top]
@@ -61,7 +61,7 @@ class SimPlatformResources extends PlatformBoardResources {
   val spiFlash = resource
     .SPIFlash()
     .onPins(
-      csN = "R2", clock = USRMCLK, copi = "W2", cipo = "V2", wpN = "Y2",
+      csN = "R2", clock = USRMCLKPin, copi = "W2", cipo = "V2", wpN = "Y2",
       holdN = "W1",
     )
 }

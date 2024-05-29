@@ -1,11 +1,9 @@
 package ee.hrzn.chryse.platform.ecp5
 
-import ee.hrzn.chryse.platform.resource.Pin
-import ee.hrzn.chryse.platform.resource.PinPlatform
+import chisel3._
+import chisel3.experimental.ExtModule
 
-import scala.language.implicitConversions
-
-object USRMCLK {
-  implicit def usrmclk2Pin(usrmclk: this.type): Pin =
-    PinPlatform(this)
+class USRMCLK extends ExtModule {
+  val USRMCLKI  = IO(Input(Clock()))
+  val USRMCLKTS = IO(Input(Bool()))
 }

@@ -13,6 +13,7 @@ trait ECP5Platform { this: PlatformBoard[_ <: PlatformBoardResources] =>
   val ecp5Variant: ECP5Variant
   val ecp5Package: String
   val ecp5Speed: Int
+  val ecp5PackOpts: Seq[String] = Seq()
 
   override def apply[Top <: Module](genTop: => Top) = {
     resources.setNames()
@@ -72,18 +73,11 @@ trait ECP5Platform { this: PlatformBoard[_ <: PlatformBoardResources] =>
         Seq(),
         bitPath,
         Seq("ecppack", "--input", textcfgPath, "--bit", bitPath, "--svf",
-          svfPath),
+          svfPath) ++ ecp5PackOpts,
       )
       runCu(CmdStepPack, bitCu)
 
       BuildResult(bitPath, svfPath)
     }
-  }
-
-  def program(bitAndSvf: BuildResult): Unit =
-    programImpl(bitAndSvf)
-
-  private object programImpl extends BaseTask {
-    def apply(bitAndSvf: BuildResult): Unit = ???
   }
 }

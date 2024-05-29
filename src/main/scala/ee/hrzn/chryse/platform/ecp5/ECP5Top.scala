@@ -5,6 +5,7 @@ import ee.hrzn.chryse.platform.ChryseTop
 import ee.hrzn.chryse.platform.Platform
 import ee.hrzn.chryse.platform.PlatformBoard
 import ee.hrzn.chryse.platform.PlatformBoardResources
+import ee.hrzn.chryse.platform.resource.PinPlatform
 import ee.hrzn.chryse.platform.resource.PinString
 import ee.hrzn.chryse.platform.resource.ResourceData
 
@@ -17,8 +18,13 @@ class ECP5Top[Top <: Module](
       name: String,
       res: ResourceData[_ <: Data],
   ): PlatformConnectResult = {
-    println(s"evaluating: $name / $res")
-    // TODO (ECP5): USRMCLK
+    if (res.pinId == Some(PinPlatform(USRMCLKPin)) && res.ioInst.isDefined) {
+      val inst = Module(new USRMCLK)
+      inst.USRMCLKI  := res.ioInst.get
+      inst.USRMCLKTS := 0.U
+      return PlatformConnectResultNoop
+    }
+
     PlatformConnectResultFallthrough
   }
 

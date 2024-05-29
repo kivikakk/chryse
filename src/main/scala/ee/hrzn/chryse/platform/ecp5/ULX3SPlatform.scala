@@ -6,9 +6,11 @@ import ee.hrzn.chryse.platform.PlatformBoard
 import ee.hrzn.chryse.platform.PlatformBoardResources
 import ee.hrzn.chryse.platform.resource.Button
 import ee.hrzn.chryse.platform.resource.ClockSource
+import ee.hrzn.chryse.platform.resource.LED
 import ee.hrzn.chryse.platform.resource.ResourceData
 import ee.hrzn.chryse.platform.resource.SPIFlash
 import ee.hrzn.chryse.platform.resource.UART
+import ee.hrzn.chryse.tasks.BaseTask
 
 // TODO: restrict the variants to those the ULX3S was delivered with.
 // TODO: try one of these: https://github.com/emard/ulx3s/blob/master/doc/MANUAL.md#programming-over-wifi-esp32-micropython
@@ -18,8 +20,20 @@ case class ULX3SPlatform(ecp5Variant: ECP5Variant)
   val id      = s"ulx3s-${ecp5Variant.id}"
   val clockHz = 25_000_000
 
-  val ecp5Package = "CABGA381"
-  val ecp5Speed   = 6
+  val ecp5Package           = "CABGA381"
+  val ecp5Speed             = 6
+  override val ecp5PackOpts = Seq("--compress")
+
+  def program(bitAndSvf: BuildResult): Unit =
+    programImpl(bitAndSvf)
+
+  private object programImpl extends BaseTask {
+    def apply(bitAndSvf: BuildResult): Unit =
+      runCmd(
+        CmdStepProgram,
+        Seq("openFPGALoader", "-b", "ulx3s", "-m", bitAndSvf.bitPath),
+      )
+  }
 
   val resources = new ULX3SPlatformResources
 }
@@ -30,13 +44,21 @@ class ULX3SPlatformResources extends PlatformBoardResources {
   val clock = ClockSource(25_000_000).onPin("G2")
 
   val program =
-    Button().inverted.onPin("M4").withAttributes("PULLMODE" -> "UP")
+    LED().inverted.onPin("M4").withAttributes("PULLMODE" -> "UP")
 
   // TODO: also expose RTS, DTR.
   var uart = UART()
     .onPins(rx = "M1", tx = "L4")
   var uartTxEnable = ResourceData(Output(Bool())).onPin("L3")
 
+  val led0 = LED().inverted.onPin("B2").withAttributes("DRIVE" -> 4)
+  val led1 = LED().inverted.onPin("C2").withAttributes("DRIVE" -> 4)
+  val led2 = LED().inverted.onPin("C1").withAttributes("DRIVE" -> 4)
+  val led3 = LED().inverted.onPin("D2").withAttributes("DRIVE" -> 4)
+  val led4 = LED().inverted.onPin("D1").withAttributes("DRIVE" -> 4)
+  val led5 = LED().inverted.onPin("E2").withAttributes("DRIVE" -> 4)
+  val led6 = LED().inverted.onPin("E1").withAttributes("DRIVE" -> 4)
+  val led7 = LED().inverted.onPin("H3").withAttributes("DRIVE" -> 4)
 //   val leds =
 //     resource
 //       .LEDs()
@@ -45,7 +67,7 @@ class ULX3SPlatformResources extends PlatformBoardResources {
 
   val spiFlash = SPIFlash()
     .onPins(
-      csN = "R2", clock = USRMCLK, copi = "W2", cipo = "V2", wpN = "Y2",
+      csN = "R2", clock = USRMCLKPin, copi = "W2", cipo = "V2", wpN = "Y2",
       holdN = "W1",
     )
     .withAttributes("PULLMODE" -> "NONE", "DRIVE" -> "4")
