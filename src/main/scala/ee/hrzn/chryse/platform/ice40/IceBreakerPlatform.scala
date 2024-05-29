@@ -37,8 +37,8 @@ class IceBreakerPlatformResources extends PlatformBoardResources {
       .onPins(rx = 6, tx = 9)
       .withAttributes("IO_STANDARD" -> IOStandard.LVTTL, "PULLUP" -> 1)
 
-  val ledg = LED().inverted.onPin(37)
-  val ledr = LED().inverted.onPin(11)
+  val ledg = LED().onPin(37)
+  val ledr = LED().onPin(11)
 
   var spiFlash =
     SPIFlash()

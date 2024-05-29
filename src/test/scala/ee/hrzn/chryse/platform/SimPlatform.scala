@@ -42,9 +42,9 @@ class SimPlatformResources extends PlatformBoardResources {
 
   val uart = UART().onPins(rx = "C3", tx = "D4")
 
-  val ledg = LED().inverted.onPin("E5")
-  val ledr = LED().inverted.onPin("F6")
-  val led3 = LED().inverted.onPin("G7")
+  val ledg = LED().onPin("E5")
+  val ledr = LED().onPin("F6")
+  val led3 = LED().onPin("G7")
 
   val pmod = Connector(
     InOut(),

@@ -6,6 +6,7 @@ import ee.hrzn.chryse.platform.PlatformBoard
 import ee.hrzn.chryse.platform.PlatformBoardResources
 import ee.hrzn.chryse.platform.resource.Button
 import ee.hrzn.chryse.platform.resource.ClockSource
+import ee.hrzn.chryse.platform.resource.Connector
 import ee.hrzn.chryse.platform.resource.LED
 import ee.hrzn.chryse.platform.resource.ResourceData
 import ee.hrzn.chryse.platform.resource.SPIFlash
@@ -44,44 +45,58 @@ class ULX3SPlatformResources extends PlatformBoardResources {
   val clock = ClockSource(25_000_000).onPin("G2")
 
   val program =
-    LED().inverted.onPin("M4").withAttributes("PULLMODE" -> "UP")
+    LED().onPin("M4").withAttributes("PULLMODE" -> PullMode.UP)
 
-  // TODO: also expose RTS, DTR.
+  // TODO: also expose RTS, DTR inputs.
   var uart = UART()
     .onPins(rx = "M1", tx = "L4")
   // TODO: either just unconditionally set this on, or only when uart.tx is
   // accessed.
   var uartTxEnable = ResourceData(Output(Bool())).onPin("L3")
 
-  // TODO
-  val led0 = LED().inverted.onPin("B2").withAttributes("DRIVE" -> 4)
-  val led1 = LED().inverted.onPin("C2").withAttributes("DRIVE" -> 4)
-  val led2 = LED().inverted.onPin("C1").withAttributes("DRIVE" -> 4)
-  val led3 = LED().inverted.onPin("D2").withAttributes("DRIVE" -> 4)
-  val led4 = LED().inverted.onPin("D1").withAttributes("DRIVE" -> 4)
-  val led5 = LED().inverted.onPin("E2").withAttributes("DRIVE" -> 4)
-  val led6 = LED().inverted.onPin("E1").withAttributes("DRIVE" -> 4)
-  val led7 = LED().inverted.onPin("H3").withAttributes("DRIVE" -> 4)
-//   val leds =
-//     resource
-//       .LEDs()
-//       .onPins("B2", "C2", "C1", "D2", "D1", "E2", "E1", "H3")
-//       .withAttributes("DRIVE" -> "4")
+  val leds = Connector(
+    LED().withAttributes("DRIVE" -> 4),
+    0 -> "B2",
+    1 -> "C2",
+    2 -> "C1",
+    3 -> "D2",
+    4 -> "D1",
+    5 -> "E2",
+    6 -> "E1",
+    7 -> "H3",
+  )
 
   val spiFlash = SPIFlash()
     .onPins(
       csN = "R2", clock = USRMCLKPin, copi = "W2", cipo = "V2", wpN = "Y2",
       holdN = "W1",
     )
-    .withAttributes("PULLMODE" -> "NONE", "DRIVE" -> "4")
+    .withAttributes("PULLMODE" -> PullMode.NONE, "DRIVE" -> 4)
 
-  // TODO
-  val butt0 = Button().inverted.onPin("D6").withAttributes("PULLMODE" -> "UP")
-// val buttons =
+  val buttonPwr =
+    Button().inverted.onPin("D6").withAttributes("PULLMODE" -> PullMode.UP)
+  val buttonFire0 =
+    Button().onPin("R1").withAttributes("PULLMODE" -> PullMode.DOWN)
+  val buttonFire1 =
+    Button().onPin("T1").withAttributes("PULLMODE" -> PullMode.DOWN)
+  val buttonLeft =
+    Button().onPin("U1").withAttributes("PULLMODE" -> PullMode.DOWN)
+  val buttonDown =
+    Button().onPin("V1").withAttributes("PULLMODE" -> PullMode.DOWN)
+  val buttonUp =
+    Button().onPin("R18").withAttributes("PULLMODE" -> PullMode.DOWN)
+  val buttonRight =
+    Button().onPin("H16").withAttributes("PULLMODE" -> PullMode.DOWN)
+
+  // val oledBl   = onPin("J4")
+  // val oledCs   = onPin("N2")
+  // val oledDc   = onPin("P1")
+  // val oledRes  = onPin("P2")
+  // val oledCopi = onPin("P3")
+  // val oledClk  = onPin("P4")
+
   // DIP switches
-  // UART
   // SD card
-  // SPI flash
   // SDRAM
   // ADC
   // TRRS

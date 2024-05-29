@@ -1,0 +1,65 @@
+package ee.hrzn.chryse.platform.resource
+
+import chisel3._
+import chisel3.experimental.Param
+
+class SPIOLED extends ResourceBase {
+  val cs    = ResourceData(Output(Bool()), invert = true)
+  val clock = ResourceData(Output(Clock()))
+  val copi  = ResourceData(Output(Bool()))
+  val cipo  = ResourceData(Input(Bool()))
+  val wp    = ResourceData(Output(Bool()), invert = true)
+  val hold  = ResourceData(Output(Bool()), invert = true)
+
+  def setName(name: String): Unit = {
+    cs.setName(s"${name}_cs")
+    clock.setName(s"${name}_clock")
+    copi.setName(s"${name}_copi")
+    cipo.setName(s"${name}_cipo")
+    wp.setName(s"${name}_wp")
+    hold.setName(s"${name}_hold")
+  }
+
+  def withAttributes(attribs: (String, Param)*): this.type = {
+    cs.withAttributes(attribs: _*)
+    clock.withAttributes(attribs: _*)
+    copi.withAttributes(attribs: _*)
+    cipo.withAttributes(attribs: _*)
+    wp.withAttributes(attribs: _*)
+    hold.withAttributes(attribs: _*)
+    this
+  }
+
+  def setDefaultAttributes(defaultAttributes: Map[String, Param]): Unit = {
+    cs.setDefaultAttributes(defaultAttributes)
+    clock.setDefaultAttributes(defaultAttributes)
+    copi.setDefaultAttributes(defaultAttributes)
+    cipo.setDefaultAttributes(defaultAttributes)
+    wp.setDefaultAttributes(defaultAttributes)
+    hold.setDefaultAttributes(defaultAttributes)
+  }
+
+  def onPins(
+      csN: Pin,
+      clock: Pin,
+      copi: Pin,
+      cipo: Pin,
+      wpN: Pin,
+      holdN: Pin,
+  ): this.type = {
+    this.cs.onPin(csN)
+    this.clock.onPin(clock)
+    this.copi.onPin(copi)
+    this.cipo.onPin(cipo)
+    this.wp.onPin(wpN)
+    this.hold.onPin(holdN)
+    this
+  }
+
+  def data: Seq[ResourceData[_ <: Data]] =
+    Seq(cs, clock, copi, cipo, wp, hold)
+}
+
+object SPIOLED {
+  def apply() = new SPIOLED
+}
