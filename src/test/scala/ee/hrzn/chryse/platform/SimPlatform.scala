@@ -1,20 +1,13 @@
 package ee.hrzn.chryse.platform
 
 import chisel3._
+import ee.hrzn.chryse.ChryseApp
 import ee.hrzn.chryse.platform.PlatformBoard
 import ee.hrzn.chryse.platform.PlatformBoardResources
 import ee.hrzn.chryse.platform.resource
 
 final case class SimPlatform() extends PlatformBoard[SimPlatformResources] {
-  val id      = "sim"
-  val clockHz = 1_000_000
-
-  val nextpnrBinary = "xxx"
-  val nextpnrArgs   = Seq()
-  val packBinary    = "xxx"
-  val programBinary = "xxx"
-
-  val resources = new SimPlatformResources
+  type TopPlatform[Top <: Module] = SimTop[Top]
 
   override def apply[Top <: Module](genTop: => Top) = {
     // TODO: detect when `this` isn't the same as the Platform the Top was
@@ -22,6 +15,20 @@ final case class SimPlatform() extends PlatformBoard[SimPlatformResources] {
     resources.setNames()
     new SimTop(this, genTop)
   }
+  override def yosysSynthCommand(top: String): String = ???
+
+  override def build(
+      chryse: ChryseApp,
+      topPlatform: SimTop[_],
+      jsonPath: String,
+  ): String = ???
+
+  override def program(binPath: String): Unit = ???
+
+  val id      = "sim"
+  val clockHz = 1_000_000
+
+  val resources = new SimPlatformResources
 }
 
 class SimPlatformResources extends PlatformBoardResources {
