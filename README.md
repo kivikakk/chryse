@@ -4,35 +4,44 @@ A little framework to build HDL projects in Chisel with open-source toolchains.
 
 ## Examples
 
-* <https://github.com/kivikakk/sevsegsim>
 * <https://github.com/kivikakk/spifrbb> — used as part of a presentation on
   CXXRTL at the Yosys Users Group ([transcript/slides][chisel-and-cxx])
+* <https://github.com/kivikakk/sevsegsim> — graphical demo of CXXRTL integration
 
 [chisel-and-cxx]: https://kivikakk.ee/digital/2024/05/28/chisel-and-cxx/
 
 ```console
 $ sbt run
-sevsegsim 0.1.0 (Chryse 0.1.0-SNAPSHOT)
+spifrbb 0.1.0 (Chryse 0.1.0-SNAPSHOT)
   -h, --help      Show help message
   -v, --version   Show version of this program
 
 Subcommand: build
-Build the design onto icebreaker, and optionally program it.
+Build the design, and optionally program it.
+  -b, --board  <board>    Board to build for. Choices: icebreaker, ulx3s-45f
   -F, --full-stacktrace   Include full Chisel stacktraces
   -p, --program           Program the design onto the board after building
   -h, --help              Show help message
 
 Subcommand: cxxsim
 Run the C++ simulator tests.
-  -c, --compile       Compile only; don't run
-  -d, --debug         Generate source-level debug information
-  -O, --optimize      Build with optimizations
-  -v, --vcd  <file>   Output a VCD file when running cxxsim (passes --vcd <file>
-                      to the executable)
-  -h, --help          Show help message
+  -c, --compile                Compile only; don't run
+  -d, --debug                  Generate source-level debug information
+  -f, --force                  Clean before build
+  -O, --optimize               Build with optimizations
+  -p, --platform  <platform>   CXXRTL platform to use. Choices: wb, bb
+  -v, --vcd  <file>            Output a VCD file when running cxxsim (passes
+                               --vcd <file> to the executable)
+  -h, --help                   Show help message
 
  trailing arguments:
   <arg> ... (not required)   Other arguments for the cxxsim executable
+
+Subcommand: rom
+Build the Stackyem ROM image, and optionally program it.
+  -p, --program  <board>   Program the ROM onto the board. Choices: icebreaker,
+                           ulx3s-45f
+  -h, --help               Show help message
 ```
 
 ## Quick feature overview
