@@ -8,9 +8,11 @@ import ee.hrzn.chryse.tasks.BaseTask
 
 trait ECP5Platform { this: PlatformBoard[_ <: PlatformBoardResources] =>
   type TopPlatform[Top <: Module] = ECP5Top[Top]
+  case class BuildResult(bitPath: String, svfPath: String)
 
   val ecp5Variant: ECP5Variant
   val ecp5Package: String
+  val ecp5Speed: Int
 
   override def apply[Top <: Module](genTop: => Top) = {
     resources.setNames()
@@ -23,7 +25,7 @@ trait ECP5Platform { this: PlatformBoard[_ <: PlatformBoardResources] =>
       chryse: ChryseApp,
       topPlatform: ECP5Top[_],
       jsonPath: String,
-  ): String =
+  ): BuildResult =
     buildImpl(this, chryse, topPlatform, jsonPath)
 
   private object buildImpl extends BaseTask {
@@ -32,18 +34,56 @@ trait ECP5Platform { this: PlatformBoard[_ <: PlatformBoardResources] =>
         chryse: ChryseApp,
         topPlatform: ECP5Top[_],
         jsonPath: String,
-    ): String = ???
+    ): BuildResult = {
+      val name = chryse.name
+
+      val lpfPath = s"$buildDir/${platform.id}/$name.lpf"
+      writePath(lpfPath, topPlatform.lpf.toString())
+
+      val textcfgPath = s"$buildDir/${platform.id}/$name.config"
+      val textcfgCu = CompilationUnit(
+        Some(jsonPath),
+        Seq(lpfPath),
+        textcfgPath,
+        Seq(
+          "nextpnr-ecp5",
+          "-q",
+          "--log",
+          s"$buildDir/${platform.id}/$name.tim",
+          "--json",
+          jsonPath,
+          "--lpf",
+          lpfPath,
+          "--textcfg",
+          textcfgPath,
+          ecp5Variant.arg,
+          "--package",
+          ecp5Package,
+          "--speed",
+          s"$ecp5Speed",
+        ),
+      )
+      runCu(CmdStepPNR, textcfgCu)
+
+      val bitPath = s"$buildDir/${platform.id}/$name.bit"
+      val svfPath = s"$buildDir/${platform.id}/$name.svf"
+      val bitCu = CompilationUnit(
+        Some(textcfgPath),
+        Seq(),
+        bitPath,
+        Seq("ecppack", "--input", textcfgPath, "--bit", bitPath, "--svf",
+          svfPath),
+      )
+      runCu(CmdStepPack, bitCu)
+
+      BuildResult(bitPath, svfPath)
+    }
   }
 
-  def program(binPath: String): Unit =
-    programImpl(binPath)
+  def program(bitAndSvf: BuildResult): Unit =
+    programImpl(bitAndSvf)
 
   private object programImpl extends BaseTask {
-    def apply(binPath: String): Unit = ???
+    def apply(bitAndSvf: BuildResult): Unit = ???
   }
-
-  val nextpnrBinary    = "nextpnr-ecp5"
-  lazy val nextpnrArgs = Seq(ecp5Variant.arg, "--package", ecp5Package)
-  val packBinary       = "ecppack"
-  val programBinary    = "dfu-util"
 }

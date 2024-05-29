@@ -5,12 +5,23 @@ import ee.hrzn.chryse.platform.ChryseTop
 import ee.hrzn.chryse.platform.Platform
 import ee.hrzn.chryse.platform.PlatformBoard
 import ee.hrzn.chryse.platform.PlatformBoardResources
+import ee.hrzn.chryse.platform.resource.PinString
+import ee.hrzn.chryse.platform.resource.ResourceData
 
 class ECP5Top[Top <: Module](
     platform: PlatformBoard[_ <: PlatformBoardResources],
     genTop: => Top,
 ) extends RawModule
     with ChryseTop {
+  override protected def platformConnect(
+      name: String,
+      res: ResourceData[_ <: Data],
+  ): PlatformConnectResult = {
+    println(s"evaluating: $name / $res")
+    // TODO (ECP5): USRMCLK
+    PlatformConnectResultFallthrough
+  }
+
   private val clki = Wire(Clock())
 
   private val gsr0 = Wire(Bool())
@@ -32,5 +43,23 @@ class ECP5Top[Top <: Module](
   private val top =
     withClockAndReset(clki, false.B)(Module(genTop))
 
+  // TODO (ECP5): allow clock source override.
+
   val connectedResources = connectResources(platform, Some(clki))
+
+  val lpf = LPF(
+    connectedResources
+      .flatMap { case (name, cr) =>
+        cr.pin match {
+          case pin: PinString =>
+            Some((name, (pin, cr.attributes)))
+          case _ =>
+            None
+        }
+      }
+      .to(Map),
+    connectedResources
+      .flatMap { case (name, cr) => cr.frequencyHz.map((name, _)) }
+      .to(Map),
+  )
 }

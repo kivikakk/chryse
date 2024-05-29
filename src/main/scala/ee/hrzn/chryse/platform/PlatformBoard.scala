@@ -6,15 +6,17 @@ import ee.hrzn.chryse.ChryseApp
 
 trait PlatformBoard[PBR <: PlatformBoardResources]
     extends ElaboratablePlatform {
+  type BuildResult
+
   def yosysSynthCommand(top: String): String
 
   def build(
       chryse: ChryseApp,
       topPlatform: TopPlatform[_],
       jsonPath: String,
-  ): String
+  ): BuildResult
 
-  def program(binPath: String): Unit
+  def program(buildResult: BuildResult): Unit
 
   val resources: PBR
 }

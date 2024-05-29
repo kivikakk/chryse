@@ -1,9 +1,12 @@
 package ee.hrzn.chryse.platform
 
 import chisel3._
+import chisel3.experimental.Param
 import chisel3.experimental.noPrefix
 import ee.hrzn.chryse.chisel.directionOf
+import ee.hrzn.chryse.platform.resource.ClockSource
 import ee.hrzn.chryse.platform.resource.Pin
+import ee.hrzn.chryse.platform.resource.ResourceData
 
 import scala.collection.mutable
 import scala.language.existentials
@@ -14,21 +17,23 @@ trait ChryseTop extends RawModule {
 
   case class ConnectedResource(
       pin: Pin,
-      frequencyHz: Option[Int],
+      attributes: Map[String, Param],
+      frequencyHz: Option[BigInt],
   )
 
-  object ConnectedResource {
-    implicit def pin2Cr(pin: Pin): ConnectedResource =
-      ConnectedResource(pin, None)
-  }
+  sealed trait PlatformConnectResult
+  case class PlatformConnectResultUsePorts(topIo: Data, portIo: Data)
+      extends PlatformConnectResult
+  case object PlatformConnectResultFallthrough extends PlatformConnectResult
+  case object PlatformConnectResultNoop        extends PlatformConnectResult
 
   protected def platformConnect(
       name: String,
-      res: resource.ResourceData[_ <: Data],
-  ): Option[(Data, Data)] = None
+      res: ResourceData[_ <: Data],
+  ): PlatformConnectResult = PlatformConnectResultFallthrough
 
   protected def platformPort[HW <: Data](
-      res: resource.ResourceData[HW],
+      res: ResourceData[HW],
       topIo: Data,
       portIo: Data,
   ): Unit = {
@@ -49,7 +54,7 @@ trait ChryseTop extends RawModule {
     for { res <- platform.resources.all } {
       val name = res.name.get
       res match {
-        case res: resource.ClockSource =>
+        case res: ClockSource =>
           if (res.ioInst.isDefined) {
             throw new Exception(
               "clock sources must be manually handled for now",
@@ -60,21 +65,31 @@ trait ChryseTop extends RawModule {
           // can't then sink like we would in the resource.Base[_] case.
           connected += name -> ConnectedResource(
             res.pinId.get,
+            res.attributes,
             Some(platform.clockHz),
           )
           clock.get := noPrefix(IO(Input(Clock())).suggestName(name))
 
         case _ =>
           platformConnect(name, res) match {
-            case Some((topIo, portIo)) =>
-              connected += name -> res.pinId.get
+            case PlatformConnectResultUsePorts(topIo, portIo) =>
+              connected += name -> ConnectedResource(
+                res.pinId.get,
+                res.attributes,
+                None,
+              )
               platformPort(res, topIo, portIo)
-            case None =>
+            case PlatformConnectResultFallthrough =>
               if (res.ioInst.isDefined) {
-                connected += name -> res.pinId.get
+                connected += name -> ConnectedResource(
+                  res.pinId.get,
+                  res.attributes,
+                  None,
+                )
                 val (topIo, portIo) = res.makeIoConnection()
                 platformPort(res, topIo, portIo)
               }
+            case PlatformConnectResultNoop =>
           }
       }
     }

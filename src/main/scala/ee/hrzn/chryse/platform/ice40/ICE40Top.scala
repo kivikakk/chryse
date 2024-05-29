@@ -10,7 +10,8 @@ import ee.hrzn.chryse.chisel.directionOf
 import ee.hrzn.chryse.platform.ChryseTop
 import ee.hrzn.chryse.platform.PlatformBoard
 import ee.hrzn.chryse.platform.PlatformBoardResources
-import ee.hrzn.chryse.platform.resource
+import ee.hrzn.chryse.platform.resource.PinInt
+import ee.hrzn.chryse.platform.resource.ResourceData
 
 import scala.collection.mutable
 
@@ -21,8 +22,8 @@ class ICE40Top[Top <: Module](
     with ChryseTop {
   override protected def platformConnect(
       name: String,
-      res: resource.ResourceData[_ <: Data],
-  ): Option[(Data, Data)] = {
+      res: ResourceData[_ <: Data],
+  ): PlatformConnectResult = {
     if (name == "ubtn" && ubtn_reset.isDefined) {
       if (res.ioInst.isDefined)
         throw new Exception("ubtnReset requested but ubtn used in design")
@@ -33,13 +34,14 @@ class ICE40Top[Top <: Module](
       ubtn_reset.get := topIo
 
       val portIo = IO(res.makeIo()).suggestName("ubtn")
-      return Some((topIo, portIo))
+      return PlatformConnectResultUsePorts(topIo, portIo)
     }
-    None
+
+    PlatformConnectResultFallthrough
   }
 
   override protected def platformPort[HW <: Data](
-      res: resource.ResourceData[HW],
+      res: ResourceData[HW],
       topIo: Data,
       portIo: Data,
   ) = {
@@ -119,17 +121,14 @@ class ICE40Top[Top <: Module](
   private val connectedResources =
     connectResources(platform, Some(clki))
 
-  val lastPCF = Some(
-    PCF(
-      connectedResources
-        .map { case (name, cr) =>
-          // iCE40 has no PinPlatforms.
-          (name, cr.pin.asInstanceOf[resource.PinConnected])
-        }
-        .to(Map),
-      connectedResources
-        .flatMap { case (name, cr) => cr.frequencyHz.map((name, _)) }
-        .to(Map),
-    ),
+  val pcf = PCF(
+    connectedResources
+      .map { case (name, cr) =>
+        (name, cr.pin.asInstanceOf[PinInt])
+      }
+      .to(Map),
+    connectedResources
+      .flatMap { case (name, cr) => cr.frequencyHz.map((name, _)) }
+      .to(Map),
   )
 }

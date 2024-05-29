@@ -8,6 +8,7 @@ import ee.hrzn.chryse.tasks.BaseTask
 
 trait ICE40Platform { this: PlatformBoard[_ <: PlatformBoardResources] =>
   type TopPlatform[Top <: Module] = ICE40Top[Top]
+  type BuildResult                = String
 
   val ice40Variant: ICE40Variant
   val ice40Package: String
@@ -36,7 +37,7 @@ trait ICE40Platform { this: PlatformBoard[_ <: PlatformBoardResources] =>
       val name = chryse.name
 
       val pcfPath = s"$buildDir/${platform.id}/$name.pcf"
-      writePath(pcfPath, topPlatform.lastPCF.get.toString())
+      writePath(pcfPath, topPlatform.pcf.toString())
 
       val ascPath = s"$buildDir/${platform.id}/$name.asc"
       val ascCu = CompilationUnit(

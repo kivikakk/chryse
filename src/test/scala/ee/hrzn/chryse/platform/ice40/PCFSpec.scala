@@ -5,23 +5,25 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should._
 
 import java.io.StringWriter
+import ee.hrzn.chryse.platform.resource.PinInt
 
 class PCFSpec extends AnyFlatSpec with Matchers {
   behavior.of("PCF")
 
   it should "format IOs correctly" in {
-    PCF(Map("abc" -> 12, "xy" -> "A9"), Map()).toString() should be(
+    PCF(Map("abc" -> PinInt(12), "xy" -> PinInt(34)), Map())
+      .toString() should be(
       """set_io abc 12
-        |set_io xy A9
+        |set_io xy 34
         |""".stripMargin,
     )
   }
 
   it should "format attached frequencies correctly" in {
-    PCF(Map("abc" -> 12, "xy" -> "A9"), Map("xy" -> 120_000_000))
+    PCF(Map("abc" -> PinInt(12), "xy" -> PinInt(34)), Map("xy" -> 120_000_000))
       .toString() should be(
       """set_io abc 12
-        |set_io xy A9
+        |set_io xy 34
         |set_frequency xy 120.0
         |""".stripMargin,
     )
@@ -29,7 +31,7 @@ class PCFSpec extends AnyFlatSpec with Matchers {
 
   it should "detect unattached frequencies" in {
     an[IllegalArgumentException] should be thrownBy PCF(
-      Map("abc" -> 12),
+      Map("abc" -> PinInt(12)),
       Map("xy"  -> 100),
     )
   }

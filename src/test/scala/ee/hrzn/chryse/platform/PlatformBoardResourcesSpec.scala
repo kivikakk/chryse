@@ -3,6 +3,7 @@ package ee.hrzn.chryse.platform
 import chisel3._
 import chisel3.simulator.EphemeralSimulator._
 import circt.stage.ChiselStage
+import ee.hrzn.chryse.platform.resource.Pin
 import ee.hrzn.chryse.verilog
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should._
@@ -26,25 +27,35 @@ class PlatformBoardResourcesSpec extends AnyFlatSpec with Matchers {
     (rtl, top)
   }
 
+  def assertConnected(top: SimTop[_], rhs: Map[String, Pin]): Unit = {
+    val namesPins: Map[String, Pin] = top.connectedResources.map {
+      case (name, cr) => (name, cr.pin)
+    }
+
+    namesPins should be(rhs)
+  }
+
   it should "detect resource use" in {
     val (_, top) = simSVAndTop(new DetectionTop()(_))
-    top.connectedResources should be(
-      Map[String, top.ConnectedResource](
-        "ledg"    -> resource.Pin("E5"),
-        "uart_rx" -> resource.Pin("C3"),
-        "uart_tx" -> resource.Pin("D4"),
-        "ubtn"    -> resource.Pin("B2"),
+    assertConnected(
+      top,
+      Map(
+        "ledg"    -> "E5",
+        "uart_rx" -> "C3",
+        "uart_tx" -> "D4",
+        "ubtn"    -> "B2",
       ),
     )
   }
 
   it should "invert inputs as requested and use the correct top-level IO names" in {
     val (rtl, top) = simSVAndTop(new InversionTop()(_))
-    top.connectedResources should be(
-      Map[String, top.ConnectedResource](
-        "ledg"    -> resource.Pin("E5"),
-        "uart_tx" -> resource.Pin("D4"),
-        "ubtn"    -> resource.Pin("B2"),
+    assertConnected(
+      top,
+      Map(
+        "ledg"    -> "E5",
+        "uart_tx" -> "D4",
+        "ubtn"    -> "B2",
       ),
     )
 
@@ -73,16 +84,17 @@ class PlatformBoardResourcesSpec extends AnyFlatSpec with Matchers {
 
   it should "handle in/out resources" in {
     val (rtl, top) = simSVAndTop(new InOutTop()(_))
-    top.connectedResources should be(
-      Map[String, top.ConnectedResource](
-        "ubtn"    -> resource.Pin("B2"),
-        "uart_rx" -> resource.Pin("C3"),
-        "uart_tx" -> resource.Pin("D4"),
-        "ledr"    -> resource.Pin("F6"),
-        "pmod1"   -> resource.Pin("H8"),
-        "pmod2"   -> resource.Pin("I9"),
-        "pmod7"   -> resource.Pin("L12"),
-        "pmod8"   -> resource.Pin("M13"),
+    assertConnected(
+      top,
+      Map(
+        "ubtn"    -> "B2",
+        "uart_rx" -> "C3",
+        "uart_tx" -> "D4",
+        "ledr"    -> "F6",
+        "pmod1"   -> "H8",
+        "pmod2"   -> "I9",
+        "pmod7"   -> "L12",
+        "pmod8"   -> "M13",
       ),
     )
 
@@ -134,4 +146,9 @@ class InOutTop(implicit platform: Platform) extends Module {
   // Do the same with 1b1 and 1b2, but use inverted inputs/outputs.
   plat.resources.pmod(7).o := plat.resources.ubtn
   plat.resources.ledr      := plat.resources.pmod(8).i
+}
+
+class USRMCLKTop(implicit platform: Platform) extends Module {
+  val plat = platform.asInstanceOf[SimPlatform]
+  plat.resources.spiFlash.copi := plat.resources.spiFlash.clock
 }
