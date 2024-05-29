@@ -31,7 +31,7 @@ case class ULX3SPlatform(ecp5Variant: ECP5Variant)
     def apply(bitAndSvf: BuildResult): Unit =
       runCmd(
         CmdStepProgram,
-        Seq("openFPGALoader", "-b", "ulx3s", "-m", bitAndSvf.bitPath),
+        Seq("openFPGALoader", "-v", "-b", "ulx3s", "-m", bitAndSvf.bitPath),
       )
   }
 
