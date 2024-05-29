@@ -49,13 +49,14 @@ Run the C++ simulator tests.
 
 ## Platform/board support
 
-### WIP
+### Basic functionality/resources
 
 * iCE40: [iCEBreaker]
+* ECP5: [ULX3S]
 
 ### Planned
 
-* ECP5: [ULX3S], [OrangeCrab]
+* ECP5: [OrangeCrab]
 
 [iCEBreaker]: https://yosyshq.readthedocs.io/projects/yosys/en/latest/cmd/write_cxxrtl.html
 [ULX3S]: https://f.hrzn.ee/chiselcxx.pdf
