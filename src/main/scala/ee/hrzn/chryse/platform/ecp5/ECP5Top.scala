@@ -66,8 +66,9 @@ class ECP5Top[Top <: Module](
   sgsr.CLK := clk
   sgsr.GSR := gsr1
 
-  // Provide a POR so RegNexts get their value.
-  private val timerLimit = 2
+  // Provide a POR so RegNexts get their value, and let some IO settle.
+  // (specifically, the UART line from the FT231X will read low for 4 cycles.)
+  private val timerLimit = 4
   private val resetTimerReg =
     withClock(clk)(Reg(UInt(unsignedBitLength(timerLimit).W)))
   private val reset = Wire(Bool())
