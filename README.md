@@ -2,6 +2,19 @@
 
 A little framework to build HDL projects in Chisel with open-source toolchains.
 
+## Overview
+
+* Provides an extensible App that facilitates synthesis for multiple target
+  platforms, and whatever other tasks you need.
+* Boards provide resources — refer to them in your design, and Chryse
+  instantiates the necessary IO buffers in-between and adds them to the
+  constraints used during place-and-route.
+* [CXXRTL] support: it's just another kind of platform. Chisel modules are
+  translated into CXXRTL blackboxes, you write the sim driver and blackbox
+  implementations, and the build system takes care of the details.
+
+[CXXRTL]: https://yosyshq.readthedocs.io/projects/yosys/en/latest/cmd/write_cxxrtl.html
+
 ## Examples
 
 * <https://github.com/kivikakk/spifrbb> — used as part of a presentation on
@@ -43,19 +56,6 @@ Build the Stackyem ROM image, and optionally program it.
                            ulx3s-45f
   -h, --help               Show help message
 ```
-
-## Quick feature overview
-
-* Provides an extensible App that facilitates synthesis for multiple target
-  platforms, and whatever other tasks you need.
-* Boards provide resources — refer to them in your design, and Chryse
-  instantiates the necessary IO buffers in-between and adds them to the
-  constraints used during place-and-route.
-* [CXXRTL] support: it's just another kind of platform. Chisel modules are
-  translated into CXXRTL blackboxes, you write the sim driver and blackbox
-  implementations, and the build system takes care of the details.
-
-[CXXRTL]: https://yosyshq.readthedocs.io/projects/yosys/en/latest/cmd/write_cxxrtl.html
 
 ## Platform/board support
 
