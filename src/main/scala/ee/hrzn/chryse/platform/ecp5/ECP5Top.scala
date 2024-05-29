@@ -6,25 +6,31 @@ import ee.hrzn.chryse.platform.Platform
 import ee.hrzn.chryse.platform.PlatformBoard
 import ee.hrzn.chryse.platform.PlatformBoardResources
 
-class ECP5Top[Top <: Module](platform: Platform, genTop: => Top)
-    extends RawModule
+class ECP5Top[Top <: Module](
+    platform: PlatformBoard[_ <: PlatformBoardResources],
+    genTop: => Top,
+) extends RawModule
     with ChryseTop {
-  override def desiredName = "ecp5top"
+  private val clki = Wire(Clock())
 
-  private val clki = IO(Input(Clock()))
+  private val gsr0 = Wire(Bool())
+  private val i0   = Module(new FD1S3AX)
+  i0.CK := clki
+  i0.D  := true.B
+  gsr0  := i0.Q
 
-  // TODO (ECP5): GSR stuff. (details follow.)
-  // FD1S3AX D=1    Q=gsr0
-  // FD1S3AX D=gsr0 Q=gsr1
-  // SGSR    GSR=gsr1
-  //
-  // FD1S3AX: posedge-triggered DFF, GSR used for clear.
-  //   Q=Mux(GSR, D, 0).
-  // SGSR:    synchronous-release global set/reset interface.
-  //   Active LOW; when pulsed will (re)set all FFs, latches, registers etc.
-  //   Signals are not connected to SGSR explicitly -- implicitly connected
-  //   globally.
+  private val gsr1 = Wire(Bool())
+  private val i1   = Module(new FD1S3AX)
+  i1.CK := clki
+  i1.D  := gsr0
+  gsr1  := i1.Q
+
+  private val sgsr = Module(new SGSR)
+  sgsr.CLK := clki
+  sgsr.GSR := gsr1
 
   private val top =
     withClockAndReset(clki, false.B)(Module(genTop))
+
+  val connectedResources = connectResources(platform, Some(clki))
 }
