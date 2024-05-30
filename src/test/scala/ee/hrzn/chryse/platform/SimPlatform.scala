@@ -29,7 +29,7 @@ final case class SimPlatform() extends PlatformBoard[SimPlatformResources] {
       jsonPath: String,
   ): Nothing = ???
 
-  override def program(buildResult: Nothing): Unit = ???
+  override def program(buildResult: Nothing, programMode: String): Unit = ???
 
   val id      = "sim"
   val clockHz = 1_000_000
