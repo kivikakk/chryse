@@ -66,9 +66,6 @@ object CxxsimTask extends BaseTask {
       }
     }
 
-    // XXX: We don't call ccPath buildDir/name-platform.cc because that'd imply
-    // the user needs to include different .h files depending on the chosen plat
-    // too.
     val yosysScriptPath = s"$buildDir/${platform.id}/$name.ys"
     val ccPath          = s"$buildDir/${platform.id}/$name.cc"
     writePath(
@@ -94,14 +91,6 @@ object CxxsimTask extends BaseTask {
     )
     runCu(CmdStepSynthesise, yosysCu)
 
-    // TODO: we need to decide how the simulation gets driven. How do we offer
-    // enough control to the user? Do we assume they/let them do all the setup
-    // themselves? etc.
-    //
-    // Fundamentally, the user may have many different ways of driving the
-    // process. We want to facilitate connecting blackboxes etc., but what else?
-    // Hrmmm. Let's start simple (just compiling everything, like rainhdx), and
-    // then see where we go.
     val ccs     = Seq(ccPath) ++ filesInDirWithExt(cxxsimDir, ".cc")
     val headers = filesInDirWithExt(cxxsimDir, ".h").toSeq
 

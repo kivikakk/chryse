@@ -54,10 +54,34 @@ abstract class ChryseApp {
               ),
             )
           else None
+
         val program =
           opt[Boolean](
             descr = "Program the design onto the board after building",
           )
+
+        val programMode =
+          if (targetPlatforms.exists(_.programmingModes.length > 1))
+            Some(
+              opt[String](
+                name = "program-mode",
+                short = 'm',
+                descr = "Alternate programming mode (use -m ? with a board specified to list)",
+              ),
+            )
+          else None
+
+        if (board.isDefined && programMode.isDefined)
+          validateOpt(board.get, programMode.get) {
+            case (Some(b), Some(pm)) if pm != "?" =>
+              val plat = targetPlatforms.find(_.id == b).get
+              if (plat.programmingModes.exists(_._1 == pm))
+                Right(())
+              else
+                Left("Invalid programming mode (use -m ? to list)")
+            case _ => Right(())
+          }
+
         val fullStacktrace = opt[Boolean](
           short = 'F',
           descr = "Include full Chisel stacktraces",
@@ -130,11 +154,27 @@ abstract class ChryseApp {
             targetPlatforms.find(_.id == Conf.build.board.get()).get
           else
             targetPlatforms(0)
+
+        val programMode = Conf.build.programMode.flatMap(_.toOption)
+
+        if (programMode == Some("?")) {
+          println(s"Programming modes for ${platform.id}:")
+          val maxlen = platform.programmingModes.map(_._1.length()).max
+          for { ((name, desc), ix) <- platform.programmingModes.zipWithIndex }
+            println(
+              s"$name${" " * (maxlen - name.length())}" +
+                s"${if (ix == 0) " (default)" else "          "}" +
+                s"  $desc",
+            )
+          return
+        }
+
         tasks.BuildTask(
           this,
           platform,
           tasks.BuildTask.Options(
             Conf.build.program(),
+            programMode.getOrElse(platform.programmingModes(0)._1),
             Conf.build.fullStacktrace(),
           ),
         )

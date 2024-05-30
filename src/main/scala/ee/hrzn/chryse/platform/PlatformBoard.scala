@@ -16,7 +16,10 @@ trait PlatformBoard[PBR <: PlatformBoardResources]
       jsonPath: String,
   ): BuildResult
 
-  def program(buildResult: BuildResult): Unit
+  def program(buildResult: BuildResult, mode: String): Unit
 
   val resources: PBR
+  val programmingModes: Seq[(String, String)] = Seq(
+    ("default", "Default programming mode for the board."),
+  )
 }

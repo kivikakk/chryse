@@ -15,11 +15,10 @@ import java.nio.file.Paths
 object BuildTask extends BaseTask {
   case class Options(
       program: Boolean,
+      programMode: String,
       fullStacktrace: Boolean,
   )
 
-  // TODO (ECP5): refactor — different steps and build products are involved
-  // after synthesis.
   def apply(
       chryse: ChryseApp,
       platform: PlatformBoard[_ <: PlatformBoardResources],
@@ -73,7 +72,7 @@ object BuildTask extends BaseTask {
 
     if (options.program) {
       println(s"Programming ${platform.id} ...")
-      platform.program(binPath)
+      platform.program(binPath, options.programMode)
     }
   }
 }

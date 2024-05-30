@@ -15,7 +15,7 @@ case class OrangeCrabPlatform(ecp5Variant: ECP5Variant)
   val ecp5Package = "csfBGA285"
   val ecp5Speed   = 8
 
-  def program(binPath: BuildResult): Unit = ???
+  def program(binPath: BuildResult, programMode: String): Unit = ???
 
   val resources = new OrangeCrabPlatformResources
 }

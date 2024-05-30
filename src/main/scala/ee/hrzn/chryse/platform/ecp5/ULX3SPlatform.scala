@@ -25,18 +25,29 @@ case class ULX3SPlatform(ecp5Variant: ECP5Variant)
   val ecp5Speed             = 6
   override val ecp5PackOpts = Seq("--compress")
 
-  def program(bitAndSvf: BuildResult): Unit =
-    programImpl(bitAndSvf)
+  def program(bitAndSvf: BuildResult, mode: String): Unit =
+    programImpl(bitAndSvf, mode)
 
   private object programImpl extends BaseTask {
-    def apply(bitAndSvf: BuildResult): Unit =
+    def apply(bitAndSvf: BuildResult, mode: String): Unit =
       runCmd(
         CmdStepProgram,
-        Seq("openFPGALoader", "-v", "-b", "ulx3s", "-m", bitAndSvf.bitPath),
+        Seq(
+          "openFPGALoader",
+          "-v",
+          "-b",
+          "ulx3s",
+          if (mode == "sram") "-m" else "-f",
+          bitAndSvf.bitPath,
+        ),
       )
   }
 
   val resources = new ULX3SPlatformResources
+  override val programmingModes = Seq(
+    ("sram", "Program the design to SRAM directly."),
+    ("flash", "Program the design to the flash."),
+  )
 }
 
 class ULX3SPlatformResources extends PlatformBoardResources {

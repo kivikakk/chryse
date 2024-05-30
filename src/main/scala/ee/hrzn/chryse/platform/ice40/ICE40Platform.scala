@@ -75,7 +75,7 @@ trait ICE40Platform { this: PlatformBoard[_ <: PlatformBoardResources] =>
     }
   }
 
-  def program(binPath: String): Unit =
+  def program(binPath: String, mode: String): Unit =
     programImpl(binPath)
 
   private object programImpl extends BaseTask {
