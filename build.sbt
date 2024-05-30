@@ -1,7 +1,8 @@
-ThisBuild / version       := "0.1.0-SNAPSHOT"
-ThisBuild / organization  := "ee.hrzn"
-ThisBuild / versionScheme := Some("early-semver")
-ThisBuild / homepage      := Some(url("https://github.com/chryse-hdl/chryse"))
+ThisBuild / version              := "0.1.0-SNAPSHOT"
+ThisBuild / versionScheme        := Some("early-semver")
+ThisBuild / homepage             := Some(url("https://github.com/chryse-hdl/chryse"))
+ThisBuild / organization         := "ee.hrzn"
+ThisBuild / organizationHomepage := Some(url("https://github.com/chryse-hdl"))
 
 val chiselVersion = "6.3.0"
 
