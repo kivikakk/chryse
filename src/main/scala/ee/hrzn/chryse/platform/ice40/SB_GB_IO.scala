@@ -6,8 +6,8 @@ import chisel3.experimental.ExtModule
 class SB_GB_IO
     extends ExtModule(
       Map(
-        "IO_STANDARD" -> IOStandard.LVCMOS,
-        "PIN_TYPE"    -> (PinType.PIN_INPUT | PinType.PIN_NO_OUTPUT),
+        IOStandard.LVCMOS,
+        "PIN_TYPE" -> (PinType.PIN_INPUT | PinType.PIN_NO_OUTPUT),
       ),
     ) {
   val PACKAGE_PIN          = IO(Input(Clock()))

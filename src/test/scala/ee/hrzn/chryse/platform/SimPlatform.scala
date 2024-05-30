@@ -59,7 +59,7 @@ class SimPlatformResources extends PlatformBoardResources {
   )
 
   val spiFlash = resource
-    .SPIFlash()
+    .SPI()
     .onPins(
       csN = "R2", clock = USRMCLKPin, copi = "W2", cipo = "V2", wpN = "Y2",
       holdN = "W1",

@@ -5,7 +5,7 @@ import chisel3.experimental.Param
 import ee.hrzn.chryse.platform.PlatformBoard
 import ee.hrzn.chryse.platform.PlatformBoardResources
 import ee.hrzn.chryse.platform.resource.Connector
-import ee.hrzn.chryse.platform.resource.SPIFlash
+import ee.hrzn.chryse.platform.resource.SPI
 import ee.hrzn.chryse.platform.resource.LED
 import ee.hrzn.chryse.platform.resource.UART
 import ee.hrzn.chryse.platform.resource.Button
@@ -26,7 +26,7 @@ case class IceBreakerPlatform(
 }
 
 class IceBreakerPlatformResources extends PlatformBoardResources {
-  override val defaultAttributes = Map("IO_STANDARD" -> IOStandard.LVCMOS)
+  override val defaultAttributes = Map(IOStandard.LVCMOS)
 
   val clock = ClockSource(12_000_000).onPin(35)
 
@@ -35,13 +35,13 @@ class IceBreakerPlatformResources extends PlatformBoardResources {
   val uart =
     UART()
       .onPins(rx = 6, tx = 9)
-      .withAttributes("IO_STANDARD" -> IOStandard.LVTTL, "PULLUP" -> 1)
+      .withAttributes(IOStandard.LVTTL, "PULLUP" -> 1)
 
   val ledg = LED().onPin(37)
   val ledr = LED().onPin(11)
 
   var spiFlash =
-    SPIFlash()
+    SPI()
       .onPins(csN = 16, clock = 15, copi = 14, cipo = 17, wpN = 12, holdN = 13)
 
   // Ideally (per Amaranth) a user can refer to these connectors to make their

@@ -9,7 +9,7 @@ import ee.hrzn.chryse.platform.resource.ClockSource
 import ee.hrzn.chryse.platform.resource.Connector
 import ee.hrzn.chryse.platform.resource.LED
 import ee.hrzn.chryse.platform.resource.ResourceData
-import ee.hrzn.chryse.platform.resource.SPIFlash
+import ee.hrzn.chryse.platform.resource.SPI
 import ee.hrzn.chryse.platform.resource.UART
 import ee.hrzn.chryse.tasks.BaseTask
 
@@ -51,12 +51,15 @@ case class ULX3SPlatform(ecp5Variant: ECP5Variant)
 }
 
 class ULX3SPlatformResources extends PlatformBoardResources {
-  override val defaultAttributes = Map("IO_TYPE" -> IOType.LVCMOS33)
+  // Pins match board version 3.0.8:
+  // https://github.com/emard/ulx3s/tree/v3.0.8
+
+  override val defaultAttributes = Map(IOType.LVCMOS33)
 
   val clock = ClockSource(25_000_000).onPin("G2")
 
   val program =
-    LED().onPin("M4").withAttributes("PULLMODE" -> PullMode.UP)
+    LED().onPin("M4").withAttributes(PullMode.UP)
 
   // TODO: also expose RTS, DTR inputs.
   var uart = UART()
@@ -77,27 +80,27 @@ class ULX3SPlatformResources extends PlatformBoardResources {
     7 -> "H3",
   )
 
-  val spiFlash = SPIFlash()
+  val spiFlash = SPI()
     .onPins(
       csN = "R2", clock = USRMCLKPin, copi = "W2", cipo = "V2", wpN = "Y2",
       holdN = "W1",
     )
-    .withAttributes("PULLMODE" -> PullMode.NONE, "DRIVE" -> 4)
+    .withAttributes(PullMode.NONE, "DRIVE" -> 4)
 
   val buttonPwr =
-    Button().inverted.onPin("D6").withAttributes("PULLMODE" -> PullMode.UP)
+    Button().inverted.onPin("D6").withAttributes(PullMode.UP)
   val buttonFire0 =
-    Button().onPin("R1").withAttributes("PULLMODE" -> PullMode.DOWN)
+    Button().onPin("R1").withAttributes(PullMode.DOWN)
   val buttonFire1 =
-    Button().onPin("T1").withAttributes("PULLMODE" -> PullMode.DOWN)
+    Button().onPin("T1").withAttributes(PullMode.DOWN)
   val buttonLeft =
-    Button().onPin("U1").withAttributes("PULLMODE" -> PullMode.DOWN)
+    Button().onPin("U1").withAttributes(PullMode.DOWN)
   val buttonDown =
-    Button().onPin("V1").withAttributes("PULLMODE" -> PullMode.DOWN)
+    Button().onPin("V1").withAttributes(PullMode.DOWN)
   val buttonUp =
-    Button().onPin("R18").withAttributes("PULLMODE" -> PullMode.DOWN)
+    Button().onPin("R18").withAttributes(PullMode.DOWN)
   val buttonRight =
-    Button().onPin("H16").withAttributes("PULLMODE" -> PullMode.DOWN)
+    Button().onPin("H16").withAttributes(PullMode.DOWN)
 
   // val oledBl   = onPin("J4")
   // val oledCs   = onPin("N2")
@@ -107,9 +110,18 @@ class ULX3SPlatformResources extends PlatformBoardResources {
   // val oledClk  = onPin("P4")
 
   // DIP switches
-  // SD card
+
+  // XXX pull-up on CIPO?
+  // http://elm-chan.org/docs/mmc/mmc_e.html
+  val sdCard = SPI()
+    .onPins(csN = "K2", clock = "H2", copi = "J1", cipo = "J3")
+
   // SDRAM
-  // ADC
+
+  val adc = SPI()
+    .onPins(csN = "R17", copi = "R16", cipo = "U16", clock = "P17")
+    .withAttributes(PullMode.UP)
+
   // TRRS
   // ESP32
   // PCB antenna (!!!)

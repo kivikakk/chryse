@@ -14,8 +14,8 @@ class LPFSpec extends AnyFlatSpec with Matchers {
     LPF(
       Map(
         "abc" -> (PinString("J1"), Map(
-          "IO_TYPE" -> IOType.LVCMOS33,
-          "DRIVE"   -> 4,
+          IOType.LVCMOS33,
+          "DRIVE" -> 4,
         )),
         "xy" -> (PinString("A9"), Map()),
       ),

@@ -3,15 +3,15 @@ package ee.hrzn.chryse.platform.resource
 import chisel3._
 import chisel3.experimental.Param
 
-class SPIFlash extends ResourceBase {
+class SPI extends ResourceBase {
   // TODO: DSPI, QSPI
 
   val cs    = ResourceData(Output(Bool()), invert = true)
   val clock = ResourceData(Output(Clock()))
   val copi  = ResourceData(Output(Bool()))
   val cipo  = ResourceData(Input(Bool()))
-  val wp    = ResourceData(Output(Bool()), invert = true)
-  val hold  = ResourceData(Output(Bool()), invert = true)
+  val wp    = ResourceData(Output(Bool()), invert = true) // permitted to be unset
+  val hold  = ResourceData(Output(Bool()), invert = true) // permitted to be unset
 
   def setName(name: String): Unit = {
     cs.setName(s"${name}_cs")
@@ -46,22 +46,24 @@ class SPIFlash extends ResourceBase {
       clock: Pin,
       copi: Pin,
       cipo: Pin,
-      wpN: Pin,
-      holdN: Pin,
+      wpN: Pin = null,
+      holdN: Pin = null,
   ): this.type = {
     this.cs.onPin(csN)
     this.clock.onPin(clock)
     this.copi.onPin(copi)
     this.cipo.onPin(cipo)
-    this.wp.onPin(wpN)
-    this.hold.onPin(holdN)
+    if (wpN != null)
+      this.wp.onPin(wpN)
+    if (holdN != null)
+      this.hold.onPin(holdN)
     this
   }
 
   def data: Seq[ResourceData[_ <: Data]] =
-    Seq(cs, clock, copi, cipo, wp, hold)
+    Seq(cs, clock, copi, cipo) ++ Seq(wp, hold).filter(_.pinId.isDefined)
 }
 
-object SPIFlash {
-  def apply() = new SPIFlash
+object SPI {
+  def apply() = new SPI
 }

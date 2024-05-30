@@ -56,12 +56,8 @@ class ICE40Top[Top <: Module](
 
     val buffer = Module(
       new SB_IO(
-        i_type | o_type,
-        res.attributes("IO_STANDARD").asInstanceOf[StringParam].value,
-        res.attributes
-          .get("PULLUP")
-          .map(_.asInstanceOf[IntParam].value == 1)
-          .getOrElse(false),
+        (Seq("PIN_TYPE" -> IntParam(i_type | o_type)) ++
+          res.attributes.toSeq): _*,
       ),
     ).suggestName(s"${res.name.get}_SB_IO")
 
