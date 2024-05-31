@@ -1,5 +1,3 @@
-import scala.sys.process._
-
 ThisBuild / scmInfo := Some(
   ScmInfo(
     url("https://github.com/chryse-hdl/chryse"),
