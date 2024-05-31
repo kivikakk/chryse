@@ -1,13 +1,9 @@
 package ee.hrzn.chryse.tasks
 
-import chisel3._
 import circt.stage.ChiselStage
 import ee.hrzn.chryse.ChryseApp
-import ee.hrzn.chryse.platform.Platform
 import ee.hrzn.chryse.platform.PlatformBoard
 import ee.hrzn.chryse.platform.PlatformBoardResources
-import ee.hrzn.chryse.platform.ice40.ICE40Top
-import ee.hrzn.chryse.platform.ice40.PCF
 
 import java.nio.file.Files
 import java.nio.file.Paths

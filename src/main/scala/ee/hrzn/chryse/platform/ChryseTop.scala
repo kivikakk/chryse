@@ -10,7 +10,6 @@ import ee.hrzn.chryse.platform.resource.ResourceData
 
 import scala.collection.mutable
 import scala.language.existentials
-import scala.language.implicitConversions
 
 trait ChryseTop extends RawModule {
   override def desiredName = "chrysetop"
@@ -33,7 +32,7 @@ trait ChryseTop extends RawModule {
   ): PlatformConnectResult = PlatformConnectResultFallthrough
 
   protected def platformPort[HW <: Data](
-      res: ResourceData[HW],
+      @annotation.unused res: ResourceData[HW],
       topIo: Data,
       portIo: Data,
   ): Unit = {

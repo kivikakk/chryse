@@ -2,8 +2,6 @@ package ee.hrzn.chryse.chisel
 
 import chisel3._
 
-import scala.language.implicitConversions
-
 private[chryse] object directionOf {
   def apply[T <: Data](data: T): Direction =
     specifiedDirectionOf(data) match {

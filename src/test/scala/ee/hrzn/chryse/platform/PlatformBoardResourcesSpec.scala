@@ -60,7 +60,7 @@ class PlatformBoardResourcesSpec extends AnyFlatSpec with Matchers {
     )
 
     val plat = SimPlatform()
-    simulate(plat(new InversionTop()(plat))) { c =>
+    simulate(plat(new InversionTop()(plat))) { _ =>
       // InversionTop connects uart.tx and ledg to ubtn. ubtn and ledg are both
       // inverted components, uart.tx isn't. Note that what we poke and peek are
       // the signals on the pins, not transformed for the user, otherwise
@@ -99,7 +99,7 @@ class PlatformBoardResourcesSpec extends AnyFlatSpec with Matchers {
     )
 
     val plat = SimPlatform()
-    simulate(plat(new InOutTop()(plat))) { c =>
+    simulate(plat(new InOutTop()(plat))) { _ =>
       for { v <- Seq(true, false) } {
         plat.resources.uart.rx.portIoInst.get.poke(v.B)
         plat.resources.pmod(2).i.portIoInst.get.poke(v.B)

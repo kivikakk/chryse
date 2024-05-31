@@ -1,17 +1,13 @@
 package ee.hrzn.chryse.tasks
 
-import chisel3._
 import circt.stage.ChiselStage
 import ee.hrzn.chryse.ChryseApp
 import ee.hrzn.chryse.ChryseAppStepFailureException
-import ee.hrzn.chryse.ExampleApp.cxxrtlOptions
-import ee.hrzn.chryse.platform.Platform
 import ee.hrzn.chryse.platform.cxxrtl.BlackBoxGenerator
 import ee.hrzn.chryse.platform.cxxrtl.CXXRTLOptions
 import ee.hrzn.chryse.platform.cxxrtl.CXXRTLPlatform
 import org.apache.commons.io.FileUtils
 
-import java.io.PrintWriter
 import java.nio.file.Files
 import java.nio.file.Paths
 import scala.collection.mutable

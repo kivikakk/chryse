@@ -1,7 +1,5 @@
 package ee.hrzn.chryse.platform
 
-import chisel3._
-import chisel3.experimental.BaseModule
 import ee.hrzn.chryse.ChryseApp
 
 trait PlatformBoard[PBR <: PlatformBoardResources]

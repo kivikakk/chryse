@@ -9,7 +9,7 @@ class SimTop[Top <: Module](
     genTop: => Top,
 ) extends Module
     with ChryseTop {
-  private val top = Module(genTop)
+  Module(genTop)
 
   val connectedResources =
     connectResources(platform, None)

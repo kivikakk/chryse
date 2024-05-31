@@ -18,7 +18,7 @@ lazy val root = (project in file("."))
     ),
     scalacOptions ++= Seq(
       "-language:reflectiveCalls", "-deprecation", "-feature", "-Xcheckinit",
-      "-Ymacro-annotations", "-Wunused",
+      "-Ymacro-annotations", "-Xlint",
     ),
     addCompilerPlugin(
       "org.chipsalliance" % "chisel-plugin" % chiselVersion cross CrossVersion.full,

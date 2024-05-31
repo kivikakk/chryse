@@ -29,7 +29,7 @@ object InterfaceExtractor {
   final private case object ModeInout  extends Mode
 
   def apply(sv: String): Map[String, Module] = {
-    var map = mutable.Map[String, Module]()
+    val map = mutable.Map[String, Module]()
     for {
       Seq(moduleName, contents) <- reWhole.findAllMatchIn(sv).map(_.subgroups)
     } {
@@ -38,7 +38,11 @@ object InterfaceExtractor {
       var outputs    = Seq[String]()
       var inouts     = Seq[String]()
       for { el <- contents.split(",") if el.strip().length() != 0 } {
-        val Seq(kind, name) = reIndividual.findAllMatchIn(el).next().subgroups
+        val (kind, name) =
+          reIndividual.findAllMatchIn(el).next().subgroups match {
+            case Seq(kind, name) => (kind, name)
+            case _               => throw new Exception("weh")
+          }
         kind match {
           case "input"  => mode = ModeInput
           case "output" => mode = ModeOutput

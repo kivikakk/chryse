@@ -105,13 +105,13 @@ object ResourceData {
     }
 
   implicit def viewBool: DataView[ResourceData[Bool], Bool] =
-    DataView(res => Bool(), _.ioInstOrMake() -> _)
+    DataView(_ => Bool(), _.ioInstOrMake() -> _)
 
   implicit def res2bool(res: ResourceData[Bool]): Bool =
     res.viewAs[Bool]
 
   implicit def viewClock: DataView[ResourceData[Clock], Clock] =
-    DataView(res => Clock(), _.ioInstOrMake() -> _)
+    DataView(_ => Clock(), _.ioInstOrMake() -> _)
 
   implicit def res2clock(res: ResourceData[Clock]): Clock =
     res.viewAs[Clock]

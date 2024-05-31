@@ -1,11 +1,8 @@
 package ee.hrzn.chryse.platform.ecp5
 
-import chisel3._
 import ee.hrzn.chryse.platform.resource.PinString
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should._
-
-import java.io.StringWriter
 
 class LPFSpec extends AnyFlatSpec with Matchers {
   behavior.of("LPF")

@@ -4,7 +4,6 @@ import chisel3._
 import chisel3.util.unsignedBitLength
 import ee.hrzn.chryse.chisel.directionOf
 import ee.hrzn.chryse.platform.ChryseTop
-import ee.hrzn.chryse.platform.Platform
 import ee.hrzn.chryse.platform.PlatformBoard
 import ee.hrzn.chryse.platform.PlatformBoardResources
 import ee.hrzn.chryse.platform.resource.PinPlatform
@@ -82,6 +81,8 @@ class ECP5Top[Top <: Module](
 
   private val top =
     withClockAndReset(clk, reset)(Module(genTop))
+  if (top.desiredName == desiredName)
+    throw new IllegalArgumentException(s"user top is called $desiredName")
 
   // TODO (ECP5): allow clock source override.
 

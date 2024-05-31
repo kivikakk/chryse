@@ -16,7 +16,7 @@ object ResourceBase {
   def allFromBoardResources[T <: PlatformBoardResources](
       br: T,
   ): Seq[ResourceData[_ <: Data]] = {
-    var out = ArrayBuffer[ResourceData[_ <: Data]]()
+    val out = ArrayBuffer[ResourceData[_ <: Data]]()
     for { f <- br.getClass().getDeclaredFields().iterator } {
       f.setAccessible(true)
       f.get(br) match {

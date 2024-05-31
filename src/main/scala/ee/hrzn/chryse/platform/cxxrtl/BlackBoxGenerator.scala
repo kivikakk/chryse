@@ -2,7 +2,6 @@ package ee.hrzn.chryse.platform.cxxrtl
 
 import chisel3._
 import chisel3.experimental.ExtModule
-import circt.stage.ChiselStage
 import ee.hrzn.chryse.chisel.BuilderContext
 import ee.hrzn.chryse.chisel.specifiedDirectionOf
 

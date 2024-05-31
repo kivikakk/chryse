@@ -2,18 +2,14 @@ package ee.hrzn.chryse.platform.ice40
 
 import chisel3._
 import chisel3.experimental.IntParam
-import chisel3.experimental.StringParam
 import chisel3.experimental.noPrefix
 import chisel3.util._
-import chisel3.util.experimental.forceName
 import ee.hrzn.chryse.chisel.directionOf
 import ee.hrzn.chryse.platform.ChryseTop
 import ee.hrzn.chryse.platform.PlatformBoard
 import ee.hrzn.chryse.platform.PlatformBoardResources
 import ee.hrzn.chryse.platform.resource.PinInt
 import ee.hrzn.chryse.platform.resource.ResourceData
-
-import scala.collection.mutable
 
 class ICE40Top[Top <: Module](
     platform: PlatformBoard[_ <: PlatformBoardResources],

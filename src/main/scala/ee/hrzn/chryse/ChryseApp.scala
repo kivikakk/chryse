@@ -5,9 +5,6 @@ import ee.hrzn.chryse.platform.Platform
 import ee.hrzn.chryse.platform.PlatformBoard
 import ee.hrzn.chryse.platform.PlatformBoardResources
 import ee.hrzn.chryse.platform.cxxrtl.CXXRTLOptions
-import ee.hrzn.chryse.platform.cxxrtl.CXXRTLPlatform
-
-import scala.collection.mutable
 
 abstract class ChryseApp {
   val name: String
@@ -79,16 +76,10 @@ abstract class ChryseApp {
         )
 
       case Some(chosen) =>
-        for { sc <- additionalSubcommands }
-          if (sc == chosen) {
-            sc.execute()
-            return
-          }
-        throw new Exception("unhandled subcommand")
+        chosen.asInstanceOf[ChryseSubcommand].execute()
 
       case None =>
         conf.printHelp()
-
     }
   }
 }

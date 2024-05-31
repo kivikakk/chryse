@@ -1,11 +1,8 @@
 package ee.hrzn.chryse.platform.ice40
 
-import chisel3._
+import ee.hrzn.chryse.platform.resource.PinInt
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should._
-
-import java.io.StringWriter
-import ee.hrzn.chryse.platform.resource.PinInt
 
 class PCFSpec extends AnyFlatSpec with Matchers {
   behavior.of("PCF")

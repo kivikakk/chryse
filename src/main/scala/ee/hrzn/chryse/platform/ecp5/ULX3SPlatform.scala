@@ -1,7 +1,6 @@
 package ee.hrzn.chryse.platform.ecp5
 
 import chisel3._
-import chisel3.experimental.Param
 import ee.hrzn.chryse.platform.PlatformBoard
 import ee.hrzn.chryse.platform.PlatformBoardResources
 import ee.hrzn.chryse.platform.resource.Button

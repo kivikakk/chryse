@@ -1,16 +1,14 @@
 package ee.hrzn.chryse.platform.ice40
 
-import chisel3._
-import chisel3.experimental.Param
 import ee.hrzn.chryse.platform.PlatformBoard
 import ee.hrzn.chryse.platform.PlatformBoardResources
-import ee.hrzn.chryse.platform.resource.Connector
-import ee.hrzn.chryse.platform.resource.SPI
-import ee.hrzn.chryse.platform.resource.LED
-import ee.hrzn.chryse.platform.resource.UART
 import ee.hrzn.chryse.platform.resource.Button
 import ee.hrzn.chryse.platform.resource.ClockSource
+import ee.hrzn.chryse.platform.resource.Connector
 import ee.hrzn.chryse.platform.resource.InOut
+import ee.hrzn.chryse.platform.resource.LED
+import ee.hrzn.chryse.platform.resource.SPI
+import ee.hrzn.chryse.platform.resource.UART
 
 case class IceBreakerPlatform(
     ubtnReset: Boolean = false,

@@ -45,7 +45,7 @@ trait BaseTask {
   final protected case object CmdStepExecute    extends CmdStep("execute")
 
   private def paddedStep(step: CmdStep): String = {
-    var r      = s"($step)"
+    val r      = s"($step)"
     val spaces = "(place&route) ".length() - r.length()
     r + " " * spaces
   }
