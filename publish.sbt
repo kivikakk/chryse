@@ -21,13 +21,14 @@ ThisBuild / licenses := List(
   "Apache 2" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt"),
 )
 
-githubOwner      := "chryse-hdl"
-githubRepository := "chryse"
+usePgpKeyHex("4ADC6C1E368DB976CCAF886B0D22B80CB8F0D344")
 
-githubTokenSource :=
-  (if (System.getenv().containsKey("GITHUB_ACTIONS")) {
-     s"git config --local --replace-all chryse.token ghp_abc123".!!
-     TokenSource.GitConfig("chryse.token")
-   } else {
-     TokenSource.GitConfig("github.token")
-   })
+ThisBuild / pomIncludeRepository := { _ => false }
+ThisBuild / publishMavenStyle    := true
+
+ThisBuild / publishTo := {
+  val nexus = "https://s01.oss.sonatype.org/"
+  if (isSnapshot.value)
+    Some("snapshots".at(nexus + "content/repositories/snapshots"))
+  else Some("releases".at(nexus + "service/local/staging/deploy/maven2"))
+}
