@@ -1,4 +1,4 @@
-ThisBuild / version              := "0.1.0"
+ThisBuild / version              := "0.1.1-SNAPSHOT"
 ThisBuild / versionScheme        := Some("early-semver")
 ThisBuild / homepage             := Some(url("https://github.com/chryse-hdl/chryse"))
 ThisBuild / organization         := "ee.hrzn"
