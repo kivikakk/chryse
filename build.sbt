@@ -5,7 +5,7 @@ ThisBuild / homepage             := Some(url("https://github.com/chryse-hdl/chry
 ThisBuild / organization         := "ee.hrzn"
 ThisBuild / organizationHomepage := Some(url("https://github.com/chryse-hdl"))
 
-val chiselVersion = "6.3.0"
+val chiselVersion = "6.4.0"
 
 lazy val root = (project in file("."))
   .settings(
