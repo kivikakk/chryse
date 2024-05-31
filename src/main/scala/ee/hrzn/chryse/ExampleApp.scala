@@ -8,7 +8,7 @@ import ee.hrzn.chryse.platform.ecp5.LFE5U_85F
 import ee.hrzn.chryse.platform.ecp5.ULX3SPlatform
 import ee.hrzn.chryse.platform.ice40.IceBreakerPlatform
 
-object ExampleApp extends ChryseApp {
+private[chryse] object ExampleApp extends ChryseApp {
   class Top(implicit @annotation.unused platform: Platform) extends Module {}
 
   override val name                                  = "example"

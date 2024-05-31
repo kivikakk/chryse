@@ -3,7 +3,7 @@ package ee.hrzn.chryse.verilog
 import scala.collection.mutable
 import scala.util.matching.Regex
 
-object InterfaceExtractor {
+private[chryse] object InterfaceExtractor {
   private val reWhole: Regex =
     (raw"(?m)^module (\w+)\(" +
       raw"((?:\s*,?(?:\s*(?:input|output|inout)\s)?" +

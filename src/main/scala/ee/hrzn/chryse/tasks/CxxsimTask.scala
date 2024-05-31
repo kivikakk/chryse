@@ -13,7 +13,7 @@ import java.nio.file.Paths
 import scala.collection.mutable
 import scala.sys.process._
 
-object CxxsimTask extends BaseTask {
+private[chryse] object CxxsimTask extends BaseTask {
   private val cxxsimDir = "cxxsim"
   private val baseCxxOpts = Seq("-std=c++17", "-g", "-pedantic", "-Wall",
     "-Wextra", "-Wno-zero-length-array", "-Wno-unused-parameter")

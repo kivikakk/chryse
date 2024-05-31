@@ -11,7 +11,7 @@ import ee.hrzn.chryse.platform.resource.ResourceData
 import scala.collection.mutable
 import scala.language.existentials
 
-trait ChryseTop extends RawModule {
+private[chryse] trait ChryseTop extends RawModule {
   override def desiredName = "chrysetop"
 
   case class ConnectedResource(

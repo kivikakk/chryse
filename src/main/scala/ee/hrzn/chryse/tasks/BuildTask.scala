@@ -8,7 +8,7 @@ import ee.hrzn.chryse.platform.PlatformBoardResources
 import java.nio.file.Files
 import java.nio.file.Paths
 
-object BuildTask extends BaseTask {
+private[chryse] object BuildTask extends BaseTask {
   case class Options(
       program: Boolean,
       programMode: String,

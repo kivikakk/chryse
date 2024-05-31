@@ -6,7 +6,7 @@ import chisel3.experimental.Param
 class SPI extends ResourceBase {
   // TODO: DSPI, QSPI
 
-  val cs    = ResourceData(Output(Bool()), invert = true)
+  val cs    = ResourceData(Output(Bool()), invert = true) // permitted to be unset
   val clock = ResourceData(Output(Clock()))
   val copi  = ResourceData(Output(Bool()))
   val cipo  = ResourceData(Input(Bool()))
@@ -42,14 +42,15 @@ class SPI extends ResourceBase {
   }
 
   def onPins(
-      csN: Pin,
+      csN: Pin = null,
       clock: Pin,
       copi: Pin,
       cipo: Pin,
       wpN: Pin = null,
       holdN: Pin = null,
   ): this.type = {
-    this.cs.onPin(csN)
+    if (csN != null)
+      this.cs.onPin(csN)
     this.clock.onPin(clock)
     this.copi.onPin(copi)
     this.cipo.onPin(cipo)
@@ -61,7 +62,7 @@ class SPI extends ResourceBase {
   }
 
   def data: Seq[ResourceData[_ <: Data]] =
-    Seq(cs, clock, copi, cipo) ++ Seq(wp, hold).filter(_.pinId.isDefined)
+    Seq(clock, copi, cipo) ++ Seq(cs, wp, hold).filter(_.pinId.isDefined)
 }
 
 object SPI {

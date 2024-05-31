@@ -2,7 +2,7 @@ package ee.hrzn.chryse.platform.ice40
 
 import ee.hrzn.chryse.platform.resource.PinInt
 
-final case class PCF(
+final private[chryse] case class PCF(
     ios: Map[String, PinInt],
     freqs: Map[String, BigInt],
 ) {

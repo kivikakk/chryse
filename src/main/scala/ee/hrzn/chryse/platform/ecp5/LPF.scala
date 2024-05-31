@@ -5,7 +5,7 @@ import chisel3.experimental.Param
 import chisel3.experimental.StringParam
 import ee.hrzn.chryse.platform.resource.PinString
 
-final case class LPF(
+final private[chryse] case class LPF(
     ios: Map[String, (PinString, Map[String, Param])],
     freqs: Map[String, BigInt],
 ) {

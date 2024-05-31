@@ -7,7 +7,7 @@ import ee.hrzn.chryse.chisel.specifiedDirectionOf
 
 import java.io.Writer
 
-class BlackBoxGenerator(private val wr: Writer) {
+private[chryse] class BlackBoxGenerator(private val wr: Writer) {
   // Can we just add attributes somehow and output Verilog instead?
   //
   // -- I looked into this and there's many levels of things missing:
