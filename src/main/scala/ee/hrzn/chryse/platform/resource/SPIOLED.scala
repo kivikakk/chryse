@@ -24,6 +24,8 @@ import chisel3.experimental.Param
 class SPIOLED extends ResourceBase {
   // TODO: There's often a BL/BLK pin pulled high by the OLED which you can
   // ground to turn off the backlight.
+  //
+  // XXX: I don't think having this and SPI and etc. are all particularly necessary/helpful.
   val cs    = ResourceData(Output(Bool()), invert = true) // permitted to be unset
   val clock = ResourceData(Output(Clock()))
   val copi  = ResourceData(Output(Bool()))
