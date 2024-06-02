@@ -1,3 +1,6 @@
+// TODO: publish-time hook to ensure the license notice is (correctly) applied
+// to all source files.
+
 ThisBuild / scmInfo := Some(
   ScmInfo(
     url("https://github.com/chryse-hdl/chryse"),
