@@ -59,7 +59,8 @@ trait ECP5Platform { this: PlatformBoard[_ <: PlatformBoardResources] =>
       val lpfPath = s"$buildDir/${platform.id}/$name.lpf"
       writePath(lpfPath, topPlatform.lpf.toString())
 
-      val textcfgPath = s"$buildDir/${platform.id}/$name.config"
+      val textcfgPath    = s"$buildDir/${platform.id}/$name.config"
+      val nextpnrLogPath = s"$buildDir/${platform.id}/$name.config.log"
       val textcfgCu = CompilationUnit(
         Some(jsonPath),
         Seq(lpfPath),
@@ -68,7 +69,7 @@ trait ECP5Platform { this: PlatformBoard[_ <: PlatformBoardResources] =>
           "nextpnr-ecp5",
           "-q",
           "--log",
-          s"$buildDir/${platform.id}/$name.tim",
+          nextpnrLogPath,
           "--json",
           jsonPath,
           "--lpf",
@@ -83,6 +84,8 @@ trait ECP5Platform { this: PlatformBoard[_ <: PlatformBoardResources] =>
         ),
       )
       runCu(CmdStepPNR, textcfgCu)
+
+      // TODO (ECP5): print statistics like ICE40Platform.
 
       val bitPath = s"$buildDir/${platform.id}/$name.bit"
       val svfPath = s"$buildDir/${platform.id}/$name.svf"

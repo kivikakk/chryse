@@ -57,7 +57,8 @@ trait ICE40Platform { this: PlatformBoard[_ <: PlatformBoardResources] =>
       val pcfPath = s"$buildDir/${platform.id}/$name.pcf"
       writePath(pcfPath, topPlatform.pcf.toString())
 
-      val ascPath = s"$buildDir/${platform.id}/$name.asc"
+      val ascPath        = s"$buildDir/${platform.id}/$name.asc"
+      val nextpnrLogPath = s"$buildDir/${platform.id}/$name.asc.log"
       val ascCu = CompilationUnit(
         Some(jsonPath),
         Seq(pcfPath),
@@ -66,7 +67,7 @@ trait ICE40Platform { this: PlatformBoard[_ <: PlatformBoardResources] =>
           "nextpnr-ice40",
           "-q",
           "--log",
-          s"$buildDir/${platform.id}/$name.tim",
+          nextpnrLogPath,
           "--json",
           jsonPath,
           "--pcf",
@@ -79,6 +80,15 @@ trait ICE40Platform { this: PlatformBoard[_ <: PlatformBoardResources] =>
         ),
       )
       runCu(CmdStepPNR, ascCu)
+
+      println()
+      println("Device utilisation:")
+      logFileBetween(
+        nextpnrLogPath,
+        raw"Info: Device utilisation:".r,
+        raw"Info: Placed .*".r,
+        Some("Info: "),
+      )
 
       val binPath = s"$buildDir/${platform.id}/$name.bin"
       val binCu = CompilationUnit(

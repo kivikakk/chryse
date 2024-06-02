@@ -130,6 +130,38 @@ trait BaseTask {
       .map(_.toString)
       .filter(_.endsWith(ext))
 
+  protected def logFileBetween(
+      path: String,
+      start: Regex,
+      end: Regex,
+      prefix: Option[String] = None,
+  ): Unit = {
+    var started = false
+    var ended   = false
+    val lines   = Files.lines(Paths.get(path)).iterator.asScala
+
+    while (!ended && lines.hasNext) {
+      val line = lines.next()
+      if (!started) {
+        started = start.matches(line)
+      } else if (end.matches(line)) {
+        ended = true
+      } else {
+        println(prefix match {
+          case Some(prefix) =>
+            if (
+              line.length >= prefix.length && line
+                .substring(0, prefix.length()) == prefix
+            )
+              line.substring(prefix.length())
+            else line
+          case None =>
+            line
+        })
+      }
+    }
+  }
+
   case class CompilationUnit(
       val primaryInPath: Option[String],
       val otherInPaths: Seq[String],

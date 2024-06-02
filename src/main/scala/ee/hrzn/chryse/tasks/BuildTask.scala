@@ -66,21 +66,20 @@ private[chryse] object BuildTask extends BaseTask {
          |write_json $jsonPath""".stripMargin,
     )
 
+    val yosysLogPath = s"$buildDir/${platform.id}/$name.json.log"
     val yosysCu = CompilationUnit(
       Some(verilogPath),
       Seq(yosysScriptPath),
       jsonPath,
-      Seq(
-        "yosys",
-        "-q",
-        "-g",
-        "-l",
-        s"$buildDir/${platform.id}/$name.rpt",
-        "-s",
-        yosysScriptPath,
-      ),
+      Seq("yosys", "-q", "-g", "-l", yosysLogPath, "-s", yosysScriptPath),
     )
     runCu(CmdStepSynthesise, yosysCu)
+
+    logFileBetween(
+      yosysLogPath,
+      raw"\d+\.\d+\. Printing statistics\.".r,
+      raw"\d+\.\d+\. .*".r,
+    )
 
     val binPath = platform.build(chryse, topPlatform.get, jsonPath)
 
