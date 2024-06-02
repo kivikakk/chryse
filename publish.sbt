@@ -16,7 +16,7 @@ ThisBuild / developers := List(
 
 ThisBuild / description := "Project framework for Chisel."
 ThisBuild / licenses := List(
-  "Apache 2" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt"),
+  "LGPL-3.0-or-later" -> url("https://spdx.org/licenses/LGPL-3.0-or-later.html"),
 )
 
 usePgpKeyHex("4ADC6C1E368DB976CCAF886B0D22B80CB8F0D344")

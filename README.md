@@ -77,3 +77,9 @@ Build the Stackyem ROM image, and optionally program it.
 [Project Trellis]: https://github.com/YosysHQ/prjtrellis
 [openFPGALoader]: https://github.com/trabucayre/openFPGALoader
 [OrangeCrab]: https://1bitsquared.com/products/orangecrab
+
+## Legal
+
+Copyright © 2024 Asherah Connor. Licensed under the [GNU Lesser General Public License
+3.0 or later](COPYING.LESSER), which builds upon the [GNU General Public License
+3.0](COPYING).

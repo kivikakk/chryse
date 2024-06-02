@@ -16,7 +16,27 @@
  * along with Chryse. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package ee.hrzn.chryse.platform.ice40
+package ee.hrzn.chryse.platform.resource
 
-sealed trait ICE40Variant { val arg: String }
-final case object UP5K extends ICE40Variant { val arg = "--up5k" }
+import scala.language.implicitConversions
+
+sealed trait Pin
+
+case class PinPlatform(p: Any) extends Pin {}
+
+sealed trait PinConnected extends Pin
+
+case class PinString(p: String) extends PinConnected {
+  override def toString(): String = p
+}
+
+case class PinInt(p: Int) extends PinConnected {
+  override def toString(): String = s"$p"
+}
+
+object Pin {
+  def apply(p: String): PinConnected = string2PinConnected(p)
+
+  implicit def string2PinConnected(p: String): PinConnected = PinString(p)
+  implicit def int2PinConnected(p: Int): PinConnected       = PinInt(p)
+}
