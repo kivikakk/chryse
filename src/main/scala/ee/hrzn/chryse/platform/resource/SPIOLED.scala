@@ -27,7 +27,7 @@ class SPIOLED extends ResourceBase {
   //
   // XXX: I don't think having this and SPI and etc. are all particularly necessary/helpful.
   val cs    = ResourceData(Output(Bool()), invert = true) // permitted to be unset
-  val clock = ResourceData(Output(Clock()))
+  val clock = ResourceData(Output(Bool()))
   val copi  = ResourceData(Output(Bool()))
   val cipo  = ResourceData(Input(Bool()))                 // permitted to be unset
   val dc    = ResourceData(Output(Bool()), invert = true)

@@ -25,7 +25,7 @@ class SPI extends ResourceBase {
   // TODO: DSPI, QSPI
 
   val cs    = ResourceData(Output(Bool()), invert = true) // permitted to be unset
-  val clock = ResourceData(Output(Clock()))
+  val clock = ResourceData(Output(Bool()))
   val copi  = ResourceData(Output(Bool()))
   val cipo  = ResourceData(Input(Bool()))
   val wp    = ResourceData(Output(Bool()), invert = true) // permitted to be unset
