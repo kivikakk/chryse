@@ -99,7 +99,7 @@ class ICE40Top[Top <: Module](
   clk_gb.PACKAGE_PIN := clki
   private val clk = clk_gb.GLOBAL_BUFFER_OUTPUT
 
-  private val timerLimit = (15e-6 * platform.clockHz).toInt
+  private val timerLimit = (15 * platform.clockHz / 1_000_000).toInt
   private val resetTimerReg =
     withClock(clk)(Reg(UInt(unsignedBitLength(timerLimit).W)))
   private val reset = Wire(Bool())
