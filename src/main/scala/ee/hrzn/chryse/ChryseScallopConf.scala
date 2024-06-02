@@ -24,7 +24,8 @@ import org.rogach.scallop.Subcommand
 // TODO (Scallop): Show parent version string on subcommand help.
 private[chryse] class ChryseScallopConf(chryse: ChryseApp, args: Array[String])
     extends ScallopConf(args) {
-  private val appVersion = getClass().getPackage().getImplementationVersion()
+  private val appVersion =
+    chryse.getClass().getPackage().getImplementationVersion()
   val versionBanner = s"${chryse.name} $appVersion (Chryse " +
     s"${ChryseApp.getChrysePackage().getImplementationVersion()})"
 
