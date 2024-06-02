@@ -78,6 +78,10 @@ Build the Stackyem ROM image, and optionally program it.
 [openFPGALoader]: https://github.com/trabucayre/openFPGALoader
 [OrangeCrab]: https://1bitsquared.com/products/orangecrab
 
+## Contact
+
+Asherah Connor \<ashe kivikakk ee\>
+
 ## Legal
 
 Copyright © 2024 Asherah Connor. Licensed under the [GNU Lesser General Public License
