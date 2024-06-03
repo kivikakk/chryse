@@ -85,7 +85,14 @@ trait ECP5Platform { this: PlatformBoard[_ <: PlatformBoardResources] =>
       )
       runCu(CmdStepPNR, textcfgCu)
 
-      // TODO (ECP5): print statistics like ICE40Platform.
+      println()
+      println("Device utilisation:")
+      logFileBetween(
+        nextpnrLogPath,
+        raw"Info: Device utilisation:".r,
+        raw"Info: Placed .*".r,
+        Some("Info: "),
+      )
 
       val bitPath = s"$buildDir/${platform.id}/$name.bit"
       val svfPath = s"$buildDir/${platform.id}/$name.svf"
