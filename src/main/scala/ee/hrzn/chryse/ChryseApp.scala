@@ -28,8 +28,8 @@ abstract class ChryseApp {
   val name: String
   def genTop()(implicit platform: Platform): Module
   val targetPlatforms: Seq[PlatformBoard[_ <: PlatformBoardResources]]
-  val cxxrtlOptions: Option[CXXRTLOptions]         = None
   val additionalSubcommands: Seq[ChryseSubcommand] = Seq()
+  val cxxrtlOptions: Option[CXXRTLOptions]         = None
 
   def main(args: Array[String]): Unit = {
     val conf = new ChryseScallopConf(this, args)
