@@ -1,4 +1,4 @@
-ThisBuild / scalaVersion         := "2.13.12"
+ThisBuild / scalaVersion         := "2.13.14"
 ThisBuild / version              := "0.1.1-SNAPSHOT"
 ThisBuild / versionScheme        := Some("early-semver")
 ThisBuild / homepage             := Some(url("https://github.com/chryse-hdl/chryse"))
@@ -11,10 +11,11 @@ lazy val root = (project in file("."))
   .settings(
     name := "chryse",
     libraryDependencies ++= Seq(
-      "org.chipsalliance" %% "chisel"    % chiselVersion,
-      "org.scalatest"     %% "scalatest" % "3.2.18" % "test",
-      "org.rogach"        %% "scallop"   % "5.1.0",
-      "com.lihaoyi"       %% "upickle"   % "3.1.0",
+      "org.chipsalliance" %% "chisel"     % chiselVersion,
+      "org.scalatest"     %% "scalatest"  % "3.2.18" % "test",
+      "org.rogach"        %% "scallop"    % "5.1.0",
+      "com.lihaoyi"       %% "upickle"    % "3.1.0",
+      "commons-io"         % "commons-io" % "2.16.1",
     ),
     scalacOptions ++= Seq(
       "-language:reflectiveCalls", "-deprecation", "-feature", "-Xcheckinit",
