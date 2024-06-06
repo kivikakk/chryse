@@ -28,6 +28,7 @@ trait Ice40Platform { this: PlatformBoard[_ <: PlatformBoardResources] =>
   type TopPlatform[Top <: Module] = Ice40Top[Top]
   type BuildResult                = String
 
+  val ice40Args: Seq[String] = Seq()
   val ice40Variant: Ice40Variant
   val ice40Package: String
 
@@ -36,7 +37,10 @@ trait Ice40Platform { this: PlatformBoard[_ <: PlatformBoardResources] =>
     new Ice40Top(this, genTop)
   }
 
-  def yosysSynthCommand(top: String) = s"synth_ice40 -top $top"
+  def yosysSynthCommand(top: String) =
+    s"synth_ice40 -top $top" + (if (ice40Args.nonEmpty)
+                                  s" ${ice40Args.mkString(" ")}"
+                                else "")
 
   def build(
       chryse: ChryseApp,

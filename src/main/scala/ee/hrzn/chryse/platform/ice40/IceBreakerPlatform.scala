@@ -31,11 +31,13 @@ import ee.hrzn.chryse.platform.resource.Uart
 
 case class IceBreakerPlatform(
     ubtnReset: Boolean = false,
+    inferSpram: Boolean = false,
 ) extends PlatformBoard[IceBreakerPlatformResources]
     with Ice40Platform {
   val id      = "icebreaker"
   val clockHz = 12_000_000
 
+  override val ice40Args    = if (inferSpram) Seq("-spram") else Seq()
   override val ice40Variant = UP5K
   val ice40Package          = "sg48"
 
