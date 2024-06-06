@@ -58,11 +58,13 @@ private[chryse] object BuildTask extends BaseTask {
     writePath(verilogPath, verilog)
 
     val yosysScriptPath = s"$buildDir/${platform.id}/$name.ys"
+    val rtlilPath       = s"$buildDir/${platform.id}/$name.il"
     val jsonPath        = s"$buildDir/${platform.id}/$name.json"
     writePath(
       yosysScriptPath,
       s"""read_verilog -sv $verilogPath
          |${platform.yosysSynthCommand("chrysetop")}
+         |write_rtlil $rtlilPath
          |write_json $jsonPath""".stripMargin,
     )
 
