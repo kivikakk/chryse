@@ -21,7 +21,7 @@ package ee.hrzn.chryse.platform.resource
 import chisel3._
 import chisel3.experimental.Param
 
-class SPI extends ResourceBase {
+class Spi extends ResourceBase {
   // TODO: DSPI, QSPI
 
   val cs    = ResourceData(Output(Bool()), invert = true) // permitted to be unset
@@ -83,6 +83,6 @@ class SPI extends ResourceBase {
     Seq(clock, copi, cipo) ++ Seq(cs, wp, hold).filter(_.pinId.isDefined)
 }
 
-object SPI {
-  def apply() = new SPI
+object Spi {
+  def apply() = new Spi
 }

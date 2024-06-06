@@ -22,14 +22,14 @@ import chisel3.Module
 import ee.hrzn.chryse.platform.Platform
 import ee.hrzn.chryse.platform.PlatformBoard
 import ee.hrzn.chryse.platform.PlatformBoardResources
-import ee.hrzn.chryse.platform.cxxrtl.CXXRTLOptions
+import ee.hrzn.chryse.platform.cxxrtl.CxxrtlOptions
 
 abstract class ChryseApp {
   val name: String
   def genTop()(implicit platform: Platform): Module
   val targetPlatforms: Seq[PlatformBoard[_ <: PlatformBoardResources]]
   val additionalSubcommands: Seq[ChryseSubcommand] = Seq()
-  val cxxrtlOptions: Option[CXXRTLOptions]         = None
+  val cxxrtlOptions: Option[CxxrtlOptions]         = None
 
   def main(args: Array[String]): Unit = {
     val conf = new ChryseScallopConf(this, args)

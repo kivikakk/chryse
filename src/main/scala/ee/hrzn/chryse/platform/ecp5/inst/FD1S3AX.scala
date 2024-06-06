@@ -16,18 +16,15 @@
  * along with Chryse. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package ee.hrzn.chryse.platform.ice40
+package ee.hrzn.chryse.platform.ecp5.inst
 
 import chisel3._
 import chisel3.experimental.ExtModule
 
-class SB_GB_IO
-    extends ExtModule(
-      Map(
-        IOStandard.LVCMOS,
-        "PIN_TYPE" -> (PinType.PIN_INPUT | PinType.PIN_NO_OUTPUT),
-      ),
-    ) {
-  val PACKAGE_PIN          = IO(Input(Clock()))
-  val GLOBAL_BUFFER_OUTPUT = IO(Output(Clock()))
+// FD1S3AX: posedge-triggered DFF, GSR used for clear.
+//   Q=Mux(GSR, D, 0).
+class FD1S3AX extends ExtModule(Map("GSR" -> "DISABLED")) {
+  val CK = IO(Input(Clock()))
+  val D  = IO(Input(Bool()))
+  val Q  = IO(Output(Bool()))
 }

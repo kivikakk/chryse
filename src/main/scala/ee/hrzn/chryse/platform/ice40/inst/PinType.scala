@@ -16,13 +16,14 @@
  * along with Chryse. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package ee.hrzn.chryse.platform.ecp5
+package ee.hrzn.chryse.platform.ice40.inst
 
-import chisel3._
-import chisel3.experimental.ExtModule
+// See SiliconBlue ICE™ Technology Library.
+object PinType {
+  val PIN_INPUT     = 0x1
+  val PIN_INPUT_DDR = 0x0 // REGISTERED
 
-class OBZ extends ExtModule {
-  val T = IO(Input(Bool())) // inverted OE
-  val I = IO(Input(Bool()))
-  val O = IO(Output(Bool()))
+  val PIN_NO_OUTPUT       = 0x0
+  val PIN_OUTPUT          = 0x18
+  val PIN_OUTPUT_TRISTATE = 0x28
 }

@@ -23,9 +23,9 @@ import ee.hrzn.chryse.platform.PlatformBoardResources
 import ee.hrzn.chryse.platform.resource.ClockSource
 
 // TODO: restrict the variants to those the OrangeCrab was delivered with.
-case class OrangeCrabPlatform(ecp5Variant: ECP5Variant)
+case class OrangeCrabPlatform(ecp5Variant: Ecp5Variant)
     extends PlatformBoard[OrangeCrabPlatformResources]
-    with ECP5Platform {
+    with Ecp5Platform {
   val id      = "orangecrab"
   val clockHz = 48_000_000
 

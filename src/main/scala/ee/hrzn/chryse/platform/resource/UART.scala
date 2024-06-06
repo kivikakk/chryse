@@ -21,7 +21,7 @@ package ee.hrzn.chryse.platform.resource
 import chisel3._
 import chisel3.experimental.Param
 
-class UART extends ResourceBase {
+class Uart extends ResourceBase {
   val rx = ResourceData(Input(Bool()))
   val tx = ResourceData(Output(Bool()))
 
@@ -50,6 +50,6 @@ class UART extends ResourceBase {
   def data: Seq[ResourceData[_ <: Data]] = Seq(rx, tx)
 }
 
-object UART {
-  def apply() = new UART
+object Uart {
+  def apply() = new Uart
 }

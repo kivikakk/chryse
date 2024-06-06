@@ -24,11 +24,16 @@ import ee.hrzn.chryse.chisel.directionOf
 import ee.hrzn.chryse.platform.ChryseTop
 import ee.hrzn.chryse.platform.PlatformBoard
 import ee.hrzn.chryse.platform.PlatformBoardResources
+import ee.hrzn.chryse.platform.ecp5.inst.FD1S3AX
+import ee.hrzn.chryse.platform.ecp5.inst.IB
+import ee.hrzn.chryse.platform.ecp5.inst.OBZ
+import ee.hrzn.chryse.platform.ecp5.inst.SGSR
+import ee.hrzn.chryse.platform.ecp5.inst.USRMCLK
 import ee.hrzn.chryse.platform.resource.PinPlatform
 import ee.hrzn.chryse.platform.resource.PinString
 import ee.hrzn.chryse.platform.resource.ResourceData
 
-class ECP5Top[Top <: Module](
+class Ecp5Top[Top <: Module](
     platform: PlatformBoard[_ <: PlatformBoardResources],
     genTop: => Top,
 ) extends RawModule
@@ -37,7 +42,7 @@ class ECP5Top[Top <: Module](
       name: String,
       res: ResourceData[_ <: Data],
   ): PlatformConnectResult = {
-    if (res.pinId == Some(PinPlatform(USRMCLKPin)) && res.ioInst.isDefined) {
+    if (res.pinId == Some(PinPlatform(UsrmclkPin)) && res.ioInst.isDefined) {
       val inst = Module(new USRMCLK)
       inst.USRMCLKI  := res.ioInst.get
       inst.USRMCLKTS := 0.U
@@ -102,11 +107,11 @@ class ECP5Top[Top <: Module](
   if (top.desiredName == desiredName)
     throw new IllegalArgumentException(s"user top is called $desiredName")
 
-  // TODO (ECP5): allow clock source override.
+  // TODO (Ecp5): allow clock source override.
 
   val connectedResources = connectResources(platform, Some(clk))
 
-  val lpf = LPF(
+  val lpf = Lpf(
     connectedResources
       .flatMap { case (name, cr) =>
         cr.pin match {

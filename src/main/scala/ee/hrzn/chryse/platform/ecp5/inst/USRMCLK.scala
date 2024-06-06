@@ -16,11 +16,12 @@
  * along with Chryse. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package ee.hrzn.chryse.platform.ice40
+package ee.hrzn.chryse.platform.ecp5.inst
 
-import chisel3.experimental.StringParam
+import chisel3._
+import chisel3.experimental.ExtModule
 
-object IOStandard {
-  val LVCMOS = "IO_STANDARD" -> StringParam("SB_LVCMOS")
-  val LVTTL  = "IO_STANDARD" -> StringParam("SB_LVTTL")
+class USRMCLK extends ExtModule {
+  val USRMCLKI  = IO(Input(Clock()))
+  val USRMCLKTS = IO(Input(Bool()))
 }

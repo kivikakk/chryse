@@ -16,16 +16,31 @@
  * along with Chryse. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package ee.hrzn.chryse.platform.ecp5
+package ee.hrzn.chryse.platform.ice40.inst
 
 import chisel3._
 import chisel3.experimental.ExtModule
+import chisel3.experimental.IntParam
+import chisel3.experimental.Param
 
-// SGSR:    synchronous-release global set/reset interface.
-//   Active LOW; when pulsed will (re)set all FFs, latches, registers etc.
-//   Signals are not connected to SGSR explicitly -- implicitly connected
-//   globally.
-class SGSR extends ExtModule {
-  val CLK = IO(Input(Clock()))
-  val GSR = IO(Input(Bool()))
+class SB_IO(
+    attrs: (String, Param)*,
+) extends ExtModule(attrs.to(Map)) {
+  // XXX: hyperspecific to Ice40Top's SB_IO generation and doesn't support
+  // tristates.
+  private val pinType =
+    attrs.find(_._1 == "PIN_TYPE").get._2.asInstanceOf[IntParam].value.toInt
+  private val isOutput = (pinType & PinType.PIN_OUTPUT_TRISTATE) != 0
+
+  private def genPin(): Bool = {
+    if (isOutput)
+      Output(Bool())
+    else
+      Input(Bool())
+  }
+
+  val PACKAGE_PIN   = IO(genPin())
+  val OUTPUT_ENABLE = IO(Input(Bool()))
+  val D_IN_0        = IO(Output(Bool()))
+  val D_OUT_0       = IO(Input(Bool()))
 }

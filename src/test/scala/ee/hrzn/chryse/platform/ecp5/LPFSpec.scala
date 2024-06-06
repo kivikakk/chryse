@@ -18,15 +18,16 @@
 
 package ee.hrzn.chryse.platform.ecp5
 
+import ee.hrzn.chryse.platform.ecp5.inst.IOType
 import ee.hrzn.chryse.platform.resource.PinString
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should._
 
-class LPFSpec extends AnyFlatSpec with Matchers {
-  behavior.of("LPF")
+class LpfSpec extends AnyFlatSpec with Matchers {
+  behavior.of("Lpf")
 
   it should "format IOs, attributes and frequencies correctly" in {
-    LPF(
+    Lpf(
       Map(
         "abc" -> (PinString("J1"), Map(
           IOType.LVCMOS33,

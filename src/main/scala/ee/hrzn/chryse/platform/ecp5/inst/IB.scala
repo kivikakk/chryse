@@ -16,10 +16,12 @@
  * along with Chryse. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package ee.hrzn.chryse.platform.ecp5
+package ee.hrzn.chryse.platform.ecp5.inst
 
-import chisel3.experimental.StringParam
+import chisel3._
+import chisel3.experimental.ExtModule
 
-object IOType {
-  val LVCMOS33 = "IO_TYPE" -> StringParam("LVCMOS33")
+class IB extends ExtModule {
+  val I = IO(Input(Bool()))
+  val O = IO(Output(Bool()))
 }

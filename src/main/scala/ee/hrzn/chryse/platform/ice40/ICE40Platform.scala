@@ -24,23 +24,23 @@ import ee.hrzn.chryse.platform.PlatformBoard
 import ee.hrzn.chryse.platform.PlatformBoardResources
 import ee.hrzn.chryse.tasks.BaseTask
 
-trait ICE40Platform { this: PlatformBoard[_ <: PlatformBoardResources] =>
-  type TopPlatform[Top <: Module] = ICE40Top[Top]
+trait Ice40Platform { this: PlatformBoard[_ <: PlatformBoardResources] =>
+  type TopPlatform[Top <: Module] = Ice40Top[Top]
   type BuildResult                = String
 
-  val ice40Variant: ICE40Variant
+  val ice40Variant: Ice40Variant
   val ice40Package: String
 
   override def apply[Top <: Module](genTop: => Top) = {
     resources.setNames()
-    new ICE40Top(this, genTop)
+    new Ice40Top(this, genTop)
   }
 
   def yosysSynthCommand(top: String) = s"synth_ice40 -top $top"
 
   def build(
       chryse: ChryseApp,
-      topPlatform: ICE40Top[_],
+      topPlatform: Ice40Top[_],
       jsonPath: String,
   ): String =
     buildImpl(this, chryse, topPlatform, jsonPath)
@@ -49,7 +49,7 @@ trait ICE40Platform { this: PlatformBoard[_ <: PlatformBoardResources] =>
     def apply(
         platform: PlatformBoard[_],
         chryse: ChryseApp,
-        topPlatform: ICE40Top[_],
+        topPlatform: Ice40Top[_],
         jsonPath: String,
     ): String = {
       val name = chryse.name

@@ -20,18 +20,19 @@ package ee.hrzn.chryse.platform.ice40
 
 import ee.hrzn.chryse.platform.PlatformBoard
 import ee.hrzn.chryse.platform.PlatformBoardResources
+import ee.hrzn.chryse.platform.ice40.inst.IOStandard
 import ee.hrzn.chryse.platform.resource.Button
 import ee.hrzn.chryse.platform.resource.ClockSource
 import ee.hrzn.chryse.platform.resource.Connector
 import ee.hrzn.chryse.platform.resource.InOut
-import ee.hrzn.chryse.platform.resource.LED
-import ee.hrzn.chryse.platform.resource.SPI
-import ee.hrzn.chryse.platform.resource.UART
+import ee.hrzn.chryse.platform.resource.Led
+import ee.hrzn.chryse.platform.resource.Spi
+import ee.hrzn.chryse.platform.resource.Uart
 
 case class IceBreakerPlatform(
     ubtnReset: Boolean = false,
 ) extends PlatformBoard[IceBreakerPlatformResources]
-    with ICE40Platform {
+    with Ice40Platform {
   val id      = "icebreaker"
   val clockHz = 12_000_000
 
@@ -49,15 +50,15 @@ class IceBreakerPlatformResources extends PlatformBoardResources {
   val ubtn = Button().inverted.onPin(10)
 
   val uart =
-    UART()
+    Uart()
       .onPins(rx = 6, tx = 9)
       .withAttributes(IOStandard.LVTTL, "PULLUP" -> 1)
 
-  val ledg = LED().onPin(37)
-  val ledr = LED().onPin(11)
+  val ledg = Led().onPin(37)
+  val ledr = Led().onPin(11)
 
   var spiFlash =
-    SPI()
+    Spi()
       .onPins(csN = 16, clock = 15, copi = 14, cipo = 17, wpN = 12, holdN = 13)
 
   // Ideally (per Amaranth) a user can refer to these connectors to make their

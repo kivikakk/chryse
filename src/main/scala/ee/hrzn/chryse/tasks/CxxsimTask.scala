@@ -22,8 +22,8 @@ import circt.stage.ChiselStage
 import ee.hrzn.chryse.ChryseApp
 import ee.hrzn.chryse.ChryseAppStepFailureException
 import ee.hrzn.chryse.platform.cxxrtl.BlackBoxGenerator
-import ee.hrzn.chryse.platform.cxxrtl.CXXRTLOptions
-import ee.hrzn.chryse.platform.cxxrtl.CXXRTLPlatform
+import ee.hrzn.chryse.platform.cxxrtl.CxxrtlOptions
+import ee.hrzn.chryse.platform.cxxrtl.CxxrtlPlatform
 import org.apache.commons.io.FileUtils
 
 import java.nio.file.Files
@@ -45,10 +45,10 @@ private[chryse] object CxxsimTask extends BaseTask {
       args: Seq[String],
   )
 
-  def apply[P <: CXXRTLPlatform](
+  def apply[P <: CxxrtlPlatform](
       chryse: ChryseApp,
       platform: P,
-      appOptions: CXXRTLOptions,
+      appOptions: CxxrtlOptions,
       runOptions: Options,
   ): Unit = {
     println(s"Building cxxsim ${platform.id} ...")

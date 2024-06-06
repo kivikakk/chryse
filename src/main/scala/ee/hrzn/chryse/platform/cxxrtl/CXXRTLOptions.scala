@@ -22,13 +22,13 @@ import chisel3.experimental.ExtModule
 
 import scala.sys.process._
 
-final case class CXXRTLOptions(
-    platforms: Seq[CXXRTLPlatform],
+final case class CxxrtlOptions(
+    platforms: Seq[CxxrtlPlatform],
     blackboxes: Seq[Class[_ <: ExtModule]] = Seq(),
     cxxFlags: Seq[String] = Seq(),
     ldFlags: Seq[String] = Seq(),
     pkgConfig: Seq[String] = Seq(),
-    buildHooks: Seq[CXXRTLPlatform => Any] = Seq(),
+    buildHooks: Seq[CxxrtlPlatform => Any] = Seq(),
 ) {
   lazy val allCxxFlags: Seq[String] = cxxFlags ++ pkgConfig.flatMap(
     Seq("pkg-config", "--cflags", _).!!.trim.split(' '),

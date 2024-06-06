@@ -26,10 +26,13 @@ import ee.hrzn.chryse.chisel.directionOf
 import ee.hrzn.chryse.platform.ChryseTop
 import ee.hrzn.chryse.platform.PlatformBoard
 import ee.hrzn.chryse.platform.PlatformBoardResources
+import ee.hrzn.chryse.platform.ice40.inst.PinType
+import ee.hrzn.chryse.platform.ice40.inst.SB_GB_IO
+import ee.hrzn.chryse.platform.ice40.inst.SB_IO
 import ee.hrzn.chryse.platform.resource.PinInt
 import ee.hrzn.chryse.platform.resource.ResourceData
 
-class ICE40Top[Top <: Module](
+class Ice40Top[Top <: Module](
     platform: PlatformBoard[_ <: PlatformBoardResources],
     genTop: => Top,
 ) extends RawModule
@@ -131,7 +134,7 @@ class ICE40Top[Top <: Module](
   private val connectedResources =
     connectResources(platform, Some(clki))
 
-  val pcf = PCF(
+  val pcf = Pcf(
     connectedResources
       .map { case (name, cr) =>
         (name, cr.pin.asInstanceOf[PinInt])

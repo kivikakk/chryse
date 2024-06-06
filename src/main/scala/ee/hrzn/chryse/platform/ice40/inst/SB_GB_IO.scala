@@ -16,14 +16,18 @@
  * along with Chryse. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package ee.hrzn.chryse.platform.ice40
+package ee.hrzn.chryse.platform.ice40.inst
 
-// See SiliconBlue ICE™ Technology Library.
-object PinType {
-  val PIN_INPUT     = 0x1
-  val PIN_INPUT_DDR = 0x0 // REGISTERED
+import chisel3._
+import chisel3.experimental.ExtModule
 
-  val PIN_NO_OUTPUT       = 0x0
-  val PIN_OUTPUT          = 0x18
-  val PIN_OUTPUT_TRISTATE = 0x28
+class SB_GB_IO
+    extends ExtModule(
+      Map(
+        IOStandard.LVCMOS,
+        "PIN_TYPE" -> (PinType.PIN_INPUT | PinType.PIN_NO_OUTPUT),
+      ),
+    ) {
+  val PACKAGE_PIN          = IO(Input(Clock()))
+  val GLOBAL_BUFFER_OUTPUT = IO(Output(Clock()))
 }

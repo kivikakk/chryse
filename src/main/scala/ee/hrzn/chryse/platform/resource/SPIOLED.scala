@@ -21,7 +21,7 @@ package ee.hrzn.chryse.platform.resource
 import chisel3._
 import chisel3.experimental.Param
 
-class SPIOLED extends ResourceBase {
+class SpiOled extends ResourceBase {
   // TODO: There's often a BL/BLK pin pulled high by the OLED which you can
   // ground to turn off the backlight.
   //
@@ -84,6 +84,6 @@ class SPIOLED extends ResourceBase {
     Seq(clock, copi, dc, res) ++ Seq(cs, cipo).filter(_.pinId.isDefined)
 }
 
-object SPIOLED {
-  def apply() = new SPIOLED
+object SpiOled {
+  def apply() = new SpiOled
 }

@@ -24,25 +24,25 @@ import ee.hrzn.chryse.platform.PlatformBoard
 import ee.hrzn.chryse.platform.PlatformBoardResources
 import ee.hrzn.chryse.tasks.BaseTask
 
-trait ECP5Platform { this: PlatformBoard[_ <: PlatformBoardResources] =>
-  type TopPlatform[Top <: Module] = ECP5Top[Top]
+trait Ecp5Platform { this: PlatformBoard[_ <: PlatformBoardResources] =>
+  type TopPlatform[Top <: Module] = Ecp5Top[Top]
   case class BuildResult(bitPath: String, svfPath: String)
 
-  val ecp5Variant: ECP5Variant
+  val ecp5Variant: Ecp5Variant
   val ecp5Package: String
   val ecp5Speed: Int
   val ecp5PackOpts: Seq[String] = Seq()
 
   override def apply[Top <: Module](genTop: => Top) = {
     resources.setNames()
-    new ECP5Top(this, genTop)
+    new Ecp5Top(this, genTop)
   }
 
   def yosysSynthCommand(top: String) = s"synth_ecp5 -top $top"
 
   def build(
       chryse: ChryseApp,
-      topPlatform: ECP5Top[_],
+      topPlatform: Ecp5Top[_],
       jsonPath: String,
   ): BuildResult =
     buildImpl(this, chryse, topPlatform, jsonPath)
@@ -51,7 +51,7 @@ trait ECP5Platform { this: PlatformBoard[_ <: PlatformBoardResources] =>
     def apply(
         platform: PlatformBoard[_],
         chryse: ChryseApp,
-        topPlatform: ECP5Top[_],
+        topPlatform: Ecp5Top[_],
         jsonPath: String,
     ): BuildResult = {
       val name = chryse.name
