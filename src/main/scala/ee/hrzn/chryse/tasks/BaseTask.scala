@@ -124,14 +124,6 @@ trait BaseTask {
     run.foreach(_.markUpToDate())
   }
 
-  protected def filesInDirWithExt(dir: String, ext: String): Iterator[String] =
-    Files
-      .walk(Paths.get(dir), 1)
-      .iterator
-      .asScala
-      .map(_.toString)
-      .filter(_.endsWith(ext))
-
   protected def logFileBetween(
       path: String,
       start: Regex,

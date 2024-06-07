@@ -31,6 +31,7 @@ import java.nio.file.Files
 import java.nio.file.Paths
 import scala.collection.mutable
 import scala.sys.process._
+import scala.util.matching.Regex
 
 private[chryse] object CxxrtlTask extends BaseTask {
   private val simDir = "cxxrtl"
@@ -104,8 +105,7 @@ private[chryse] object CxxrtlTask extends BaseTask {
     )
     runCu(CmdStepSynthesise, yosysCu)
 
-    val ccs     = Seq(ccPath) ++ filesInDirWithExt(simDir, ".cc")
-    val headers = filesInDirWithExt(simDir, ".h").toSeq
+    val ccs = platform.ccs(simDir, ccPath)
 
     val yosysDatDir = Seq("yosys-config", "--datdir").!!.trim()
     val cxxOpts     = new mutable.ArrayBuffer[String]
@@ -114,27 +114,29 @@ private[chryse] object CxxrtlTask extends BaseTask {
     if (runOptions.debug) cxxOpts.append("-g")
     if (runOptions.optimize) cxxOpts.append("-O3")
 
-    def buildPathForCc(cc: String) =
-      cc.replace(s"$simDir/", s"$buildDir/${platform.id}/")
-        .replace(".cc", ".o")
+    def buildPathForCc(cc: String) = {
+      val inBuildDir = ("^" + Regex.quote(s"$simDir/")).r
+        .replaceFirstIn(cc, s"$buildDir/${platform.id}/")
+      "\\.cc$".r.replaceFirstIn(inBuildDir, ".o")
+    }
 
-    def compileCmdForCc(cc: String, obj: String): Seq[String] = Seq(
-      "c++",
-      s"-I$buildDir/${platform.id}",
-      s"-I$buildDir", // XXX: other artefacts the user might generate
-      s"-I$yosysDatDir/include/backends/cxxrtl/runtime",
-      "-c",
-      cc,
-      "-o",
-      obj,
-    ) ++ cxxOpts ++ appOptions.allCxxFlags
+    def compileCmdForCc(cc: String, obj: String): Seq[String] =
+      (if (platform.useZig) Seq("zig") else Seq()) ++ Seq(
+        "c++",
+        s"-I$buildDir/${platform.id}",
+        s"-I$buildDir", // XXX: other artefacts the user might generate
+        s"-I$yosysDatDir/include/backends/cxxrtl/runtime",
+        "-c",
+        cc,
+        "-o",
+        obj,
+      ) ++ cxxOpts ++ appOptions.allCxxFlags
 
-    // XXX: depend on what look like headers for now.
     val cus = for {
       cc <- ccs
       obj = buildPathForCc(cc)
       cmd = compileCmdForCc(cc, obj)
-    } yield CompilationUnit(Some(cc), headers, obj, cmd)
+    } yield CompilationUnit(Some(cc), platform.depsFor(simDir, cc), obj, cmd)
 
     // clangd won't look deeper than $buildDir, so just overwrite.
     writePath(s"$buildDir/compile_commands.json") { wr =>
@@ -148,7 +150,11 @@ private[chryse] object CxxrtlTask extends BaseTask {
       None,
       cus.map(_.outPath),
       binPath,
-      Seq("c++", "-o", binPath) ++ cxxOpts ++ cus.map(
+      (if (platform.useZig) Seq("zig") else Seq()) ++ Seq(
+        "c++",
+        "-o",
+        binPath,
+      ) ++ cxxOpts ++ cus.map(
         _.outPath,
       ) ++ appOptions.allLdFlags,
     )

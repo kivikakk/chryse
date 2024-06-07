@@ -19,13 +19,22 @@
 package ee.hrzn.chryse.platform.cxxrtl
 
 import chisel3._
+import ee.hrzn.chryse.build.filesInDirWithExt
 import ee.hrzn.chryse.platform.ElaboratablePlatform
 
-abstract case class CxxrtlPlatform(id: String) extends ElaboratablePlatform {
+abstract case class CxxrtlPlatform(id: String, useZig: Boolean = false)
+    extends ElaboratablePlatform {
   type TopPlatform[Top <: Module] = Top
 
   var cxxOpts: Seq[String] = Seq("-std=c++17", "-g", "-pedantic", "-Wall",
     "-Wextra", "-Wno-zero-length-array", "-Wno-unused-parameter")
+
+  def ccs(simDir: String, cxxrtlCcPath: String): Seq[String] =
+    Seq(cxxrtlCcPath) ++ filesInDirWithExt(simDir, ".cc")
+
+  // XXX: just depend on what look like headers for now.
+  def depsFor(simDir: String, ccPath: String): Seq[String] =
+    filesInDirWithExt(simDir, ".h").toSeq
 
   override def apply[Top <: Module](genTop: => Top) =
     genTop
