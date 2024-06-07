@@ -31,8 +31,8 @@ import java.nio.file.Paths
 import scala.collection.mutable
 import scala.sys.process._
 
-private[chryse] object CxxsimTask extends BaseTask {
-  private val cxxsimDir = "cxxsim"
+private[chryse] object CxxrtlTask extends BaseTask {
+  private val simDir = "cxxrtl"
   private val baseCxxOpts = Seq("-std=c++17", "-g", "-pedantic", "-Wall",
     "-Wextra", "-Wno-zero-length-array", "-Wno-unused-parameter")
 
@@ -51,7 +51,7 @@ private[chryse] object CxxsimTask extends BaseTask {
       appOptions: CxxrtlOptions,
       runOptions: Options,
   ): Unit = {
-    println(s"Building cxxsim ${platform.id} ...")
+    println(s"Building ${platform.id} (cxxrtl) ...")
 
     Files.createDirectories(Paths.get(buildDir, platform.id))
     if (runOptions.force) {
@@ -105,8 +105,8 @@ private[chryse] object CxxsimTask extends BaseTask {
     )
     runCu(CmdStepSynthesise, yosysCu)
 
-    val ccs     = Seq(ccPath) ++ filesInDirWithExt(cxxsimDir, ".cc")
-    val headers = filesInDirWithExt(cxxsimDir, ".h").toSeq
+    val ccs     = Seq(ccPath) ++ filesInDirWithExt(simDir, ".cc")
+    val headers = filesInDirWithExt(simDir, ".h").toSeq
 
     val yosysDatDir = Seq("yosys-config", "--datdir").!!.trim()
     val cxxOpts     = new mutable.ArrayBuffer[String]
@@ -116,7 +116,7 @@ private[chryse] object CxxsimTask extends BaseTask {
     if (runOptions.optimize) cxxOpts.append("-O3")
 
     def buildPathForCc(cc: String) =
-      cc.replace(s"$cxxsimDir/", s"$buildDir/${platform.id}/")
+      cc.replace(s"$simDir/", s"$buildDir/${platform.id}/")
         .replace(".cc", ".o")
 
     def compileCmdForCc(cc: String, obj: String): Seq[String] = Seq(
