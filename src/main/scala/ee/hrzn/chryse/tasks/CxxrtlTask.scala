@@ -34,8 +34,6 @@ import scala.sys.process._
 
 private[chryse] object CxxrtlTask extends BaseTask {
   private val simDir = "cxxrtl"
-  private val baseCxxOpts = Seq("-std=c++17", "-g", "-pedantic", "-Wall",
-    "-Wextra", "-Wno-zero-length-array", "-Wno-unused-parameter")
 
   case class Options(
       debug: Boolean,
@@ -111,7 +109,7 @@ private[chryse] object CxxrtlTask extends BaseTask {
 
     val yosysDatDir = Seq("yosys-config", "--datdir").!!.trim()
     val cxxOpts     = new mutable.ArrayBuffer[String]
-    cxxOpts.appendAll(baseCxxOpts)
+    cxxOpts.appendAll(platform.cxxOpts)
     cxxOpts.append(s"-DCLOCK_HZ=${platform.clockHz}")
     if (runOptions.debug) cxxOpts.append("-g")
     if (runOptions.optimize) cxxOpts.append("-O3")

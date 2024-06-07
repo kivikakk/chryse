@@ -24,6 +24,9 @@ import ee.hrzn.chryse.platform.ElaboratablePlatform
 abstract case class CxxrtlPlatform(id: String) extends ElaboratablePlatform {
   type TopPlatform[Top <: Module] = Top
 
+  var cxxOpts: Seq[String] = Seq("-std=c++17", "-g", "-pedantic", "-Wall",
+    "-Wextra", "-Wno-zero-length-array", "-Wno-unused-parameter")
+
   override def apply[Top <: Module](genTop: => Top) =
     genTop
 }
