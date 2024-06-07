@@ -20,6 +20,7 @@ package ee.hrzn.chryse.tasks
 
 import circt.stage.ChiselStage
 import ee.hrzn.chryse.ChryseApp
+import ee.hrzn.chryse.build.CompilationUnit
 import ee.hrzn.chryse.platform.PlatformBoard
 import ee.hrzn.chryse.platform.PlatformBoardResources
 

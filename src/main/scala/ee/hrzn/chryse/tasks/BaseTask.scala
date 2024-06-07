@@ -19,16 +19,16 @@
 package ee.hrzn.chryse.tasks
 
 import ee.hrzn.chryse.ChryseAppStepFailureException
+import ee.hrzn.chryse.build.CompilationUnit
 
 import java.io.PrintWriter
 import java.nio.file.Files
 import java.nio.file.Paths
-import java.security.MessageDigest
-import java.util.HexFormat
 import scala.jdk.CollectionConverters._
 import scala.sys.process._
 import scala.util.matching.Regex
 
+// TODO: just about anything goes in here. Refactor.
 trait BaseTask {
   protected val buildDir = "build"
 
@@ -70,6 +70,8 @@ trait BaseTask {
 
   private val specialChar = "[^a-zA-Z0-9,./=+-_:@%^]".r
 
+  // This isn't rigorous and it isn't meant to be — for displaying on stdout
+  // only.
   private def formattedCmd(cmd: Seq[String]): String = {
     def fmtPart(part: String) =
       specialChar.replaceAllIn(part, Regex.quoteReplacement("\\") + "$0")
@@ -160,51 +162,5 @@ trait BaseTask {
         })
       }
     }
-  }
-
-  case class CompilationUnit(
-      val primaryInPath: Option[String],
-      val otherInPaths: Seq[String],
-      val outPath: String,
-      val cmd: Seq[String],
-  ) {
-    val digestPath            = s"$outPath.dig"
-    private val sortedInPaths = otherInPaths.appendedAll(primaryInPath).sorted
-
-    private def addIntToDigest(n: Int)(implicit digest: MessageDigest): Unit =
-      digest.update(String.format("%08x", n).getBytes("UTF-8"))
-
-    private def addStringToDigest(s: String)(implicit
-        digest: MessageDigest,
-    ): Unit =
-      addBytesToDigest(s.getBytes("UTF-8"))
-
-    private def addBytesToDigest(
-        b: Array[Byte],
-    )(implicit digest: MessageDigest): Unit = {
-      addIntToDigest(b.length)
-      digest.update(b)
-    }
-
-    private def digestInsWithCmd(): String = {
-      implicit val digest = MessageDigest.getInstance("SHA-256")
-      addIntToDigest(sortedInPaths.length)
-      for { inPath <- sortedInPaths } {
-        addStringToDigest(inPath)
-        addBytesToDigest(Files.readAllBytes(Paths.get(inPath)))
-      }
-      addIntToDigest(cmd.length)
-      for { el <- cmd }
-        addStringToDigest(el)
-      HexFormat.of().formatHex(digest.digest())
-    }
-
-    def isUpToDate(): Boolean =
-      Files.exists(Paths.get(digestPath)) && Files.readString(
-        Paths.get(digestPath),
-      ) == digestInsWithCmd()
-
-    def markUpToDate(): Unit =
-      writePath(digestPath, digestInsWithCmd())
   }
 }

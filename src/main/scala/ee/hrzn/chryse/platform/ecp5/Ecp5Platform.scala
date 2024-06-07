@@ -20,6 +20,7 @@ package ee.hrzn.chryse.platform.ecp5
 
 import chisel3._
 import ee.hrzn.chryse.ChryseApp
+import ee.hrzn.chryse.build.CompilationUnit
 import ee.hrzn.chryse.platform.PlatformBoard
 import ee.hrzn.chryse.platform.PlatformBoardResources
 import ee.hrzn.chryse.tasks.BaseTask
