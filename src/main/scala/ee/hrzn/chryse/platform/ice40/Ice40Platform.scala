@@ -20,10 +20,12 @@ package ee.hrzn.chryse.platform.ice40
 
 import chisel3._
 import ee.hrzn.chryse.ChryseApp
+import ee.hrzn.chryse.build.CommandRunner._
 import ee.hrzn.chryse.build.CompilationUnit
+import ee.hrzn.chryse.build.logFileBetween
+import ee.hrzn.chryse.build.writePath
 import ee.hrzn.chryse.platform.PlatformBoard
 import ee.hrzn.chryse.platform.PlatformBoardResources
-import ee.hrzn.chryse.tasks.BaseTask
 
 trait Ice40Platform { this: PlatformBoard[_ <: PlatformBoardResources] =>
   type TopPlatform[Top <: Module] = Ice40Top[Top]
@@ -47,72 +49,57 @@ trait Ice40Platform { this: PlatformBoard[_ <: PlatformBoardResources] =>
       chryse: ChryseApp,
       topPlatform: Ice40Top[_],
       jsonPath: String,
-  ): String =
-    buildImpl(this, chryse, topPlatform, jsonPath)
+  ): String = {
+    val name = chryse.name
 
-  private object buildImpl extends BaseTask {
-    def apply(
-        platform: PlatformBoard[_],
-        chryse: ChryseApp,
-        topPlatform: Ice40Top[_],
-        jsonPath: String,
-    ): String = {
-      val name = chryse.name
+    val pcfPath = s"$buildDir/$id/$name.pcf"
+    writePath(pcfPath, topPlatform.pcf.toString())
 
-      val pcfPath = s"$buildDir/${platform.id}/$name.pcf"
-      writePath(pcfPath, topPlatform.pcf.toString())
-
-      val ascPath        = s"$buildDir/${platform.id}/$name.asc"
-      val nextpnrLogPath = s"$buildDir/${platform.id}/$name.asc.log"
-      val ascCu = CompilationUnit(
-        Some(jsonPath),
-        Seq(pcfPath),
-        ascPath,
-        Seq(
-          "nextpnr-ice40",
-          "-q",
-          "--log",
-          nextpnrLogPath,
-          "--json",
-          jsonPath,
-          "--pcf",
-          pcfPath,
-          "--asc",
-          ascPath,
-          ice40Variant.arg,
-          "--package",
-          ice40Package,
-        ),
-      )
-      runCu(CmdStepPNR, ascCu)
-
-      println()
-      println("Device utilisation:")
-      logFileBetween(
+    val ascPath        = s"$buildDir/$id/$name.asc"
+    val nextpnrLogPath = s"$buildDir/$id/$name.asc.log"
+    val ascCu = CompilationUnit(
+      Some(jsonPath),
+      Seq(pcfPath),
+      ascPath,
+      Seq(
+        "nextpnr-ice40",
+        "-q",
+        "--log",
         nextpnrLogPath,
-        raw"Info: Device utilisation:".r,
-        raw"Info: Placed .*".r,
-        Some("Info: "),
-      )
+        "--json",
+        jsonPath,
+        "--pcf",
+        pcfPath,
+        "--asc",
+        ascPath,
+        ice40Variant.arg,
+        "--package",
+        ice40Package,
+      ),
+    )
+    runCu(CmdStep.PNR, ascCu)
 
-      val binPath = s"$buildDir/${platform.id}/$name.bin"
-      val binCu = CompilationUnit(
-        Some(ascPath),
-        Seq(),
-        binPath,
-        Seq("icepack", ascPath, binPath),
-      )
-      runCu(CmdStepPack, binCu)
+    println()
+    println("Device utilisation:")
+    logFileBetween(
+      nextpnrLogPath,
+      raw"Info: Device utilisation:".r,
+      raw"Info: Placed .*".r,
+      Some("Info: "),
+    )
 
-      binPath
-    }
+    val binPath = s"$buildDir/$id/$name.bin"
+    val binCu = CompilationUnit(
+      Some(ascPath),
+      Seq(),
+      binPath,
+      Seq("icepack", ascPath, binPath),
+    )
+    runCu(CmdStep.Pack, binCu)
+
+    binPath
   }
 
   def program(binPath: String, mode: String): Unit =
-    programImpl(binPath)
-
-  private object programImpl extends BaseTask {
-    def apply(binPath: String): Unit =
-      runCmd(CmdStepProgram, Seq("iceprog", binPath))
-  }
+    runCmd(CmdStep.Program, Seq("iceprog", binPath))
 }

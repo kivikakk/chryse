@@ -51,10 +51,10 @@ class Ice40Top[Top <: Module](
       ubtn_reset.get := topIo
 
       val portIo = IO(res.makeIo()).suggestName("ubtn")
-      return PlatformConnectResultUsePorts(topIo, portIo)
+      return PlatformConnectResult.UsePorts(topIo, portIo)
     }
 
-    PlatformConnectResultFallthrough
+    PlatformConnectResult.Fallthrough
   }
 
   override protected def platformPort[HW <: Data](

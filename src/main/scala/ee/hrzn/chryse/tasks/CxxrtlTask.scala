@@ -21,9 +21,10 @@ package ee.hrzn.chryse.tasks
 import circt.stage.ChiselStage
 import ee.hrzn.chryse.ChryseApp
 import ee.hrzn.chryse.ChryseAppStepFailureException
+import ee.hrzn.chryse.build.writePath
+import ee.hrzn.chryse.build.CommandRunner._
 import ee.hrzn.chryse.build.CompilationUnit
 import ee.hrzn.chryse.platform.cxxrtl.BlackBoxGenerator
-import ee.hrzn.chryse.platform.cxxrtl.CxxrtlOptions
 import ee.hrzn.chryse.platform.cxxrtl.CxxrtlPlatform
 import org.apache.commons.io.FileUtils
 
@@ -33,7 +34,7 @@ import scala.collection.mutable
 import scala.sys.process._
 import scala.util.matching.Regex
 
-private[chryse] object CxxrtlTask extends BaseTask {
+private[chryse] object CxxrtlTask {
   case class Options(
       debug: Boolean,
       optimize: Boolean,
@@ -46,9 +47,10 @@ private[chryse] object CxxrtlTask extends BaseTask {
   def apply[P <: CxxrtlPlatform](
       chryse: ChryseApp,
       platform: P,
-      appOptions: CxxrtlOptions,
       runOptions: Options,
   ): Unit = {
+    val buildDir = platform.buildDir
+
     println(s"Building ${platform.id} (cxxrtl) ...")
 
     Files.createDirectories(Paths.get(buildDir, platform.id))
@@ -60,19 +62,19 @@ private[chryse] object CxxrtlTask extends BaseTask {
 
     val name = chryse.name
 
-    appOptions.buildHooks.foreach(_(platform))
+    platform.preBuild()
 
     val verilogPath = s"$buildDir/${platform.id}/$name.sv"
     val verilog =
       ChiselStage.emitSystemVerilog(
         platform(chryse.genTop()(platform)),
-        firtoolOpts = firtoolOpts,
+        firtoolOpts = platform.firtoolOpts,
       )
     writePath(verilogPath, verilog)
 
     val blackboxIlPath = s"$buildDir/${platform.id}/$name-blackbox.il"
     writePath(blackboxIlPath) { wr =>
-      for { (bb, bbIx) <- appOptions.blackboxes.zipWithIndex } {
+      for { (bb, bbIx) <- platform.blackboxes.zipWithIndex } {
         if (bbIx > 0) wr.write("\n")
         BlackBoxGenerator(wr, bb)
       }
@@ -101,16 +103,14 @@ private[chryse] object CxxrtlTask extends BaseTask {
         yosysScriptPath,
       ),
     )
-    runCu(CmdStepSynthesise, yosysCu)
+    runCu(CmdStep.Synthesise, yosysCu)
 
     val ccs = platform.ccs(ccPath)
 
-    val finalCxxOpts = new mutable.ArrayBuffer[String]
-    finalCxxOpts.appendAll(platform.cxxOpts)
-    finalCxxOpts.append(s"-DCLOCK_HZ=${platform.clockHz}")
-    if (runOptions.debug) finalCxxOpts.append("-g")
-    if (runOptions.optimize) finalCxxOpts.append("-O3")
-    finalCxxOpts.appendAll(appOptions.allCxxFlags)
+    val finalCxxFlags = new mutable.ArrayBuffer[String]
+    finalCxxFlags.appendAll(platform.cxxFlags)
+    if (runOptions.debug) finalCxxFlags.append("-g")
+    if (runOptions.optimize) finalCxxFlags.append("-O3")
 
     def buildPathForCc(cc: String) = {
       val inBuildDir = ("^" + Regex.quote(s"${platform.simDir}/")).r
@@ -124,7 +124,7 @@ private[chryse] object CxxrtlTask extends BaseTask {
       cmd =
         platform.compileCmdForCc(
           buildDir,
-          finalCxxOpts.toSeq,
+          finalCxxFlags.toSeq,
           cc,
           obj,
         )
@@ -135,15 +135,15 @@ private[chryse] object CxxrtlTask extends BaseTask {
       upickle.default.writeTo(ccCus.map(ClangdEntry(_)), wr)
     }
 
-    runCus(CmdStepCompile, ccCus)
+    runCus(CmdStep.Compile, ccCus)
 
     val binPath = s"$buildDir/${platform.id}/$name"
 
     platform.link(
       ccCus.map(_.outPath),
       binPath,
-      finalCxxOpts.toSeq,
-      appOptions.allLdFlags,
+      finalCxxFlags.toSeq,
+      platform.ldFlags,
       runOptions.optimize,
     )
 
@@ -155,7 +155,7 @@ private[chryse] object CxxrtlTask extends BaseTask {
     }
     val binCmd = Seq(binPath) ++ binArgs ++ runOptions.args
 
-    reportCmd(CmdStepExecute, CmdActionRun, (binCmd, None))
+    reportCmd(CmdStep.Execute, CmdAction.Run, (binCmd, None))
     val rc = binCmd.!
 
     println(s"$name exited with return code $rc")

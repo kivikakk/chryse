@@ -19,23 +19,36 @@
 package ee.hrzn.chryse.platform.cxxrtl
 
 import chisel3._
+import chisel3.experimental.ExtModule
+import ee.hrzn.chryse.build.CommandRunner._
 import ee.hrzn.chryse.build.CompilationUnit
 import ee.hrzn.chryse.build.filesInDirWithExt
 import ee.hrzn.chryse.platform.ElaboratablePlatform
-import ee.hrzn.chryse.tasks.BaseTask
 
 import scala.sys.process._
 
-abstract class CxxrtlPlatform(val id: String)
-    extends ElaboratablePlatform
-    with BaseTask {
+abstract class CxxrtlPlatform(val id: String) extends ElaboratablePlatform {
   type TopPlatform[Top <: Module] = Top
 
-  val simDir = "cxxrtl"
+  val simDir: String                         = "cxxrtl"
+  val blackboxes: Seq[Class[_ <: ExtModule]] = Seq()
 
-  lazy val yosysDatDir = Seq("yosys-config", "--datdir").!!.trim()
-  def cxxOpts: Seq[String] = Seq("-std=c++17", "-g", "-pedantic", "-Wall",
-    "-Wextra", "-Wno-zero-length-array", "-Wno-unused-parameter")
+  def preBuild(): Unit = {}
+
+  lazy val yosysDatDir: String = Seq("yosys-config", "--datdir").!!.trim()
+
+  def cxxFlags: Seq[String] = Seq(
+    "-std=c++17",
+    "-g",
+    "-pedantic",
+    "-Wall",
+    "-Wextra",
+    "-Wno-zero-length-array",
+    "-Wno-unused-parameter",
+    s"-DCLOCK_HZ=$clockHz",
+  )
+
+  def ldFlags: Seq[String] = Seq()
 
   def compileCmdForCc(
       buildDir: String,
@@ -75,7 +88,7 @@ abstract class CxxrtlPlatform(val id: String)
       Seq("c++", "-o", binPath) ++ finalCxxOpts ++ ccOutPaths ++ allLdFlags,
     )
 
-    runCu(CmdStepLink, linkCu)
+    runCu(CmdStep.Link, linkCu)
   }
 
   override def apply[Top <: Module](genTop: => Top) =

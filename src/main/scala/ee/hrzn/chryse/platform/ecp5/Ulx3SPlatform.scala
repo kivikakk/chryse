@@ -19,6 +19,7 @@
 package ee.hrzn.chryse.platform.ecp5
 
 import chisel3._
+import ee.hrzn.chryse.build.CommandRunner._
 import ee.hrzn.chryse.platform.PlatformBoard
 import ee.hrzn.chryse.platform.PlatformBoardResources
 import ee.hrzn.chryse.platform.ecp5.inst.IOType
@@ -29,7 +30,6 @@ import ee.hrzn.chryse.platform.resource.Led
 import ee.hrzn.chryse.platform.resource.ResourceData
 import ee.hrzn.chryse.platform.resource.Spi
 import ee.hrzn.chryse.platform.resource.Uart
-import ee.hrzn.chryse.tasks.BaseTask
 
 // TODO: restrict the variants to those the ULX3S was delivered with.
 // TODO: try one of these: https://github.com/emard/ulx3s/blob/master/doc/MANUAL.md#programming-over-wifi-esp32-micropython
@@ -44,22 +44,17 @@ case class Ulx3SPlatform(ecp5Variant: Ecp5Variant)
   override val ecp5PackOpts = Seq("--compress")
 
   def program(bitAndSvf: BuildResult, mode: String): Unit =
-    programImpl(bitAndSvf, mode)
-
-  private object programImpl extends BaseTask {
-    def apply(bitAndSvf: BuildResult, mode: String): Unit =
-      runCmd(
-        CmdStepProgram,
-        Seq(
-          "openFPGALoader",
-          "-v",
-          "-b",
-          "ulx3s",
-          if (mode == "sram") "-m" else "-f",
-          bitAndSvf.bitPath,
-        ),
-      )
-  }
+    runCmd(
+      CmdStep.Program,
+      Seq(
+        "openFPGALoader",
+        "-v",
+        "-b",
+        "ulx3s",
+        if (mode == "sram") "-m" else "-f",
+        bitAndSvf.bitPath,
+      ),
+    )
 
   val resources = new Ulx3SPlatformResources
   override val programmingModes = Seq(

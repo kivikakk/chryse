@@ -20,7 +20,6 @@ package ee.hrzn.chryse
 
 import chisel3._
 import ee.hrzn.chryse.platform.Platform
-import ee.hrzn.chryse.platform.cxxrtl.CxxrtlOptions
 import ee.hrzn.chryse.platform.cxxrtl.CxxrtlPlatform
 import ee.hrzn.chryse.platform.ecp5.Lfe5U_85F
 import ee.hrzn.chryse.platform.ecp5.Ulx3SPlatform
@@ -33,9 +32,9 @@ private[chryse] object ExampleApp extends ChryseApp {
   override def genTop()(implicit platform: Platform) = new Top
   override val targetPlatforms =
     Seq(IceBreakerPlatform(), Ulx3SPlatform(Lfe5U_85F))
-  override val cxxrtlOptions = Some(
-    CxxrtlOptions(platforms = Seq(new CxxrtlPlatform("ex") {
+  override val cxxrtlPlatforms = Seq(
+    new CxxrtlPlatform("ex") {
       val clockHz = 3_000_000
-    })),
+    },
   )
 }

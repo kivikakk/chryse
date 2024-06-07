@@ -39,15 +39,16 @@ private[chryse] trait ChryseTop extends RawModule {
   )
 
   sealed trait PlatformConnectResult
-  case class PlatformConnectResultUsePorts(topIo: Data, portIo: Data)
-      extends PlatformConnectResult
-  case object PlatformConnectResultFallthrough extends PlatformConnectResult
-  case object PlatformConnectResultNoop        extends PlatformConnectResult
+  object PlatformConnectResult {
+    case class UsePorts(topIo: Data, portIo: Data) extends PlatformConnectResult
+    case object Fallthrough                        extends PlatformConnectResult
+    case object Noop                               extends PlatformConnectResult
+  }
 
   protected def platformConnect(
       name: String,
       res: ResourceData[_ <: Data],
-  ): PlatformConnectResult = PlatformConnectResultFallthrough
+  ): PlatformConnectResult = PlatformConnectResult.Fallthrough
 
   protected def platformPort[HW <: Data](
       @annotation.unused res: ResourceData[HW],
@@ -89,14 +90,14 @@ private[chryse] trait ChryseTop extends RawModule {
 
         case _ =>
           platformConnect(name, res) match {
-            case PlatformConnectResultUsePorts(topIo, portIo) =>
+            case PlatformConnectResult.UsePorts(topIo, portIo) =>
               connected += name -> ConnectedResource(
                 res.pinId.get,
                 res.attributes,
                 None,
               )
               platformPort(res, topIo, portIo)
-            case PlatformConnectResultFallthrough =>
+            case PlatformConnectResult.Fallthrough =>
               if (res.ioInst.isDefined) {
                 connected += name -> ConnectedResource(
                   res.pinId.get,
@@ -106,7 +107,7 @@ private[chryse] trait ChryseTop extends RawModule {
                 val (topIo, portIo) = res.makeIoConnection()
                 platformPort(res, topIo, portIo)
               }
-            case PlatformConnectResultNoop =>
+            case PlatformConnectResult.Noop =>
           }
       }
     }

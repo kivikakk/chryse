@@ -16,20 +16,18 @@
  * along with Chryse. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package ee.hrzn.chryse.platform
+package ee.hrzn.chryse.build
 
-import chisel3._
+import java.nio.file.Files
+import java.nio.file.Path
+import scala.jdk.CollectionConverters._
 
-trait ElaboratablePlatform extends Platform {
-  type TopPlatform[Top <: Module] <: RawModule
-
-  var buildDir = "build"
-
-  val firtoolOpts = Array(
-    "--lowering-options=disallowLocalVariables,disallowPackedArrays",
-    "-disable-all-randomization",
-    "-strip-debug-info",
-  )
-
-  def apply[Top <: Module](top: => Top): TopPlatform[Top]
+object filesInDirWithExt {
+  def apply(dir: String, ext: String): Iterator[String] =
+    Files
+      .walk(Path.of(dir), Integer.MAX_VALUE)
+      .iterator
+      .asScala
+      .map(_.toString)
+      .filter(_.endsWith(ext))
 }

@@ -16,24 +16,20 @@
  * along with Chryse. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package ee.hrzn.chryse.platform.cxxrtl
+package ee.hrzn.chryse.build
 
-import chisel3.experimental.ExtModule
+import java.io.PrintWriter
 
-import scala.sys.process._
+object writePath {
+  def apply(
+      path: String,
+  )(action: PrintWriter => Unit): Unit = {
+    new PrintWriter(path, "UTF-8") {
+      try action(this)
+      finally close()
+    }
+  }
 
-final case class CxxrtlOptions(
-    platforms: Seq[CxxrtlPlatform],
-    blackboxes: Seq[Class[_ <: ExtModule]] = Seq(),
-    cxxFlags: Seq[String] = Seq(),
-    ldFlags: Seq[String] = Seq(),
-    pkgConfig: Seq[String] = Seq(),
-    buildHooks: Seq[CxxrtlPlatform => Any] = Seq(),
-) {
-  lazy val allCxxFlags: Seq[String] = cxxFlags ++ pkgConfig.flatMap(
-    Seq("pkg-config", "--cflags", _).!!.trim.split(' '),
-  )
-  lazy val allLdFlags: Seq[String] = ldFlags ++ pkgConfig.flatMap(
-    Seq("pkg-config", "--libs", _).!!.trim.split(' '),
-  )
+  def apply(path: String, content: String): Unit =
+    apply(path)(_.write(content))
 }

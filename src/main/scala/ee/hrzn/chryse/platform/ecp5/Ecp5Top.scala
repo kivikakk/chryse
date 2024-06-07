@@ -46,10 +46,10 @@ class Ecp5Top[Top <: Module](
       val inst = Module(new USRMCLK)
       inst.USRMCLKI  := res.ioInst.get
       inst.USRMCLKTS := 0.U
-      return PlatformConnectResultNoop
+      return PlatformConnectResult.Noop
     }
 
-    PlatformConnectResultFallthrough
+    PlatformConnectResult.Fallthrough
   }
 
   override protected def platformPort[HW <: Data](
