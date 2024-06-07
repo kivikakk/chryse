@@ -19,22 +19,64 @@
 package ee.hrzn.chryse.platform.cxxrtl
 
 import chisel3._
+import ee.hrzn.chryse.build.CompilationUnit
 import ee.hrzn.chryse.build.filesInDirWithExt
 import ee.hrzn.chryse.platform.ElaboratablePlatform
+import ee.hrzn.chryse.tasks.BaseTask
 
-abstract case class CxxrtlPlatform(id: String, zig: Boolean = false)
-    extends ElaboratablePlatform {
+import scala.sys.process._
+
+abstract class CxxrtlPlatform(val id: String)
+    extends ElaboratablePlatform
+    with BaseTask {
   type TopPlatform[Top <: Module] = Top
 
-  var cxxOpts: Seq[String] = Seq("-std=c++17", "-g", "-pedantic", "-Wall",
+  val simDir = "cxxrtl"
+
+  lazy val yosysDatDir = Seq("yosys-config", "--datdir").!!.trim()
+  def cxxOpts: Seq[String] = Seq("-std=c++17", "-g", "-pedantic", "-Wall",
     "-Wextra", "-Wno-zero-length-array", "-Wno-unused-parameter")
 
-  def ccs(simDir: String, cxxrtlCcPath: String): Seq[String] =
+  def compileCmdForCc(
+      buildDir: String,
+      finalCxxOpts: Seq[String],
+      cc: String,
+      obj: String,
+  ): Seq[String] =
+    Seq(
+      "c++",
+      s"-I$buildDir/$id",
+      s"-I$buildDir", // XXX: other artefacts the user might generate
+      s"-I$yosysDatDir/include/backends/cxxrtl/runtime",
+      "-c",
+      cc,
+      "-o",
+      obj,
+    ) ++ finalCxxOpts
+
+  def ccs(cxxrtlCcPath: String): Seq[String] =
     Seq(cxxrtlCcPath) ++ filesInDirWithExt(simDir, ".cc")
 
   // XXX: just depend on what look like headers for now.
-  def depsFor(simDir: String, ccPath: String): Seq[String] =
+  def depsFor(ccPath: String): Seq[String] =
     filesInDirWithExt(simDir, ".h").toSeq
+
+  def link(
+      ccOutPaths: Seq[String],
+      binPath: String,
+      finalCxxOpts: Seq[String],
+      allLdFlags: Seq[String],
+      optimize: Boolean,
+  ): Unit = {
+    val linkCu = CompilationUnit(
+      None,
+      ccOutPaths,
+      binPath,
+      Seq("c++", "-o", binPath) ++ finalCxxOpts ++ ccOutPaths ++ allLdFlags,
+    )
+
+    runCu(CmdStepLink, linkCu)
+  }
 
   override def apply[Top <: Module](genTop: => Top) =
     genTop

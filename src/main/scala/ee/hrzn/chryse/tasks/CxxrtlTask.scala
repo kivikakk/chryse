@@ -22,13 +22,11 @@ import circt.stage.ChiselStage
 import ee.hrzn.chryse.ChryseApp
 import ee.hrzn.chryse.ChryseAppStepFailureException
 import ee.hrzn.chryse.build.CompilationUnit
-import ee.hrzn.chryse.build.filesInDirWithExt
 import ee.hrzn.chryse.platform.cxxrtl.BlackBoxGenerator
 import ee.hrzn.chryse.platform.cxxrtl.CxxrtlOptions
 import ee.hrzn.chryse.platform.cxxrtl.CxxrtlPlatform
 import org.apache.commons.io.FileUtils
 
-import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths
 import scala.collection.mutable
@@ -36,8 +34,6 @@ import scala.sys.process._
 import scala.util.matching.Regex
 
 private[chryse] object CxxrtlTask extends BaseTask {
-  private val simDir = "cxxrtl"
-
   case class Options(
       debug: Boolean,
       optimize: Boolean,
@@ -107,92 +103,49 @@ private[chryse] object CxxrtlTask extends BaseTask {
     )
     runCu(CmdStepSynthesise, yosysCu)
 
-    val ccs = platform.ccs(simDir, ccPath)
+    val ccs = platform.ccs(ccPath)
 
-    val yosysDatDir = Seq("yosys-config", "--datdir").!!.trim()
-    val cxxOpts     = new mutable.ArrayBuffer[String]
-    cxxOpts.appendAll(platform.cxxOpts)
-    cxxOpts.append(s"-DCLOCK_HZ=${platform.clockHz}")
-    if (platform.zig)
-      cxxOpts.appendAll(
-        Seq(
-          "-DCXXRTL_INCLUDE_CAPI_IMPL",
-          "-DCXXRTL_INCLUDE_VCD_CAPI_IMPL",
-        ),
-      )
-    if (runOptions.debug) cxxOpts.append("-g")
-    if (runOptions.optimize) cxxOpts.append("-O3")
+    val finalCxxOpts = new mutable.ArrayBuffer[String]
+    finalCxxOpts.appendAll(platform.cxxOpts)
+    finalCxxOpts.append(s"-DCLOCK_HZ=${platform.clockHz}")
+    if (runOptions.debug) finalCxxOpts.append("-g")
+    if (runOptions.optimize) finalCxxOpts.append("-O3")
+    finalCxxOpts.appendAll(appOptions.allCxxFlags)
 
     def buildPathForCc(cc: String) = {
-      val inBuildDir = ("^" + Regex.quote(s"$simDir/")).r
+      val inBuildDir = ("^" + Regex.quote(s"${platform.simDir}/")).r
         .replaceFirstIn(cc, s"$buildDir/${platform.id}/")
       "\\.cc$".r.replaceFirstIn(inBuildDir, ".o")
     }
 
-    def compileCmdForCc(cc: String, obj: String): Seq[String] =
-      (if (platform.zig) Seq("zig") else Seq()) ++ Seq(
-        "c++",
-        s"-I$buildDir/${platform.id}",
-        s"-I$buildDir", // XXX: other artefacts the user might generate
-        s"-I$yosysDatDir/include/backends/cxxrtl/runtime",
-        "-c",
-        cc,
-        "-o",
-        obj,
-      ) ++ cxxOpts ++ appOptions.allCxxFlags
-
-    val cus = for {
+    val ccCus = for {
       cc <- ccs
       obj = buildPathForCc(cc)
-      cmd = compileCmdForCc(cc, obj)
-    } yield CompilationUnit(Some(cc), platform.depsFor(simDir, cc), obj, cmd)
+      cmd =
+        platform.compileCmdForCc(
+          buildDir,
+          finalCxxOpts.toSeq,
+          cc,
+          obj,
+        )
+    } yield CompilationUnit(Some(cc), platform.depsFor(cc), obj, cmd)
 
     // clangd won't look deeper than $buildDir, so just overwrite.
     writePath(s"$buildDir/compile_commands.json") { wr =>
-      upickle.default.writeTo(cus.map(ClangdEntry(_)), wr)
+      upickle.default.writeTo(ccCus.map(ClangdEntry(_)), wr)
     }
 
-    runCus(CmdStepCompile, cus)
+    runCus(CmdStepCompile, ccCus)
 
     val binPath = s"$buildDir/${platform.id}/$name"
 
-    if (platform.zig) {
-      // TODO: extract into a CxxrtlPlatform subclass, make the defines configurable there.
-      val linkCu = CompilationUnit(
-        None,
-        cus.map(_.outPath) ++ filesInDirWithExt(simDir, ".zig"),
-        binPath,
-        Seq(
-          "zig",
-          "build",
-          s"-Dyosys_data_dir=$yosysDatDir",
-          s"-Dcxxrtl_o_paths=${cus.map(p => s"../${p.outPath}").mkString(",")}",
-        )
-          ++ (if (runOptions.optimize) Seq("-Doptimize=ReleaseFast")
-              else Seq()),
-        chdir = Some(simDir),
-      )
-      runCu(CmdStepLink, linkCu)
-
-      FileUtils.copyFile(
-        new File(s"$simDir/zig-out/bin/$simDir"),
-        new File(binPath),
-      )
-    } else {
-      val linkCu = CompilationUnit(
-        None,
-        cus.map(_.outPath),
-        binPath,
-        Seq(
-          "c++",
-          "-o",
-          binPath,
-        ) ++ cxxOpts ++ cus.map(
-          _.outPath,
-        ) ++ appOptions.allLdFlags,
-      )
-      runCu(CmdStepLink, linkCu)
-    }
+    platform.link(
+      ccCus.map(_.outPath),
+      binPath,
+      finalCxxOpts.toSeq,
+      appOptions.allLdFlags,
+      runOptions.optimize,
+    )
 
     if (runOptions.compileOnly) return
 
