@@ -20,13 +20,17 @@ package ee.hrzn.chryse.tasks
 
 import circt.stage.ChiselStage
 import ee.hrzn.chryse.ChryseApp
+import ee.hrzn.chryse.build.CommandRunner._
+import ee.hrzn.chryse.build.CompilationUnit
+import ee.hrzn.chryse.build.logFileBetween
+import ee.hrzn.chryse.build.writePath
 import ee.hrzn.chryse.platform.PlatformBoard
 import ee.hrzn.chryse.platform.PlatformBoardResources
 
 import java.nio.file.Files
 import java.nio.file.Paths
 
-private[chryse] object BuildTask extends BaseTask {
+private[chryse] object BuildTask {
   case class Options(
       program: Boolean,
       programMode: String,
@@ -38,6 +42,8 @@ private[chryse] object BuildTask extends BaseTask {
       platform: PlatformBoard[_ <: PlatformBoardResources],
       options: Options,
   ): Unit = {
+    val buildDir = platform.buildDir
+
     println(s"Building for ${platform.id} ...")
 
     Files.createDirectories(Paths.get(buildDir, platform.id))
@@ -53,7 +59,7 @@ private[chryse] object BuildTask extends BaseTask {
           topPlatform.get
         },
         if (options.fullStacktrace) Array("--full-stacktrace") else Array.empty,
-        firtoolOpts = firtoolOpts,
+        firtoolOpts = platform.firtoolOpts,
       )
     writePath(verilogPath, verilog)
 
@@ -75,7 +81,7 @@ private[chryse] object BuildTask extends BaseTask {
       jsonPath,
       Seq("yosys", "-q", "-g", "-l", yosysLogPath, "-s", yosysScriptPath),
     )
-    runCu(CmdStepSynthesise, yosysCu)
+    runCu(CmdStep.Synthesise, yosysCu)
 
     logFileBetween(
       yosysLogPath,

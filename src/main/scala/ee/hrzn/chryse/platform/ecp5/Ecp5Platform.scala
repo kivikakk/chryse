@@ -20,9 +20,12 @@ package ee.hrzn.chryse.platform.ecp5
 
 import chisel3._
 import ee.hrzn.chryse.ChryseApp
+import ee.hrzn.chryse.build.CommandRunner._
+import ee.hrzn.chryse.build.CompilationUnit
+import ee.hrzn.chryse.build.logFileBetween
+import ee.hrzn.chryse.build.writePath
 import ee.hrzn.chryse.platform.PlatformBoard
 import ee.hrzn.chryse.platform.PlatformBoardResources
-import ee.hrzn.chryse.tasks.BaseTask
 
 trait Ecp5Platform { this: PlatformBoard[_ <: PlatformBoardResources] =>
   type TopPlatform[Top <: Module] = Ecp5Top[Top]
@@ -44,68 +47,58 @@ trait Ecp5Platform { this: PlatformBoard[_ <: PlatformBoardResources] =>
       chryse: ChryseApp,
       topPlatform: Ecp5Top[_],
       jsonPath: String,
-  ): BuildResult =
-    buildImpl(this, chryse, topPlatform, jsonPath)
+  ): BuildResult = {
+    val name = chryse.name
 
-  private object buildImpl extends BaseTask {
-    def apply(
-        platform: PlatformBoard[_],
-        chryse: ChryseApp,
-        topPlatform: Ecp5Top[_],
-        jsonPath: String,
-    ): BuildResult = {
-      val name = chryse.name
+    val lpfPath = s"$buildDir/$id/$name.lpf"
+    writePath(lpfPath, topPlatform.lpf.toString())
 
-      val lpfPath = s"$buildDir/${platform.id}/$name.lpf"
-      writePath(lpfPath, topPlatform.lpf.toString())
-
-      val textcfgPath    = s"$buildDir/${platform.id}/$name.config"
-      val nextpnrLogPath = s"$buildDir/${platform.id}/$name.config.log"
-      val textcfgCu = CompilationUnit(
-        Some(jsonPath),
-        Seq(lpfPath),
-        textcfgPath,
-        Seq(
-          "nextpnr-ecp5",
-          "-q",
-          "--log",
-          nextpnrLogPath,
-          "--json",
-          jsonPath,
-          "--lpf",
-          lpfPath,
-          "--textcfg",
-          textcfgPath,
-          ecp5Variant.arg,
-          "--package",
-          ecp5Package,
-          "--speed",
-          s"$ecp5Speed",
-        ),
-      )
-      runCu(CmdStepPNR, textcfgCu)
-
-      println()
-      println("Device utilisation:")
-      logFileBetween(
+    val textcfgPath    = s"$buildDir/$id/$name.config"
+    val nextpnrLogPath = s"$buildDir/$id/$name.config.log"
+    val textcfgCu = CompilationUnit(
+      Some(jsonPath),
+      Seq(lpfPath),
+      textcfgPath,
+      Seq(
+        "nextpnr-ecp5",
+        "-q",
+        "--log",
         nextpnrLogPath,
-        raw"Info: Device utilisation:".r,
-        raw"Info: Placed .*".r,
-        Some("Info: "),
-      )
+        "--json",
+        jsonPath,
+        "--lpf",
+        lpfPath,
+        "--textcfg",
+        textcfgPath,
+        ecp5Variant.arg,
+        "--package",
+        ecp5Package,
+        "--speed",
+        s"$ecp5Speed",
+      ),
+    )
+    runCu(CmdStep.PNR, textcfgCu)
 
-      val bitPath = s"$buildDir/${platform.id}/$name.bit"
-      val svfPath = s"$buildDir/${platform.id}/$name.svf"
-      val bitCu = CompilationUnit(
-        Some(textcfgPath),
-        Seq(),
-        bitPath,
-        Seq("ecppack", "--input", textcfgPath, "--bit", bitPath, "--svf",
-          svfPath) ++ ecp5PackOpts,
-      )
-      runCu(CmdStepPack, bitCu)
+    println()
+    println("Device utilisation:")
+    logFileBetween(
+      nextpnrLogPath,
+      raw"Info: Device utilisation:".r,
+      raw"Info: Placed .*".r,
+      Some("Info: "),
+    )
 
-      BuildResult(bitPath, svfPath)
-    }
+    val bitPath = s"$buildDir/$id/$name.bit"
+    val svfPath = s"$buildDir/$id/$name.svf"
+    val bitCu = CompilationUnit(
+      Some(textcfgPath),
+      Seq(),
+      bitPath,
+      Seq("ecppack", "--input", textcfgPath, "--bit", bitPath, "--svf",
+        svfPath) ++ ecp5PackOpts,
+    )
+    runCu(CmdStep.Pack, bitCu)
+
+    BuildResult(bitPath, svfPath)
   }
 }

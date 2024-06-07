@@ -90,16 +90,14 @@ private[chryse] class ChryseScallopConf(chryse: ChryseApp, args: Array[String])
   }
   addSubcommand(build)
 
-  object cxxsim extends Subcommand("cxxsim") {
-    banner("Run the C++ simulator tests.")
-
-    val platformChoices = chryse.cxxrtlOptions.map(_.platforms).getOrElse(Seq())
+  object cxxrtl extends Subcommand("cxxrtl") {
+    banner("Run the CXXRTL simulator tests.")
 
     val platform =
-      if (platformChoices.length > 1)
+      if (chryse.cxxrtlPlatforms.length > 1)
         Some(
           choice(
-            platformChoices.map(_.id),
+            chryse.cxxrtlPlatforms.map(_.id),
             name = "platform",
             argName = "platform",
             descr = "CXXRTL platform to use.",
@@ -128,16 +126,16 @@ private[chryse] class ChryseScallopConf(chryse: ChryseApp, args: Array[String])
     val vcd =
       opt[String](
         argName = "file",
-        descr = "Output a VCD file when running cxxsim (passes --vcd <file> to the executable)",
+        descr = "Output a VCD file when running simulation (passes --vcd <file> to the simulation executable)",
       )
     val trailing = trailArg[List[String]](
       name = "<arg> ...",
-      descr = "Other arguments for the cxxsim executable",
+      descr = "Other arguments for the simulation executable",
       required = false,
     )
   }
-  if (chryse.cxxrtlOptions.isDefined)
-    addSubcommand(cxxsim)
+  if (chryse.cxxrtlPlatforms.nonEmpty)
+    addSubcommand(cxxrtl)
 
   for { sc <- chryse.additionalSubcommands }
     addSubcommand(sc)
