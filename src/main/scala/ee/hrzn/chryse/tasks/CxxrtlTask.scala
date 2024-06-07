@@ -22,11 +22,13 @@ import circt.stage.ChiselStage
 import ee.hrzn.chryse.ChryseApp
 import ee.hrzn.chryse.ChryseAppStepFailureException
 import ee.hrzn.chryse.build.CompilationUnit
+import ee.hrzn.chryse.build.filesInDirWithExt
 import ee.hrzn.chryse.platform.cxxrtl.BlackBoxGenerator
 import ee.hrzn.chryse.platform.cxxrtl.CxxrtlOptions
 import ee.hrzn.chryse.platform.cxxrtl.CxxrtlPlatform
 import org.apache.commons.io.FileUtils
 
+import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths
 import scala.collection.mutable
@@ -111,6 +113,13 @@ private[chryse] object CxxrtlTask extends BaseTask {
     val cxxOpts     = new mutable.ArrayBuffer[String]
     cxxOpts.appendAll(platform.cxxOpts)
     cxxOpts.append(s"-DCLOCK_HZ=${platform.clockHz}")
+    if (platform.zig)
+      cxxOpts.appendAll(
+        Seq(
+          "-DCXXRTL_INCLUDE_CAPI_IMPL",
+          "-DCXXRTL_INCLUDE_VCD_CAPI_IMPL",
+        ),
+      )
     if (runOptions.debug) cxxOpts.append("-g")
     if (runOptions.optimize) cxxOpts.append("-O3")
 
@@ -121,7 +130,7 @@ private[chryse] object CxxrtlTask extends BaseTask {
     }
 
     def compileCmdForCc(cc: String, obj: String): Seq[String] =
-      (if (platform.useZig) Seq("zig") else Seq()) ++ Seq(
+      (if (platform.zig) Seq("zig") else Seq()) ++ Seq(
         "c++",
         s"-I$buildDir/${platform.id}",
         s"-I$buildDir", // XXX: other artefacts the user might generate
@@ -146,19 +155,44 @@ private[chryse] object CxxrtlTask extends BaseTask {
     runCus(CmdStepCompile, cus)
 
     val binPath = s"$buildDir/${platform.id}/$name"
-    val linkCu = CompilationUnit(
-      None,
-      cus.map(_.outPath),
-      binPath,
-      (if (platform.useZig) Seq("zig") else Seq()) ++ Seq(
-        "c++",
-        "-o",
+
+    if (platform.zig) {
+      // TODO: extract into a CxxrtlPlatform subclass, make the defines configurable there.
+      val linkCu = CompilationUnit(
+        None,
+        cus.map(_.outPath) ++ filesInDirWithExt(simDir, ".zig"),
         binPath,
-      ) ++ cxxOpts ++ cus.map(
-        _.outPath,
-      ) ++ appOptions.allLdFlags,
-    )
-    runCu(CmdStepLink, linkCu)
+        Seq(
+          "zig",
+          "build",
+          s"-Dyosys_data_dir=$yosysDatDir",
+          s"-Dcxxrtl_o_paths=${cus.map(p => s"../${p.outPath}").mkString(",")}",
+        )
+          ++ (if (runOptions.optimize) Seq("-Doptimize=ReleaseFast")
+              else Seq()),
+        chdir = Some(simDir),
+      )
+      runCu(CmdStepLink, linkCu)
+
+      FileUtils.copyFile(
+        new File(s"$simDir/zig-out/bin/$simDir"),
+        new File(binPath),
+      )
+    } else {
+      val linkCu = CompilationUnit(
+        None,
+        cus.map(_.outPath),
+        binPath,
+        Seq(
+          "c++",
+          "-o",
+          binPath,
+        ) ++ cxxOpts ++ cus.map(
+          _.outPath,
+        ) ++ appOptions.allLdFlags,
+      )
+      runCu(CmdStepLink, linkCu)
+    }
 
     if (runOptions.compileOnly) return
 
@@ -168,7 +202,7 @@ private[chryse] object CxxrtlTask extends BaseTask {
     }
     val binCmd = Seq(binPath) ++ binArgs ++ runOptions.args
 
-    reportCmd(CmdStepExecute, CmdActionRun, binCmd)
+    reportCmd(CmdStepExecute, CmdActionRun, (binCmd, None))
     val rc = binCmd.!
 
     println(s"$name exited with return code $rc")

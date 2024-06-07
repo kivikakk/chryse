@@ -22,7 +22,7 @@ import chisel3._
 import ee.hrzn.chryse.build.filesInDirWithExt
 import ee.hrzn.chryse.platform.ElaboratablePlatform
 
-abstract case class CxxrtlPlatform(id: String, useZig: Boolean = false)
+abstract case class CxxrtlPlatform(id: String, zig: Boolean = false)
     extends ElaboratablePlatform {
   type TopPlatform[Top <: Module] = Top
 

@@ -21,6 +21,7 @@ package ee.hrzn.chryse.tasks
 import ee.hrzn.chryse.ChryseAppStepFailureException
 import ee.hrzn.chryse.build.CompilationUnit
 
+import java.io.File
 import java.io.PrintWriter
 import java.nio.file.Files
 import java.nio.file.Paths
@@ -49,7 +50,7 @@ trait BaseTask {
     writePath(path)(_.write(content))
 
   protected def runCmd(step: CmdStep, cmd: Seq[String]) =
-    runCmds(step, Seq(cmd))
+    runCmds(step, Seq((cmd, None)))
 
   sealed protected class CmdStep(s: String) {
     override def toString() = s
@@ -72,10 +73,11 @@ trait BaseTask {
 
   // This isn't rigorous and it isn't meant to be — for displaying on stdout
   // only.
-  private def formattedCmd(cmd: Seq[String]): String = {
+  private def formattedCmd(cmd: (Seq[String], Option[String])): String = {
     def fmtPart(part: String) =
       specialChar.replaceAllIn(part, Regex.quoteReplacement("\\") + "$0")
-    cmd.map(fmtPart).mkString(" ")
+    cmd._2.map(dir => s"(in $dir/) ").getOrElse("") +
+      cmd._1.map(fmtPart).mkString(" ")
   }
 
   sealed protected trait CmdAction
@@ -85,7 +87,7 @@ trait BaseTask {
   protected def reportCmd(
       step: CmdStep,
       action: CmdAction,
-      cmd: Seq[String],
+      cmd: (Seq[String], Option[String]),
   ): Unit = {
     val paddedAction = action match {
       case CmdActionRun  => "[run]  "
@@ -96,10 +98,13 @@ trait BaseTask {
 
   protected def runCmds(
       step: CmdStep,
-      cmds: Iterable[Seq[String]],
+      cmds: Iterable[(Seq[String], Option[String])],
   ): Unit = {
     cmds.foreach(reportCmd(step, CmdActionRun, _))
-    val processes = cmds.map(cmd => (cmd, cmd.run()))
+    val processes = cmds.map { cmd =>
+      val pb = Process(cmd._1, cmd._2.map(new File(_)))
+      (cmd, pb.run())
+    }
     // TODO: consider an upper limit on concurrency.
     val failed = processes.collect {
       case (cmd, proc) if proc.exitValue() != 0 => cmd
@@ -119,8 +124,8 @@ trait BaseTask {
       cus: Iterable[CompilationUnit],
   ): Unit = {
     val (skip, run) = cus.partition(_.isUpToDate())
-    skip.foreach(cu => reportCmd(step, CmdActionSkip, cu.cmd))
-    runCmds(step, run.map(_.cmd))
+    skip.foreach(cu => reportCmd(step, CmdActionSkip, _))
+    runCmds(step, run.map(cu => (cu.cmd, cu.chdir)))
     run.foreach(_.markUpToDate())
   }
 
