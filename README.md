@@ -17,9 +17,12 @@ A little framework to build HDL projects in Chisel with open-source toolchains.
 
 ## Examples
 
-* <https://github.com/kivikakk/spifrbb> — used as part of a presentation on
+* [spifrbb](https://github.com/kivikakk/spifrbb) — used as part of a presentation on
   CXXRTL at the Yosys Users Group ([transcript/slides][chisel-and-cxx])
-* <https://github.com/kivikakk/sevsegsim> — graphical demo of CXXRTL integration
+* [sevsegsim](https://github.com/kivikakk/sevsegsim) — graphical demo of CXXRTL
+  integration
+* [ili9341spi](https://github.com/kivikakk/ili9341spi) — SPI color LCD driver with
+  Zig testbench
 
 [chisel-and-cxx]: https://kivikakk.ee/digital/2024/05/28/chisel-and-cxx/
 
