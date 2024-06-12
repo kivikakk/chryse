@@ -32,10 +32,18 @@ import ee.hrzn.chryse.platform.resource.Uart
 case class IceBreakerPlatform(
     ubtnReset: Boolean = false,
     inferSpram: Boolean = false,
+    useHfosc: Option[Int] = None,
 ) extends PlatformBoard[IceBreakerPlatformResources]
     with Ice40Platform {
-  val id      = "icebreaker"
-  val clockHz = 12_000_000
+  val id = "icebreaker"
+  val clockHz = useHfosc match {
+    case None      => 12_000_000
+    case Some(0)   => 48_000_000
+    case Some(1)   => 24_000_000
+    case Some(2)   => 12_000_000
+    case Some(3)   => 6_000_000
+    case Some(div) => throw new IllegalArgumentException(s"bad HFOSC div $div")
+  }
 
   override val ice40Args    = if (inferSpram) Seq("-spram") else Seq()
   override val ice40Variant = UP5K
