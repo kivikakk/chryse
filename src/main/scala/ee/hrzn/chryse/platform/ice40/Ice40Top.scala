@@ -142,8 +142,6 @@ class Ice40Top[Top <: Module](
   if (top.desiredName == desiredName)
     throw new IllegalArgumentException(s"user top is called $desiredName")
 
-  // TODO (iCE40): allow clock source override.
-
   private val connectedResources =
     connectResources(platform, Some(default_clock))
 
