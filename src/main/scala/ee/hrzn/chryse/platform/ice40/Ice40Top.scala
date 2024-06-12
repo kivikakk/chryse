@@ -27,6 +27,7 @@ import ee.hrzn.chryse.platform.ChryseTop
 import ee.hrzn.chryse.platform.PlatformBoard
 import ee.hrzn.chryse.platform.PlatformBoardResources
 import ee.hrzn.chryse.platform.ice40.inst.PinType
+import ee.hrzn.chryse.platform.ice40.inst.SB_GB_IO
 import ee.hrzn.chryse.platform.ice40.inst.SB_HFOSC
 import ee.hrzn.chryse.platform.ice40.inst.SB_IO
 import ee.hrzn.chryse.platform.resource.PinInt
@@ -96,18 +97,25 @@ class Ice40Top[Top <: Module](
     }
   }
 
-  private val clki = Wire(Clock())
+  private val default_clock = Wire(Clock())
 
-  // private val clk_gb = Module(new SB_GB_IO)
-  // clk_gb.PACKAGE_PIN := clki
-  // private val clk = clk_gb.GLOBAL_BUFFER_OUTPUT
-  private val hfosc = Module(new SB_HFOSC(div = 1))
-  hfosc.CLKHFEN := true.B
-  hfosc.CLKHFPU := true.B
-  private val clk = hfosc.CLKHF
+  private val clk        = Wire(Clock())
+  private var timerLimit = (15 * platform.clockHz / 1_000_000).toInt
 
-  // private val timerLimit = (15 * platform.clockHz / 1_000_000).toInt
-  private val timerLimit = (100 /* XXX */ * platform.clockHz / 1_000_000).toInt
+  // XXX
+  if (platform.asInstanceOf[IceBreakerPlatform].useHfosc.isDefined) {
+    val hfosc = Module(new SB_HFOSC(div = 1))
+    hfosc.CLKHFEN := true.B
+    hfosc.CLKHFPU := true.B
+    clk           := hfosc.CLKHF
+
+    timerLimit = (100 * platform.clockHz / 1_000_000).toInt
+  } else {
+    val clk_gb = Module(new SB_GB_IO)
+    clk_gb.PACKAGE_PIN := default_clock
+    clk                := clk_gb.GLOBAL_BUFFER_OUTPUT
+  }
+
   private val resetTimerReg =
     withClock(clk)(Reg(UInt(unsignedBitLength(timerLimit).W)))
   private val reset = Wire(Bool())
@@ -137,7 +145,7 @@ class Ice40Top[Top <: Module](
   // TODO (iCE40): allow clock source override.
 
   private val connectedResources =
-    connectResources(platform, Some(clki))
+    connectResources(platform, Some(default_clock))
 
   val pcf = Pcf(
     connectedResources
