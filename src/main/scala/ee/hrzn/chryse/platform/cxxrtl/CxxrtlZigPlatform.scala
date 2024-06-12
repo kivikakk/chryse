@@ -54,6 +54,7 @@ abstract class CxxrtlZigPlatform(id: String) extends CxxrtlPlatform(id) {
       Seq(
         "zig",
         "build",
+        s"-Dclock_hz=$clockHz",
         s"-Dyosys_data_dir=$yosysDatDir",
         s"-Dcxxrtl_o_paths=${ccOutPaths.map(p => s"../$p").mkString(",")}",
       )

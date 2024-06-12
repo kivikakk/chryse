@@ -35,7 +35,7 @@ case class IceBreakerPlatform(
 ) extends PlatformBoard[IceBreakerPlatformResources]
     with Ice40Platform {
   val id      = "icebreaker"
-  val clockHz = 12_000_000
+  val clockHz = 24_000_000 // XXX!
 
   override val ice40Args    = if (inferSpram) Seq("-spram") else Seq()
   override val ice40Variant = UP5K
