@@ -2,6 +2,16 @@
 
 A little framework to build HDL projects in Chisel with open-source toolchains.
 
+## Status
+
+For now I've returned to doing RTL with [Amaranth], so I'm kind of porting Chryse to* Python in [Niar].
+
+\* Chryse was originally [rainhdx], so this is a full-circle moment.
+
+[Amaranth]: https://amaranth-lang.org
+[Niar]: https://github.com/kivikakk/niar
+[rainhdx]: https://github.com/kivikakk/hdx#rain
+
 ## Overview
 
 * Provides an extensible App that facilitates synthesis for multiple target
